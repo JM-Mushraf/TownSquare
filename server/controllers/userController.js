@@ -4,16 +4,16 @@ import { User } from "../models/userModel.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { sendToken } from "../middlewares/jwtToken.js";
 import { ApiResponse } from "../routes/apiResponse.js";
-export const registerUser = AsyncHandler(async (req, res, next) => {
-  const { username, email, password } = req.body;
+export const registerUser = AsyncHandler(async (req, res, next) => { 
+  const { username, email, password, role, phone, location } = req.body;
 
-  if (!username || !email || !password) {
+  if (!username || !email || !password || !role || !location) {
     throw new ErrorHandler("All fields are required", 400);
   }
 
-  const existedUser = await User.findOne({ $or: [{ username }, { email }] });
+  const existedUser = await User.findOne({ $or: [{ username }, { email }, { phone }] });
   if (existedUser) {
-    throw new ErrorHandler("Username or email already exists", 409);
+    throw new ErrorHandler("Username, email, or phone already exists", 409);
   }
 
   const avatarFile = req.files?.avatar?.[0]; // Check if avatar is provided
@@ -26,13 +26,16 @@ export const registerUser = AsyncHandler(async (req, res, next) => {
     throw new ErrorHandler("Error uploading avatar file", 500);
   }
 
-  // Ensure only the URL is stored in the `avatar` field
+  // Creating new user with all required fields
   const newUser = await User.create({
     username,
     email,
     password,
-    avatar: uploadedAvatar.url, // Store only the URL as a string
-    avatarPublicId: uploadedAvatar.public_id, // Store public ID separately
+    role,
+    phone,
+    location,
+    avatar: uploadedAvatar.url, 
+    avatarPublicId: uploadedAvatar.public_id, 
   });
 
   res.status(201).json({
@@ -44,20 +47,34 @@ export const registerUser = AsyncHandler(async (req, res, next) => {
 
 export const loginUser = AsyncHandler(async (req, res, next) => {
   try {
-    const { email, password } =await req.body;
+    const { email, password, location } = req.body;
+
     if (!email || !password) {
       return next(new ErrorHandler("Please enter email and password", 400));
     }
+
+    // Find user by email and include password field
     const user = await User.findOne({ email }).select("+password");
+
     if (!user) {
       return next(new ErrorHandler("Invalid email or password", 401));
     }
+
+    // Validate password
     const isPasswordCorrect = await user.comparePassword(password);
     if (!isPasswordCorrect) {
       return next(new ErrorHandler("Invalid email or password", 401));
     }
-    //if email and password matched send token
+
+    // Update location if provided
+    if (location) {
+      user.location = location;
+      await user.save(); // Save updated location
+    }
+
+    // If email and password matched, send token
     sendToken(user, 200, res);
+
   } catch (error) {
     console.log(error);
     return next(

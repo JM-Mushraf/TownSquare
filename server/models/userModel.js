@@ -22,39 +22,62 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Please enter your password"],
-      select: false,
+      select: false, 
+    },
+    role: {
+      type: String,
+      enum: ["resident", "official", "admin"],
+      default: "resident",
     },
     avatar: {
-      type: String, // Ensure that only the URL is stored here
+      type: String, 
       required: true,
     },
     avatarPublicId: {
-      type: String, // Store publicId separately
+      type: String, // Cloudinary publicId for easy deletion
     },
-  },
-  { timestamps: true }
-);
+    phone: {
+      type: String,
+      unique: true,
+      sparse: true, // Allows null values but ensures uniqueness
+    },
+    location: {
+      type: String,
+      required: true, // Represents colony/society/locality in a single field
+    },
+    bio: {
+      type: String,
+      maxlength: 500,
+    },
+    communitiesJoined: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Community", // References the Community model
+      },
+    ],
+  },{ timestamps: true });
 
+// Pre-save middleware for hashing password
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
+  if (!this.isModified("password")) return next();
+  try {
+    this.password = await bcrypt.hash(this.password, 10);
     next();
+  } catch (error) {
+    return next(error);
   }
-
-  this.password = await bcrypt.hash(this.password, 10);
 });
 
-// JWT TOKEN
-const JWT_SECRET = process.env.JWT_SECRET || "cnmsjkenfkljnsjklgnsdljkfjsdkcnmsa4rw4jljsdfl";
-console.log("jwt usermodel", JWT_SECRET);
-
+// Generate JWT Token
 userSchema.methods.getJWT = function () {
-  return jwt.sign({ id: this._id }, JWT_SECRET, {
+  return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET, {
     expiresIn: "5d",
   });
 };
 
-userSchema.methods.comparePassword = async function (entered) {
-  return await bcrypt.compare(entered, this.password);
+// Compare Entered Password with Hashed Password
+userSchema.methods.comparePassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
-export const User = new mongoose.model("User", userSchema);
+export const User = mongoose.model("User", userSchema);
