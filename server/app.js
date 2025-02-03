@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-
+import { postRouter } from "./routes/postRouter.js";
 import { userRouter } from "./routes/userRouter.js";
 import { error } from "./middlewares/error.js";
 
@@ -22,7 +22,7 @@ app.get("/", (req, res) => {
   res.send("Hello World");
 });
 app.use("/user", userRouter);
-
+app.use('/post',postRouter)
 
 
 app.use(error);
