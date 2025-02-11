@@ -41,10 +41,14 @@ const userSchema = new mongoose.Schema(
       unique: true,
       sparse: true, // Allows null values but ensures uniqueness
     },
-    location: {
-      type: String,
-      required: true, // Represents colony/society/locality in a single field
-    },
+    // location: {
+    //   type: String,
+    //   required: true, // Represents colony/society/locality in a single field
+    // },
+    city:String,
+    cityDistrict:String,
+    county:String,
+    postcode:Number,
     bio: {
       type: String,
       maxlength: 500,
