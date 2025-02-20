@@ -45,10 +45,17 @@ const userSchema = new mongoose.Schema(
     //   type: String,
     //   required: true, // Represents colony/society/locality in a single field
     // },
-    city:String,
-    cityDistrict:String,
-    county:String,
-    postcode:Number,
+    location: {
+      type: {
+        address: { type: String, required: true }, // Represents colony/society/locality
+        city: String,
+        district: String,
+        country: String,
+        postcode: Number,
+      },
+      required: true,
+    },
+    
     bio: {
       type: String,
       maxlength: 500,

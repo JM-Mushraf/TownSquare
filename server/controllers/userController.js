@@ -7,9 +7,9 @@ import { ApiResponse } from "../routes/apiResponse.js";
 import { sendMail } from "../nodemailer/nodemailer.js";
 
 export const registerUser = AsyncHandler(async (req, res, next) => { 
-  const { username, email, password, role, phone, location } = req.body;
+  const { username, email, password, role, phone, address, city, district, country, postcode } = req.body;
 
-  if (!username || !email || !password || !role || !location) {
+  if (!username || !email || !password || !role || !address || !city || !district || !country || !postcode) {
     throw new ErrorHandler("All fields are required", 400);
   }
 
@@ -18,7 +18,7 @@ export const registerUser = AsyncHandler(async (req, res, next) => {
     throw new ErrorHandler("Username, email, or phone already exists", 409);
   }
 
-  const avatarFile = req.files?.avatar?.[0]; // Check if avatar is provided
+  const avatarFile = req.files?.avatar?.[0]; 
   if (!avatarFile) {
     throw new ErrorHandler("Avatar file is required", 400);
   }
@@ -38,7 +38,7 @@ export const registerUser = AsyncHandler(async (req, res, next) => {
     password,
     role,
     phone,
-    location,
+    location: { address, city, district, country, postcode },  // Store as an object
     avatar: { url: uploadedAvatar.url, publicId: uploadedAvatar.public_id },
     verificationCode,
   };
@@ -48,6 +48,8 @@ export const registerUser = AsyncHandler(async (req, res, next) => {
     message: "Verification code sent to your email. Please verify to complete registration.",
   });
 });
+
+
 export const verifyUser = AsyncHandler(async (req, res, next) => {
   const { verificationCode } = req.body;
 
@@ -70,7 +72,7 @@ export const verifyUser = AsyncHandler(async (req, res, next) => {
     password,
     role,
     phone,
-    location,
+    location,  // Now correctly storing location as an object
     avatar: avatar.url,
     avatarPublicId: avatar.publicId,
   });
@@ -83,7 +85,6 @@ export const verifyUser = AsyncHandler(async (req, res, next) => {
     user: newUser,
   });
 });
-
 
 export const loginUser = AsyncHandler(async (req, res, next) => {
   try {
