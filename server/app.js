@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import { postRouter } from "./routes/postRouter.js";
 import { userRouter } from "./routes/userRouter.js";
+import { emergencyRouter } from "./routes/emergencyRouter.js";
 import { error } from "./middlewares/error.js";
 
 export const app = express();
@@ -22,7 +23,7 @@ app.get("/", (req, res) => {
   res.send("Hello World");
 });
 app.use("/user", userRouter);
-app.use('/post',postRouter)
-
+app.use('/post',postRouter);
+app.use("/emergency",emergencyRouter);
 
 app.use(error);
