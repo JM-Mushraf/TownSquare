@@ -59,6 +59,9 @@ const userSchema = new mongoose.Schema(
         ref: "Community", // References the Community model
       },
     ],
+    verificationCode:{
+      type:Number,
+  },
   },{ timestamps: true });
 
 // Pre-save middleware for hashing password

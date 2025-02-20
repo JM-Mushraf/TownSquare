@@ -6,6 +6,7 @@ import { postRouter } from "./routes/postRouter.js";
 import { userRouter } from "./routes/userRouter.js";
 import { emergencyRouter } from "./routes/emergencyRouter.js";
 import { error } from "./middlewares/error.js";
+import session from 'express-session';
 
 export const app = express();
 // app.use(Error)
@@ -15,6 +16,12 @@ app.use(
     credentials: true, // if you're using cookies or HTTP authentication
   })
 );
+app.use(session({
+  secret: 'Mushraf123',  // Using your custom secret key
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false }  // Set to true if using HTTPS in production
+}));
 
 app.use(express.json());
 app.use(cookieParser());

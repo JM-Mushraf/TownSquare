@@ -1,9 +1,11 @@
 import { AsyncHandler } from "../utils/asyncHandler.js";
 import ErrorHandler from "../utils/errorHandler.js";
 import { User } from "../models/userModel.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { uploadOnCloudinary,deleteFromCloudinary } from "../utils/cloudinary.js";
 import { sendToken } from "../middlewares/jwtToken.js";
 import { ApiResponse } from "../routes/apiResponse.js";
+import { sendMail } from "../nodemailer/nodemailer.js";
+
 export const registerUser = AsyncHandler(async (req, res, next) => { 
   const { username, email, password, role, phone, location } = req.body;
 
@@ -26,7 +28,42 @@ export const registerUser = AsyncHandler(async (req, res, next) => {
     throw new ErrorHandler("Error uploading avatar file", 500);
   }
 
-  // Creating new user with all required fields
+  // Send verification email
+  const verificationCode = await sendMail(email);
+  
+  // Store user data in session for verification
+  req.session.verificationData = {
+    username,
+    email,
+    password,
+    role,
+    phone,
+    location,
+    avatar: { url: uploadedAvatar.url, publicId: uploadedAvatar.public_id },
+    verificationCode,
+  };
+
+  res.status(200).json({
+    success: true,
+    message: "Verification code sent to your email. Please verify to complete registration.",
+  });
+});
+export const verifyUser = AsyncHandler(async (req, res, next) => {
+  const { verificationCode } = req.body;
+
+  const verificationData = req.session.verificationData;
+  if (!verificationData) {
+    throw new ErrorHandler("No registration process found. Please register again.", 400);
+  }
+
+  if (verificationData.verificationCode !== Number(verificationCode)) {
+    if (verificationData.avatar.publicId) {
+      await deleteFromCloudinary(verificationData.avatar.publicId);
+    }
+    throw new ErrorHandler("Invalid verification code", 400);
+  }
+
+  const { username, email, password, role, phone, location, avatar } = verificationData;
   const newUser = await User.create({
     username,
     email,
@@ -34,16 +71,19 @@ export const registerUser = AsyncHandler(async (req, res, next) => {
     role,
     phone,
     location,
-    avatar: uploadedAvatar.url, 
-    avatarPublicId: uploadedAvatar.public_id, 
+    avatar: avatar.url,
+    avatarPublicId: avatar.publicId,
   });
+
+  req.session.verificationData = null;
 
   res.status(201).json({
     success: true,
-    message: "User registered successfully",
+    message: "Your email has been successfully verified! Welcome to TownSquare!",
     user: newUser,
   });
 });
+
 
 export const loginUser = AsyncHandler(async (req, res, next) => {
   try {
