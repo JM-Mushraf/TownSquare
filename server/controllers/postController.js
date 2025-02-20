@@ -134,8 +134,6 @@ export const getPostById = async (req, res) => {
 };
 
 
-
-
 // Upvote a post (User can only upvote once)
 export const upvotePost = async (req, res) => {
     try {
@@ -211,10 +209,7 @@ export const downvotePost = async (req, res) => {
 };
 
 
-
-
 // COMMENT
-
 export const addComment = async (req, res) => {
     try {
         const { postId, message } = req.body;
@@ -231,4 +226,46 @@ export const addComment = async (req, res) => {
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
+};
+
+//poll
+export const createPoll = async (req, res) => {
+  try {
+    const { title, solutions } = req.body;
+    const createdBy = req.user._id;
+
+    // Validate required fields
+    if (!title || !solutions || !Array.isArray(solutions) || solutions.length < 2 || solutions.length > 5) {
+      return res.status(400).json({
+        success: false,
+        message: "Title and 2 to 5 solutions are required.",
+      });
+    }
+
+    // Format solutions with initial votes
+    const formattedSolutions = solutions.map((solution) => ({
+      text: solution,
+      votes: 0,
+    }));
+
+    const newPoll = new Post({
+      title,
+      type: "poll",
+      createdBy,
+      solutions: formattedSolutions,
+    });
+
+    await newPoll.save();
+    res.status(201).json({
+      success: true,
+      message: "Poll created successfully",
+      poll: newPoll,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error creating poll",
+      error: error.message,
+    });
+  }
 };

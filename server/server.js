@@ -12,7 +12,6 @@ connection().then(()=>{
 dotenv.config();
 const PORT=process.env.PORT
 
-
 app.listen(3000,()=>{
     console.log("SERVER IS RUNNING ON PORT ",PORT);
 })

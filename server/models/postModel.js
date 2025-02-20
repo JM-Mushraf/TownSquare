@@ -40,7 +40,13 @@ const postSchema = new mongoose.Schema({
         }
     ],
 
-    comments:[{type:mongoose.Schema.Types.ObjectId, ref: "Comment" }]
+    comments:[{type:mongoose.Schema.Types.ObjectId, ref: "Comment" }],
+    solutions: [
+        {
+            text: { type: String, required: true },
+            votes: { type: Number, default: 0 },
+        }
+    ]    
 });
 
 export const Post = mongoose.model("Post", postSchema);
