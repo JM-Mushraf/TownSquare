@@ -34,26 +34,19 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     avatarPublicId: {
-      type: String, // Cloudinary publicId for easy deletion
+      type: String,
     },
     phone: {
       type: String,
       unique: true,
-      sparse: true, // Allows null values but ensures uniqueness
+      sparse: true,
     },
-    // location: {
-    //   type: String,
-    //   required: true, // Represents colony/society/locality in a single field
-    // },
     location: {
-      type: {
-        address: { type: String, required: true }, // Represents colony/society/locality
-        city: String,
-        district: String,
-        country: String,
-        postcode: Number,
-      },
-      required: true,
+      address: { type: String, required: true },
+      city: { type: String, required: true },
+      district: { type: String, required: true },
+      county: { type: String, required: true },
+      postcode: { type: String, required: true },
     },
 
     bio: {
@@ -63,7 +56,7 @@ const userSchema = new mongoose.Schema(
     communitiesJoined: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Community", // References the Community model
+        ref: "Community",
       },
     ],
     verificationCode: {
@@ -73,7 +66,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Pre-save middleware for hashing password
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   try {
@@ -84,14 +76,12 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-// Generate JWT Token
 userSchema.methods.getJWT = function () {
   return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET, {
     expiresIn: "5d",
   });
 };
 
-// Compare Entered Password with Hashed Password
 userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
