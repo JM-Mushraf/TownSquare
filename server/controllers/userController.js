@@ -6,10 +6,10 @@ import { sendToken } from "../middlewares/jwtToken.js";
 import { ApiResponse } from "../routes/apiResponse.js";
 import { sendMail } from "../nodemailer/nodemailer.js";
 
-export const registerUser = AsyncHandler(async (req, res, next) => { 
-  const { username, email, password, role, phone, address, city, district, country, postcode } = req.body;
+export const registerUser = AsyncHandler(async (req, res, next) => {
+  const { username, email, password, role, phone, address, city, district, county, postcode } = req.body;
 
-  if (!username || !email || !password || !role || !address || !city || !district || !country || !postcode) {
+  if (!username || !email || !password || !role || !address || !city || !district || !county || !postcode) {
     throw new ErrorHandler("All fields are required", 400);
   }
 
@@ -18,7 +18,7 @@ export const registerUser = AsyncHandler(async (req, res, next) => {
     throw new ErrorHandler("Username, email, or phone already exists", 409);
   }
 
-  const avatarFile = req.files?.avatar?.[0]; 
+  const avatarFile = req.files?.avatar?.[0];
   if (!avatarFile) {
     throw new ErrorHandler("Avatar file is required", 400);
   }
@@ -28,17 +28,15 @@ export const registerUser = AsyncHandler(async (req, res, next) => {
     throw new ErrorHandler("Error uploading avatar file", 500);
   }
 
-  // Send verification email
   const verificationCode = await sendMail(email);
-  
-  // Store user data in session for verification
+
   req.session.verificationData = {
     username,
     email,
     password,
     role,
     phone,
-    location: { address, city, district, country, postcode },  // Store as an object
+    location: { address, city, district, county, postcode },
     avatar: { url: uploadedAvatar.url, publicId: uploadedAvatar.public_id },
     verificationCode,
   };
@@ -49,10 +47,8 @@ export const registerUser = AsyncHandler(async (req, res, next) => {
   });
 });
 
-
 export const verifyUser = AsyncHandler(async (req, res, next) => {
   const { verificationCode } = req.body;
-
   const verificationData = req.session.verificationData;
   if (!verificationData) {
     throw new ErrorHandler("No registration process found. Please register again.", 400);
@@ -72,7 +68,7 @@ export const verifyUser = AsyncHandler(async (req, res, next) => {
     password,
     role,
     phone,
-    location,  // Now correctly storing location as an object
+    location,
     avatar: avatar.url,
     avatarPublicId: avatar.publicId,
   });
@@ -85,6 +81,7 @@ export const verifyUser = AsyncHandler(async (req, res, next) => {
     user: newUser,
   });
 });
+
 
 export const loginUser = AsyncHandler(async (req, res, next) => {
   try {
