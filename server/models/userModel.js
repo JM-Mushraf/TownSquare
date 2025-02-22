@@ -22,15 +22,15 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Please enter your password"],
-      select: false, 
+      select: false,
     },
     role: {
       type: String,
-      enum: ["resident", "official", "admin","emergency"],
+      enum: ["resident", "official", "admin", "emergency"],
       default: "resident",
     },
     avatar: {
-      type: String, 
+      type: String,
       required: true,
     },
     avatarPublicId: {
@@ -55,7 +55,7 @@ const userSchema = new mongoose.Schema(
       },
       required: true,
     },
-    
+
     bio: {
       type: String,
       maxlength: 500,
@@ -66,10 +66,12 @@ const userSchema = new mongoose.Schema(
         ref: "Community", // References the Community model
       },
     ],
-    verificationCode:{
-      type:Number,
+    verificationCode: {
+      type: Number,
+    },
   },
-  },{ timestamps: true });
+  { timestamps: true }
+);
 
 // Pre-save middleware for hashing password
 userSchema.pre("save", async function (next) {
