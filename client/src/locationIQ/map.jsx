@@ -29,7 +29,7 @@ function LocationComponent() {
 
           try {
             const response = await axios.get(
-              `https:us1.locationiq.com/v1/reverse?key=pk.69b624eadc91f4b86faf46cc73cc3f11&lat=12.832180&lon=77.590848&format=json&accept-language=en`
+              `https:us1.locationiq.com/v1/reverse?key=pk.69b624eadc91f4b86faf46cc73cc3f11&lat=${latitude}&lon=${longitude}&format=json&accept-language=en`
             );
 
             console.log("Location API Response:", response.data);
