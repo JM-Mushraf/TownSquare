@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import GetLocation from './Geolocation/Geolocation'
+import Location from './locationIQ/map'
 import './App.css'
 
 function App() {
@@ -7,7 +7,7 @@ function App() {
 
   return (
     <>
-      <GetLocation/>
+      <Location/>
     </>
   )
 }
