@@ -1,0 +1,62 @@
+.location-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #1a1a1a, #222);
+  color: #ffffff;
+  text-align: center;
+  padding: 20px;
+  width: 95vw;
+}
+
+.get-location-button {
+  background: linear-gradient(135deg, #00b4db, #0083b0);
+  color: #ffffff;
+  border: none;
+  padding: 14px 24px;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 180, 219, 0.3);
+  outline: none;
+}
+
+.get-location-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 180, 219, 0.5);
+}
+
+.get-location-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 5px rgba(0, 180, 219, 0.2);
+}
+
+.location-text {
+  font-size: 20px;
+  color: #f5f5f5;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px 20px;
+  border-radius: 6px;
+  margin-top: 16px;
+  max-width: 80%;
+  word-wrap: break-word;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+}
+
+.error-text {
+  font-size: 18px;
+  color: #ff5252;
+  background: rgba(255, 0, 0, 0.1);
+  padding: 10px 18px;
+  border-radius: 6px;
+  margin-top: 12px;
+  max-width: 80%;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 10px rgba(255, 0, 0, 0.2);
+}
