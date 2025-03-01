@@ -5,6 +5,8 @@ import { uploadOnCloudinary,deleteFromCloudinary } from "../utils/cloudinary.js"
 import { sendToken } from "../middlewares/jwtToken.js";
 import { ApiResponse } from "../routes/apiResponse.js";
 import { sendMail } from "../nodemailer/nodemailer.js";
+import { Location } from "../models/locationModel.js";
+import { createChat } from "./chatController.js";
 
 export const registerUser = AsyncHandler(async (req, res, next) => {
   const { username, email, password, role, phone, address, city, district, county, postcode } = req.body;
@@ -74,6 +76,28 @@ export const verifyUser = AsyncHandler(async (req, res, next) => {
   });
 
   req.session.verificationData = null;
+
+  let newLocation = await Location.findOne({
+    $or: [
+        { county: location.county },
+        { postcode: location.postcode },
+        { city: location.city }
+    ]
+});
+
+if (!newLocation) {
+  // No existing location, create a new entry
+  newLocation = await Location.findOneAndUpdate(
+      {}, 
+      { 
+          $push: { county: location.county, postcode: location.postcode, city: location.city } 
+      }, 
+      { new: true, upsert: true }
+  );
+
+  // Call createChat for the new location
+  await createChat(req, res);
+}
 
   res.status(201).json({
     success: true,

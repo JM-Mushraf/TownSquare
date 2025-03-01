@@ -2,7 +2,7 @@ import ErrorHandler from "../utils/errorHandler.js";
 import { AsyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/userModel.js";
 
-export const createChat = AsyncHandler(async (req, res) => {
+export const createChat = AsyncHandler(async (req, res,next) => {
     const userId = req.user.id;
 
     // Fetch the user's county
