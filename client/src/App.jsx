@@ -1,4 +1,5 @@
 import { useState } from 'react'
+
 import axios from 'axios'
 axios.defaults.withCredentials = true;
 import {
@@ -12,6 +13,8 @@ import { Toaster } from "react-hot-toast";
 import { useSelector } from 'react-redux';
 import './App.css'
 import Login from './Pages/Login/Login';
+import Register from './Pages/Register/Register';
+import Verify from './Pages/Verification/Verify';
 
 
 function App() {
@@ -20,8 +23,11 @@ function App() {
 
   return (
     <Router>
+      <Toaster position="bottom-right" toastOptions={{ duration: 2000 }} />
       <Routes>
         <Route path='/login' element={<Login/>} />
+        <Route path='/register' element={<Register/>} />
+        <Route path='/verify' element={<Verify/>} />
       </Routes>
       
     </Router>

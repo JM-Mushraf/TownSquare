@@ -1,24 +1,29 @@
-import {createAsyncThunk,createSlice} from '@reduxjs/toolkit'
-import axios from 'axios'
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
 
-
-const initialState={
-    userData:null,
-    token:null,
-    isAuthorized:false,
-    loading:false,
-    error:null
-}
+const initialState = {
+  userData: null,
+  token: null,
+  isAuthorized: false,
+  loading: false,
+  error: null,
+};
 
 const signup = createAsyncThunk("signup", async (userCredentials) => {
-    console.log(userCredentials)
-    const { data } = await axios.post(`${import.meta.env.VITE_BACKEND_BASEURL}/user/register`, userCredentials, {
+  console.log(userCredentials);
+  const { data } = await axios.post(
+    `${import.meta.env.VITE_BACKEND_BASEURL}/user/register`,
+    userCredentials,
+    {
       withCredentials: true,
-    });  
-    return data;
-  });
+    }
+  );
+  return data;
+});
 
-  const login = createAsyncThunk('login', async (userCredentials,{rejectWithValue }) => {
+const login = createAsyncThunk(
+  "login",
+  async (userCredentials, { rejectWithValue }) => {
     try {
       const result = await axios.post(
         `${import.meta.env.VITE_BACKEND_BASEURL}/user/login`,
@@ -30,7 +35,7 @@ const signup = createAsyncThunk("signup", async (userCredentials) => {
       return result.data;
     } catch (err) {
       console.error("Error in login thunk:", err);
-  
+
       // Return a rejected value with the error message from the backend
       if (err.response) {
         // The request was made, and the server responded with a status code
@@ -43,47 +48,44 @@ const signup = createAsyncThunk("signup", async (userCredentials) => {
         return rejectWithValue("An unexpected error occurred.");
       }
     }
-  });
-  
+  }
+);
 
+const authSlice = createSlice({
+  name: "user",
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(signup.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(signup.fulfilled, (state, action) => {
+        state.loading = false;
+        state.userData = action.payload.user;
+        state.token = action.payload.token;
+        state.isAuthorized = true;
+      })
+      .addCase(signup.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.loading = false;
+        state.userData = action.payload.user;
+        state.token = action.payload.token;
+        state.isAuthorized = true;
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+  },
+});
 
-  const authSlice = createSlice({
-    name: "user",
-    initialState,
-    reducers: {},
-    extraReducers: (builder) => {
-      builder
-        .addCase(signup.pending, (state) => {
-          state.loading = true;
-          
-        })
-        .addCase(signup.fulfilled, (state, action) => {
-          state.loading = false;
-          state.userData = action.payload.user;
-          state.token = action.payload.token;
-          state.isAuthorized = true;
-        })
-        .addCase(signup.rejected, (state, action) => {
-          state.loading = false;
-          state.error = action.error.message;
-        })
-        .addCase(login.pending, (state) => {
-          state.loading = true;
-          state.error = null;
-        })
-        .addCase(login.fulfilled, (state, action) => {
-          state.loading = false;
-          state.userData = action.payload.user;
-          state.token = action.payload.token;
-          state.isAuthorized = true;
-        })
-        .addCase(login.rejected, (state, action) => {
-          state.loading = false;
-          state.error = action.error.message;
-        });
-    },
-  });
-  
-
-  export { signup ,login};
+export { signup, login };
 export default authSlice.reducer;
