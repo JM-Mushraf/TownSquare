@@ -1,6 +1,6 @@
 :root {
- --sidebar-background: #ffffff; /*  Light mode background */
-  --sidebar-foreground: black; /*Light mode text color*/
+  --sidebar-background: #ffffff; /* Light mode background */
+  --sidebar-foreground: black; /* Light mode text color */
   --sidebar-border: #e0e0e0; /* Light mode border color */
   --primary: #3b82f6; /* Primary color */
   --destructive: #ef4444; /* Destructive color */
@@ -27,7 +27,6 @@
   height: 100vh;
   width: 260px;
   border-right: 1px solid var(--sidebar-border);
-  /* background-color: var(--sidebar-background); */
   color: var(--sidebar-foreground);
   transition: all 0.3s ease;
   overflow: hidden;
@@ -415,4 +414,21 @@
   .sidebar-mobile-toggle {
     display: flex;
   }
+}
+
+/* Login/Logout Button Styles */
+.sidebar-footer button.sidebar-nav-item {
+  width: 100%;
+  justify-content: flex-start;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.sidebar-footer button.sidebar-nav-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark .sidebar-footer button.sidebar-nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
 }
