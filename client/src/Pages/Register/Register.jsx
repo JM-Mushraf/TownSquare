@@ -31,7 +31,7 @@ const Register = () => {
   const handleFileChange = (e) => {
     setAvatar(e.target.files[0]);
   };
-
+ 
   const handleRegister = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
