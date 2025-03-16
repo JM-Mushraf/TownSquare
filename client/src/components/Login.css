@@ -1,0 +1,411 @@
+/* Auth Page Container */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--background), var(--card));
+  perspective: 1000px;
+}
+
+/* Auth Card */
+.auth-card {
+  width: 100%;
+  max-width: 500px;
+  min-height: 600px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-radius: 16px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
+}
+
+.auth-card.flipped {
+  transform: rotateY(180deg);
+}
+
+/* Card Sides */
+.card-side {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 2rem;
+  background-color: var(--card);
+  display: flex;
+  flex-direction: column;
+}
+
+.front {
+  z-index: 2;
+}
+
+.back {
+  transform: rotateY(180deg);
+  overflow-y: auto;
+}
+
+/* Auth Header */
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.auth-header p {
+  color: var(--muted-foreground);
+  font-size: 1rem;
+}
+
+/* Auth Form */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  flex: 1;
+}
+
+.login-form .form-group,
+.register-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.login-form .form-group label,
+.register-form .form-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.login-input-with-icon,
+.register-input-with-icon {
+  position: relative;
+}
+
+.login-input-with-icon svg,
+.register-input-with-icon svg {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-foreground);
+}
+
+.login-input-with-icon input,
+.login-input-with-icon select,
+.register-input-with-icon input,
+.register-input-with-icon select {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.login-form .form-group input:not(.login-input-with-icon input),
+.register-form .form-group input:not(.register-input-with-icon input) {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.login-input-with-icon input:focus,
+.login-input-with-icon select:focus,
+.register-input-with-icon input:focus,
+.register-input-with-icon select:focus,
+.login-form .form-group input:focus,
+.register-form .form-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+}
+
+/* Form Options */
+.login-form-options,
+.register-form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.login-remember-me,
+.register-remember-me {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.login-remember-me input[type="checkbox"],
+.register-remember-me input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--primary);
+}
+
+.login-forgot-password,
+.register-forgot-password {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.login-forgot-password:hover,
+.register-forgot-password:hover {
+  text-decoration: underline;
+}
+
+/* Auth Button */
+.login-auth-button,
+.register-auth-button {
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(var(--primary-rgb), 0.2);
+}
+
+.login-auth-button:hover,
+.register-auth-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(var(--primary-rgb), 0.3);
+}
+
+.login-auth-button:active,
+.register-auth-button:active {
+  transform: translateY(0);
+}
+
+/* Auth Divider */
+.login-auth-divider,
+.register-auth-divider {
+  display: flex;
+  align-items: center;
+  margin: 1rem 0;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+.login-auth-divider::before,
+.login-auth-divider::after,
+.register-auth-divider::before,
+.register-auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: var(--border);
+}
+
+.login-auth-divider span,
+.register-auth-divider span {
+  padding: 0 1rem;
+}
+
+/* Social Login */
+.login-social-login,
+.register-social-login {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.login-social-button,
+.register-social-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.login-social-button:hover,
+.register-social-button:hover {
+  background-color: var(--muted);
+}
+
+/* Auth Footer */
+.login-auth-footer,
+.register-auth-footer {
+  margin-top: auto;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.login-flip-button,
+.register-flip-button {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.login-flip-button:hover,
+.register-flip-button:hover {
+  text-decoration: underline;
+}
+
+/* Register Form Grid */
+.register-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+/* Terms Checkbox */
+.register-terms-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.register-terms-checkbox input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.2rem;
+  accent-color: var(--primary);
+}
+
+.register-terms-checkbox a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.register-terms-checkbox a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .auth-card {
+    max-width: 100%;
+  }
+
+  .register-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .full-width {
+    grid-column: span 1;
+  }
+}
+
+/* Dark Mode Adjustments */
+.dark .auth-container {
+  background: linear-gradient(135deg, var(--background), #1a1a2e);
+}
+
+.dark .auth-card {
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.dark .auth-header h2 {
+  background: linear-gradient(135deg, var(--primary), #a5b4fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dark .auth-button {
+  background: linear-gradient(135deg, var(--primary), #4f46e5);
+}
+
+/* Animation for form elements */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-form .form-group,
+.register-form .form-group {
+  animation: fadeIn 0.3s ease forwards;
+  animation-delay: calc(var(--index, 0) * 0.05s);
+  opacity: 0;
+}
+
+.login-form .form-group:nth-child(1),
+.register-form .form-group:nth-child(1) {
+  --index: 1;
+}
+.login-form .form-group:nth-child(2),
+.register-form .form-group:nth-child(2) {
+  --index: 2;
+}
+.login-form .form-group:nth-child(3),
+.register-form .form-group:nth-child(3) {
+  --index: 3;
+}
+.login-form .form-group:nth-child(4),
+.register-form .form-group:nth-child(4) {
+  --index: 4;
+}
+.login-form .form-group:nth-child(5),
+.register-form .form-group:nth-child(5) {
+  --index: 5;
+}
+.login-form .form-group:nth-child(6),
+.register-form .form-group:nth-child(6) {
+  --index: 6;
+}
+.login-form .form-group:nth-child(7),
+.register-form .form-group:nth-child(7) {
+  --index: 7;
+}
+.login-form .form-group:nth-child(8),
+.register-form .form-group:nth-child(8) {
+  --index: 8;
+}
+.login-form .form-group:nth-child(9),
+.register-form .form-group:nth-child(9) {
+  --index: 9;
+}
+.login-form .form-group:nth-child(10),
+.register-form .form-group:nth-child(10) {
+  --index: 10;
+}

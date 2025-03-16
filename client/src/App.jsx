@@ -15,6 +15,7 @@ import MarketplacePage from "./pages/MarketplacePage";
 import EmergencyPage from "./pages/EmergencyPage";
 import SurveysPage from "./pages/SurveysPage";
 import "./App.css";
+import AuthPage from "./components/Login";
 
 import axios from "axios";
 axios.defaults.withCredentials = true;
@@ -39,7 +40,7 @@ function App() {
               toastOptions={{ duration: 2000 }}
             />
             <Routes>
-              <Route path="/login" element={<Login />} />
+              <Route path="/login" element={<AuthPage/>} />
               <Route path="/register" element={<Register />} />
               <Route path="/verify" element={<Verify />} />
               <Route path="/" element={<HomePage />} />
