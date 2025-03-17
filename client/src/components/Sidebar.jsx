@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from "./ThemeProvider";
 import ThemeToggle from "./ThemeToggle";
 import "./Sidebar.css";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../Slices/AuthSlice";
 
 // Icons
 import {
@@ -25,7 +27,8 @@ function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { theme } = useTheme();
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
+  const dispatch = useDispatch();
+  const isAuthorized = useSelector((state) => state.user.isAuthorized); // Use isAuthorized from state
 
   // Animation on mount
   const [mounted, setMounted] = useState(false);
@@ -50,23 +53,18 @@ function Sidebar() {
 
   // Redirect to login page if not logged in
   useEffect(() => {
-    if (!isLoggedIn && location.pathname !== "/login") {
+    if (!isAuthorized && location.pathname !== "/login") {
       navigate("/login");
     }
-  }, [isLoggedIn, location.pathname, navigate]);
+  }, [isAuthorized, location.pathname, navigate]);
 
   if (!mounted) return null;
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
   const toggleMobileSidebar = () => setIsMobileOpen(!isMobileOpen);
 
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-    navigate("/"); // Redirect to home page after login
-  };
-
   const handleLogout = () => {
-    setIsLoggedIn(false);
+    dispatch(logout()); // Dispatch the logout action
     navigate("/login"); // Redirect to login page after logout
   };
 
@@ -188,16 +186,16 @@ function Sidebar() {
               </div>
             )}
           </div>
-          {isLoggedIn ? (
+          {isAuthorized ? (
             <button className="sidebar-nav-item" onClick={handleLogout}>
               <div className="sidebar-nav-icon"><LogOut /></div>
               {!isCollapsed && <span className="sidebar-nav-text">Logout</span>}
             </button>
           ) : (
-            <button className="sidebar-nav-item" onClick={handleLogin}>
+            <Link to="/login" className="sidebar-nav-item">
               <div className="sidebar-nav-icon"><LogIn /></div>
               {!isCollapsed && <span className="sidebar-nav-text">Login</span>}
-            </button>
+            </Link>
           )}
         </div>
       </div>

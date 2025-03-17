@@ -1,7 +1,7 @@
 import express from "express";
 import { isAuthenticated } from "../middlewares/auth.js";
 import { upload } from "../middlewares/multer.js";
-import  { registerUser , verifyUser,loginUser,logoutUser}  from "../controllers/userController.js";
+import  { registerUser , verifyUser,loginUser,logoutUser,getUserDetails}  from "../controllers/userController.js";
 export const userRouter = express.Router();
 
 userRouter.post(
@@ -12,3 +12,4 @@ userRouter.post(
 userRouter.post("/register/verification",verifyUser)
 userRouter.post("/login",loginUser)
 userRouter.get("/logout",logoutUser)
+userRouter.get("/getUserDetails",isAuthenticated,getUserDetails)

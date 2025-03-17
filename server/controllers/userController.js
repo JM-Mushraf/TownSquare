@@ -156,3 +156,19 @@ export const logoutUser=AsyncHandler(async(req,res,next)=>{
   });
   res.status(200).json(new ApiResponse(200, {}, "user LoggedOut Successfully"));
 })
+export const getUserDetails = AsyncHandler(async (req, res, next) => {
+  const userId = req.user?._id;
+  if (!userId) {
+    throw new ApiError(401, "Unauthorized: User ID not found");
+  }
+
+  const user = await User.findById(userId).select("-password -verificationCode");
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "User details fetched successfully"));
+});

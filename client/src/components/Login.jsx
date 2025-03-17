@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux"; // Added
-// import { login } from "../../Slices/AuthSlice.js"; // Added
 import { login } from "../Slices/AuthSlice.js"; // Added
 import toast from "react-hot-toast"; // Added
 import "./Login.css";
@@ -50,6 +49,7 @@ export default function AuthPage() {
 
     try {
       const result = await dispatch(login(loginData)).unwrap(); // Added
+      console.log(result)
       if (result) {
         toast.success("Login successful!"); // Added
         navigate("/");
@@ -154,7 +154,7 @@ export default function AuthPage() {
             <button
               type="submit"
               className="auth-button login-auth-button"
-              disabled={isSubmitting} // Added
+              disabled={isSubmitting} 
             >
               {isSubmitting ? "Logging in..." : "Sign In"} {/* Added */}
             </button>
