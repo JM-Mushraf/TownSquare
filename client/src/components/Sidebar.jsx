@@ -28,7 +28,10 @@ function Sidebar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { theme } = useTheme();
   const dispatch = useDispatch();
-  const isAuthorized = useSelector((state) => state.user.isAuthorized); // Use isAuthorized from state
+
+  // Access user data and authorization status from Redux store
+  const isAuthorized = useSelector((state) => state.user.isAuthorized);
+  const userData = useSelector((state) => state.user.userData); // Access userData
 
   // Animation on mount
   const [mounted, setMounted] = useState(false);
@@ -178,11 +181,16 @@ function Sidebar() {
         <div className="sidebar-footer">
           {!isCollapsed && <div className="theme-toggle-container"><ThemeToggle /></div>}
           <div className="sidebar-user">
-            <div className="sidebar-user-avatar">TS</div>
+            {isAuthorized?<img className="sidebar-user-avatar" src={userData?.avatar} ></img>:null}
             {!isCollapsed && (
               <div className="sidebar-user-info">
-                <div className="sidebar-user-name">John Doe</div>
-                <div className="sidebar-user-role">Community Member</div>
+                {/* Conditionally render username if logged in */}
+                {isAuthorized && userData ? (
+                  <>
+                    <div className="sidebar-user-name">{userData.username}</div>
+                    <div className="sidebar-user-role">{userData.role}</div>
+                  </>
+                ) : null}
               </div>
             )}
           </div>

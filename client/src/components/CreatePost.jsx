@@ -22,7 +22,7 @@ import {
 import { FaBullhorn } from "react-icons/fa";
 import "./CreatePost.css";
 import { useSelector } from "react-redux";
-
+const MAX_UPLOADS = 3;
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -64,7 +64,7 @@ function CreatePost() {
   const [success, setSuccess] = useState("");
   const [files, setFiles] = useState([]);
   const [activeTab, setActiveTab] = useState("general");
-
+  const [uploadsRemaining, setUploadsRemaining] = useState(MAX_UPLOADS);
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -75,6 +75,16 @@ function CreatePost() {
     if (name === "type") {
       setActiveTab(value);
     }
+  };
+  const [isImportant, setIsImportant] = useState(false);
+
+  const toggleImportance = async () => {
+    const newImportantState = !isImportant;
+    setIsImportant(newImportantState);
+    setFormData({
+      ...formData,
+      important: newImportantState,
+    });
   };
 
   const handlePollOptionChange = (index, value) => {
@@ -96,13 +106,20 @@ function CreatePost() {
 
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
+    if (selectedFiles.length + files.length > MAX_UPLOADS) {
+      alert(`You can only upload a maximum of ${MAX_UPLOADS} files.`);
+      return;
+    }
     setFiles([...files, ...selectedFiles]);
+    setUploadsRemaining(MAX_UPLOADS - (files.length + selectedFiles.length));
   };
 
   const removeFile = (index) => {
     const newFiles = [...files];
+    const updatedFiles = files.filter((_, i) => i !== index);
     newFiles.splice(index, 1);
     setFiles(newFiles);
+    setUploadsRemaining(MAX_UPLOADS - updatedFiles.length);
   };
 
   const getFileIcon = (fileType) => {
@@ -433,16 +450,30 @@ function CreatePost() {
                         <FiAlertCircle className="input-icon" /> Important
                         Announcement
                       </label>
-                      <div className="modern-checkbox">
-                        <input
-                          type="checkbox"
-                          id="important"
-                          name="important"
-                          checked={formData.important}
-                          onChange={handleChange}
+                      <motion.div
+                        className="toggle-switch"
+                        onClick={toggleImportance}
+                        style={{
+                          backgroundColor: isImportant ? "rgb(76 106 175)" : "rgb(30 46 82)", // Background color
+                        }}
+                        initial={false} // Disable initial animation
+                        animate={{
+                          backgroundColor: isImportant ? "rgb(76 106 175)" : "rgb(30 46 82)", // Animate background color
+                        }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <motion.div
+                          className="slider"
+                          animate={{
+                            x: isImportant ? 25 : 0, // Move slider to the right or left
+                          }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 20,
+                          }}
                         />
-                        <span className="checkmark"></span>
-                      </div>
+                      </motion.div>
                     </div>
                   </motion.div>
                 )}
@@ -465,10 +496,12 @@ function CreatePost() {
                       onChange={handleFileChange}
                       multiple
                       className="file-input"
+                      disabled={uploadsRemaining === 0}
                     />
                   </motion.label>
                   <span className="file-help-text">
-                    Upload images or documents (optional)
+                    Upload images or documents (optional) - {uploadsRemaining}{" "}
+                    uploads remaining
                   </span>
                 </div>
 
