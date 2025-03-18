@@ -16,6 +16,7 @@ import EmergencyPage from "./pages/EmergencyPage";
 import SurveysPage from "./pages/SurveysPage";
 import "./App.css";
 import AuthPage from "./components/Login";
+import CreatePost from "./components/CreatePost";
 
 import axios from "axios";
 axios.defaults.withCredentials = true;
@@ -50,6 +51,7 @@ function App() {
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/marketplace" element={<MarketplacePage />} />
               <Route path="/emergency" element={<EmergencyPage />} />
+              <Route path="/createPost" element={<CreatePost />} />
             </Routes>
           </div>
         </Layout>

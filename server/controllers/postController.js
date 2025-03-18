@@ -1,57 +1,93 @@
 import { Post } from "../models/postModel.js";
 import { Comment } from "../models/commentModel.js";
+import { uploadOnCloudinary,deleteFromCloudinary } from "../utils/cloudinary.js";
 // Create a new post
 export const createPost = async (req, res) => {
   try {
-    const { title, description, type, attachments } = req.body;
-    // console.log(req.user);
-    // {
-    //     _id: new ObjectId('67a0cf338b5eb8780062916c'),
-    //     username: 'himanshu',
-    //     email: 'himpreetak@gmail.com',
-    //     avatar: 'http://res.cloudinary.com/dqlcy9wmd/image/upload/v1738592051/lupv6il21g7ckwxiejq0.png',
-    //     avatarPublicId: 'lupv6il21g7ckwxiejq0',
-    //     createdAt: 2025-02-03T14:14:11.928Z,
-    //     updatedAt: 2025-02-03T14:14:11.928Z,
-    //     __v: 0
-    //   }
-    
-    const createdBy = req.user._id; // Assuming user ID is available via authentication middleware
+    const { title, description, type, important, solutions } = req.body;
+    const createdBy = req.user.id; // Assuming user ID is available via authentication middleware
 
     // Validate required fields
     if (!title || !description || !type) {
-      return res
-        .status(400)
-        .json({ message: "Title, description, and type are required." });
+      return res.status(400).json({
+        success: false,
+        message: "Title, description, and type are required.",
+      });
     }
 
+    // Additional validation for announcements
+    if (type === "announcements" && important === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: "The 'important' field is required for announcements.",
+      });
+    }
+
+    // Validate poll options
+    if (type === "poll") {
+      let parsedSolutions;
+      try {
+        parsedSolutions = JSON.parse(solutions);
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid poll options format.",
+        });
+      }
+
+      if (!parsedSolutions || parsedSolutions.length < 2) {
+        return res.status(400).json({
+          success: false,
+          message: "Polls require at least 2 options.",
+        });
+      }
+    }
+
+    // Handle attachments (optional)
+    let uploadedAttachments = [];
+    const attachments_files = req.files?.attachments;
+
+    if (attachments_files && attachments_files.length > 0) {
+      // Upload attachments to Cloudinary if provided
+      uploadedAttachments = await Promise.all(
+        attachments_files.map(async (file) => {
+          const uploaded = await uploadOnCloudinary(file.path);
+          if (!uploaded) {
+            throw new ErrorHandler("Error uploading attachment files", 500);
+          }
+          return {
+            url: uploaded.url,
+            fileType: file.mimetype,
+          };
+        })
+      );
+    }
+
+    // Create the post
     const newPost = new Post({
       title,
       description,
       type,
       createdBy,
-      attachments,
+      attachments: uploadedAttachments, // Will be empty if no attachments are provided
+      important: type === "announcements" ? important : false, // Set 'important' only for announcements
+      solutions: type === "poll" ? JSON.parse(solutions) : [], // Add poll options if type is poll
     });
 
     await newPost.save();
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "Post created successfully",
-        post: newPost,
-      });
+    res.status(201).json({
+      success: true,
+      message: "Post created successfully",
+      post: newPost,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error creating post",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error creating post",
+      error: error.message,
+    });
   }
 };
-
 // Delete a post (Only the creator can delete)
 export const deletePost = async (req, res) => {
   try {
@@ -90,19 +126,26 @@ export const deletePost = async (req, res) => {
 // Get all posts (Feed)
 export const getAllPosts = async (req, res) => {
   try {
-    const posts = await Post.find()
-      .populate("createdBy", "name email")
-      .sort({ createdAt: -1 });
+    // Step 1: Delete all posts where createdBy is null
+    // await Post.deleteMany({ createdBy: null });
 
-    res.status(200).json({ success: true, posts });
+    // Step 2: Fetch all remaining posts and populate createdBy with user details
+    const posts = await Post.find()
+      .populate("createdBy", "username email avatar avatarPublicId") // Populate user details
+      .sort({ createdAt: -1 }); // Sort by creation date in descending order
+
+    // Step 3: Return the remaining posts
+    res.status(200).json({
+      success: true,
+      message: "Posts fetched successfully after cleaning up null createdBy posts",
+      posts,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching posts",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching posts",
+      error: error.message,
+    });
   }
 };
 
@@ -265,6 +308,38 @@ export const createPoll = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error creating poll",
+      error: error.message,
+    });
+  }
+};
+
+
+export const getAllAnnouncements = async (req, res) => {
+  try {
+    // Fetch all announcements and populate the createdBy field with user details
+    const announcements = await Post.find({ type: "announcements" })
+      .populate("createdBy", "username avatar") // Populate username and avatar
+      .sort({ createdAt: -1 }); // Sort by creation date in descending order
+
+    // If no announcements are found
+    if (announcements.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No announcements found.",
+        announcements: [],
+      });
+    }
+
+    // Return the announcements
+    res.status(200).json({
+      success: true,
+      message: "Announcements fetched successfully",
+      announcements,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching announcements",
       error: error.message,
     });
   }
