@@ -22,7 +22,9 @@ import {
 import { FaBullhorn } from "react-icons/fa";
 import "./CreatePost.css";
 import { useSelector } from "react-redux";
+
 const MAX_UPLOADS = 3;
+
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -56,15 +58,17 @@ function CreatePost() {
     description: "",
     type: "general",
     important: false,
+    poll: { question: "", options: ["", ""], status: "active" },
+    survey: { questions: [], status: "active" },
   });
 
-  const [pollOptions, setPollOptions] = useState(["", ""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [files, setFiles] = useState([]);
   const [activeTab, setActiveTab] = useState("general");
   const [uploadsRemaining, setUploadsRemaining] = useState(MAX_UPLOADS);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -76,32 +80,96 @@ function CreatePost() {
       setActiveTab(value);
     }
   };
-  const [isImportant, setIsImportant] = useState(false);
 
-  const toggleImportance = async () => {
-    const newImportantState = !isImportant;
-    setIsImportant(newImportantState);
+  const handlePollQuestionChange = (e) => {
     setFormData({
       ...formData,
-      important: newImportantState,
+      poll: { ...formData.poll, question: e.target.value },
     });
   };
 
   const handlePollOptionChange = (index, value) => {
-    const newOptions = [...pollOptions];
+    const newOptions = [...formData.poll.options];
     newOptions[index] = value;
-    setPollOptions(newOptions);
+    setFormData({
+      ...formData,
+      poll: { ...formData.poll, options: newOptions },
+    });
   };
 
   const addPollOption = () => {
-    setPollOptions([...pollOptions, ""]);
+    setFormData({
+      ...formData,
+      poll: { ...formData.poll, options: [...formData.poll.options, ""] },
+    });
   };
 
   const removePollOption = (index) => {
-    if (pollOptions.length <= 2) return; // Minimum 2 options
-    const newOptions = [...pollOptions];
+    if (formData.poll.options.length <= 2) return; // Minimum 2 options
+    const newOptions = [...formData.poll.options];
     newOptions.splice(index, 1);
-    setPollOptions(newOptions);
+    setFormData({
+      ...formData,
+      poll: { ...formData.poll, options: newOptions },
+    });
+  };
+
+  const handleSurveyQuestionChange = (index, field, value) => {
+    const newQuestions = [...formData.survey.questions];
+    newQuestions[index][field] = value;
+    setFormData({
+      ...formData,
+      survey: { ...formData.survey, questions: newQuestions },
+    });
+  };
+
+  const addSurveyQuestion = () => {
+    setFormData({
+      ...formData,
+      survey: {
+        ...formData.survey,
+        questions: [
+          ...formData.survey.questions,
+          { question: "", type: "text", options: [] },
+        ],
+      },
+    });
+  };
+
+  const removeSurveyQuestion = (index) => {
+    const newQuestions = [...formData.survey.questions];
+    newQuestions.splice(index, 1);
+    setFormData({
+      ...formData,
+      survey: { ...formData.survey, questions: newQuestions },
+    });
+  };
+
+  const handleSurveyOptionChange = (questionIndex, optionIndex, value) => {
+    const newQuestions = [...formData.survey.questions];
+    newQuestions[questionIndex].options[optionIndex] = value;
+    setFormData({
+      ...formData,
+      survey: { ...formData.survey, questions: newQuestions },
+    });
+  };
+
+  const addSurveyOption = (questionIndex) => {
+    const newQuestions = [...formData.survey.questions];
+    newQuestions[questionIndex].options.push("");
+    setFormData({
+      ...formData,
+      survey: { ...formData.survey, questions: newQuestions },
+    });
+  };
+
+  const removeSurveyOption = (questionIndex, optionIndex) => {
+    const newQuestions = [...formData.survey.questions];
+    newQuestions[questionIndex].options.splice(optionIndex, 1);
+    setFormData({
+      ...formData,
+      survey: { ...formData.survey, questions: newQuestions },
+    });
   };
 
   const handleFileChange = (e) => {
@@ -116,10 +184,9 @@ function CreatePost() {
 
   const removeFile = (index) => {
     const newFiles = [...files];
-    const updatedFiles = files.filter((_, i) => i !== index);
     newFiles.splice(index, 1);
     setFiles(newFiles);
-    setUploadsRemaining(MAX_UPLOADS - updatedFiles.length);
+    setUploadsRemaining(MAX_UPLOADS - newFiles.length);
   };
 
   const getFileIcon = (fileType) => {
@@ -141,11 +208,22 @@ function CreatePost() {
         throw new Error("Title and description are required");
       }
 
+      if (formData.type === "poll" && !formData.poll.question) {
+        throw new Error("Poll question is required");
+      }
+
       if (
         formData.type === "poll" &&
-        pollOptions.filter((opt) => opt.trim()).length < 2
+        formData.poll.options.filter((opt) => opt.trim()).length < 2
       ) {
         throw new Error("Polls require at least 2 options");
+      }
+
+      if (
+        formData.type === "survey" &&
+        formData.survey.questions.length === 0
+      ) {
+        throw new Error("Surveys require at least one question");
       }
 
       // Prepare data for submission
@@ -155,16 +233,12 @@ function CreatePost() {
       postData.append("type", formData.type);
       postData.append("important", formData.important);
 
-      // Add poll options if type is poll
       if (formData.type === "poll") {
-        postData.append(
-          "solutions",
-          JSON.stringify(
-            pollOptions
-              .filter((opt) => opt.trim())
-              .map((text) => ({ text, votes: 0 }))
-          )
-        );
+        postData.append("poll", JSON.stringify(formData.poll));
+      }
+
+      if (formData.type === "survey") {
+        postData.append("survey", JSON.stringify(formData.survey));
       }
 
       // Append files if any
@@ -198,8 +272,9 @@ function CreatePost() {
         description: "",
         type: "general",
         important: false,
+        poll: { question: "", options: ["", ""], status: "active" },
+        survey: { questions: [], status: "active" },
       });
-      setPollOptions(["", ""]);
       setFiles([]);
       setActiveTab("general");
     } catch (error) {
@@ -281,6 +356,16 @@ function CreatePost() {
             <FaBullhorn />
             <span>Announcements</span>
           </button>
+          <button
+            className={`post-type-tab ${activeTab === "survey" ? "active" : ""}`}
+            onClick={() => {
+              setActiveTab("survey");
+              setFormData({ ...formData, type: "survey" });
+            }}
+          >
+            <FiList />
+            <span>Survey</span>
+          </button>
         </motion.div>
 
         <motion.div variants={itemVariants}>
@@ -357,9 +442,18 @@ function CreatePost() {
                     transition={{ duration: 0.3 }}
                   >
                     <label>
-                      <FiList className="input-icon" /> Poll Options
+                      <FiList className="input-icon" /> Poll Question
                     </label>
-                    {pollOptions.map((option, index) => (
+                    <input
+                      type="text"
+                      value={formData.poll.question}
+                      onChange={handlePollQuestionChange}
+                      placeholder="Enter your poll question"
+                      className="form-control"
+                      required
+                    />
+                    <label>Poll Options</label>
+                    {formData.poll.options.map((option, index) => (
                       <motion.div
                         key={index}
                         className="poll-option-input"
@@ -377,7 +471,7 @@ function CreatePost() {
                           className="form-control"
                           required
                         />
-                        {pollOptions.length > 2 && (
+                        {formData.poll.options.length > 2 && (
                           <button
                             type="button"
                             className="remove-option-btn"
@@ -400,39 +494,101 @@ function CreatePost() {
                   </motion.div>
                 )}
 
-                {activeTab === "marketplace" && (
+                {activeTab === "survey" && (
                   <motion.div
-                    className="marketplace-fields"
-                    key="marketplace-fields"
+                    className="survey-questions-container"
+                    key="survey-questions"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <div className="form-group">
-                      <label htmlFor="price">
-                        <FiDollarSign className="input-icon" /> Price (optional)
-                      </label>
-                      <input
-                        type="text"
-                        id="price"
-                        name="price"
-                        placeholder="Enter price or 'Free'"
-                        className="form-control"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="location">
-                        <FiMapPin className="input-icon" /> Location (optional)
-                      </label>
-                      <input
-                        type="text"
-                        id="location"
-                        name="location"
-                        placeholder="Where is this item available?"
-                        className="form-control"
-                      />
-                    </div>
+                    <label>
+                      <FiList className="input-icon" /> Survey Questions
+                    </label>
+                    {formData.survey.questions.map((question, index) => (
+                      <motion.div
+                        key={index}
+                        className="survey-question-input"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <input
+                          type="text"
+                          value={question.question}
+                          onChange={(e) =>
+                            handleSurveyQuestionChange(
+                              index,
+                              "question",
+                              e.target.value
+                            )
+                          }
+                          placeholder={`Question ${index + 1}`}
+                          className="form-control"
+                          required
+                        />
+                        <select
+                          value={question.type}
+                          onChange={(e) =>
+                            handleSurveyQuestionChange(
+                              index,
+                              "type",
+                              e.target.value
+                            )
+                          }
+                          className="form-control"
+                        >
+                          <option value="text">Text</option>
+                          <option value="multiple-choice">
+                            Multiple Choice
+                          </option>
+                        </select>
+                        {question.type === "multiple-choice" && (
+                          <div className="survey-options-container">
+                            {question.options.map((option, optIndex) => (
+                              <input
+                                key={optIndex}
+                                type="text"
+                                value={option}
+                                onChange={(e) =>
+                                  handleSurveyOptionChange(
+                                    index,
+                                    optIndex,
+                                    e.target.value
+                                  )
+                                }
+                                placeholder={`Option ${optIndex + 1}`}
+                                className="form-control"
+                              />
+                            ))}
+                            <button
+                              type="button"
+                              className="add-option-btn"
+                              onClick={() => addSurveyOption(index)}
+                            >
+                              <FiPlusCircle className="btn-icon" /> Add Option
+                            </button>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          className="remove-question-btn"
+                          onClick={() => removeSurveyQuestion(index)}
+                        >
+                          <FiX />
+                        </button>
+                      </motion.div>
+                    ))}
+                    <motion.button
+                      type="button"
+                      className="add-question-btn"
+                      onClick={addSurveyQuestion}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <FiPlusCircle className="btn-icon" /> Add Question
+                    </motion.button>
                   </motion.div>
                 )}
 
@@ -450,30 +606,13 @@ function CreatePost() {
                         <FiAlertCircle className="input-icon" /> Important
                         Announcement
                       </label>
-                      <motion.div
-                        className="toggle-switch"
-                        onClick={toggleImportance}
-                        style={{
-                          backgroundColor: isImportant ? "rgb(76 106 175)" : "rgb(30 46 82)", // Background color
-                        }}
-                        initial={false} // Disable initial animation
-                        animate={{
-                          backgroundColor: isImportant ? "rgb(76 106 175)" : "rgb(30 46 82)", // Animate background color
-                        }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <motion.div
-                          className="slider"
-                          animate={{
-                            x: isImportant ? 25 : 0, // Move slider to the right or left
-                          }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 300,
-                            damping: 20,
-                          }}
-                        />
-                      </motion.div>
+                      <input
+                        type="checkbox"
+                        id="important"
+                        name="important"
+                        checked={formData.important}
+                        onChange={handleChange}
+                      />
                     </div>
                   </motion.div>
                 )}

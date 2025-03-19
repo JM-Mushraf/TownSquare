@@ -12,7 +12,7 @@ const postSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["issue", "poll", "general", "marketplace", "announcements"],
+      enum: ["issue", "poll", "general", "marketplace", "announcements", "survey"],
       required: true,
     },
     createdBy: {
@@ -50,12 +50,38 @@ const postSchema = new mongoose.Schema(
       },
     ],
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
-    solutions: [
+    // Fields for polls
+    poll: {
+      question: { type: String }, // The poll question
+      options: [
         {
-            text: { type: String, required: true },
-            votes: { type: Number, default: 0 },
-        }
-    ]    
+          text: { type: String, required: true }, // The text of the option
+          votes: { type: Number, default: 0 }, // Number of votes for this option
+        },
+      ],
+      deadline: { type: Date }, // Deadline for the poll
+      status: {
+        type: String,
+        enum: ["active", "upcoming", "past"],
+        default: "active",
+      }, // Status of the poll
+    },
+    // Fields for surveys
+    survey: {
+      questions: [
+        {
+          question: { type: String, required: true }, // The survey question
+          type: { type: String, enum: ["multiple-choice", "open-ended", "rating"], required: true }, // Type of question
+          options: [{ type: String }], // Options for multiple-choice questions
+        },
+      ],
+      deadline: { type: Date }, // Deadline for the survey
+      status: {
+        type: String,
+        enum: ["active", "upcoming", "past"],
+        default: "active",
+      }, // Status of the survey
+    },
   },
   { timestamps: true }
 );

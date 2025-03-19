@@ -4,7 +4,7 @@ import { uploadOnCloudinary,deleteFromCloudinary } from "../utils/cloudinary.js"
 // Create a new post
 export const createPost = async (req, res) => {
   try {
-    const { title, description, type, important, solutions } = req.body;
+    const { title, description, type, important, poll, survey } = req.body;
     const createdBy = req.user.id; // Assuming user ID is available via authentication middleware
 
     // Validate required fields
@@ -23,23 +23,57 @@ export const createPost = async (req, res) => {
       });
     }
 
-    // Validate poll options
+    // Validate poll fields if type is 'poll'
     if (type === "poll") {
-      let parsedSolutions;
-      try {
-        parsedSolutions = JSON.parse(solutions);
-      } catch (error) {
+      if (!poll || !poll.question || !poll.options || poll.options.length < 2) {
         return res.status(400).json({
           success: false,
-          message: "Invalid poll options format.",
+          message: "Polls require a question and at least 2 options.",
         });
       }
 
-      if (!parsedSolutions || parsedSolutions.length < 2) {
+      // Ensure each option has text and initialize votes to 0
+      poll.options = poll.options.map((option) => ({
+        text: option.text,
+        votes: 0,
+      }));
+
+      // Set default status if not provided
+      if (!poll.status) {
+        poll.status = "active";
+      }
+    }
+
+    // Validate survey fields if type is 'survey'
+    if (type === "survey") {
+      if (!survey || !survey.questions || survey.questions.length === 0) {
         return res.status(400).json({
           success: false,
-          message: "Polls require at least 2 options.",
+          message: "Surveys require at least one question.",
         });
+      }
+
+      // Validate each question
+      for (const question of survey.questions) {
+        if (!question.question || !question.type) {
+          return res.status(400).json({
+            success: false,
+            message: "Each survey question must have a question text and type.",
+          });
+        }
+
+        // Validate options for multiple-choice questions
+        if (question.type === "multiple-choice" && (!question.options || question.options.length < 2)) {
+          return res.status(400).json({
+            success: false,
+            message: "Multiple-choice questions require at least 2 options.",
+          });
+        }
+      }
+
+      // Set default status if not provided
+      if (!survey.status) {
+        survey.status = "active";
       }
     }
 
@@ -71,7 +105,8 @@ export const createPost = async (req, res) => {
       createdBy,
       attachments: uploadedAttachments, // Will be empty if no attachments are provided
       important: type === "announcements" ? important : false, // Set 'important' only for announcements
-      solutions: type === "poll" ? JSON.parse(solutions) : [], // Add poll options if type is poll
+      poll: type === "poll" ? poll : undefined, // Add poll data if type is poll
+      survey: type === "survey" ? survey : undefined, // Add survey data if type is survey
     });
 
     await newPost.save();
