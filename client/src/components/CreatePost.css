@@ -291,14 +291,6 @@ textarea.form-control {
   background-color: var(--primary-foreground, rgba(67, 97, 238, 0.05));
 }
 
-/* Marketplace fields */
-.marketplace-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  overflow: hidden;
-}
-
 /* File upload styling */
 .file-upload-container {
   display: flex;
@@ -523,26 +515,32 @@ textarea.form-control {
   flex-shrink: 0;
 }
 
-/* Toggle Switch Container */
-.toggle-switch {
-  width: 50px;
-  height: 25px;
-  border-radius: 25px;
-  position: relative;
-  cursor: pointer;
-  overflow: hidden; /* Ensure the slider stays within the container */
+/* React DatePicker styling */
+.react-datepicker-wrapper {
+  width: 100%;
 }
 
-/* Toggle Switch Slider */
-.slider {
-  width: 21px;
-  height: 21px;
-  background-color: white;
-  border-radius: 50%;
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+.react-datepicker__input-container input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background-color: var(--card, white);
+  color: var(--foreground, #1f2937);
+}
+
+.dark .react-datepicker__input-container input {
+  background-color: var(--card, #1f2937);
+  border-color: var(--border, #374151);
+  color: var(--foreground, #f9fafb);
+}
+
+.react-datepicker__input-container input:focus {
+  outline: none;
+  border-color: var(--primary, #4361ee);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
 }
 
 /* Responsive adjustments */
@@ -553,11 +551,6 @@ textarea.form-control {
 
   .page-title {
     font-size: 2rem;
-  }
-
-  .marketplace-fields {
-    grid-template-columns: 1fr;
-    gap: 1rem;
   }
 
   .post-type-tabs {

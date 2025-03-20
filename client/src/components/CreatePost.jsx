@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "./ThemeProvider";
 import { Card } from "../components/Card";
 import axios from "axios";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import moment from "moment-timezone";
 import {
   FiEdit3,
   FiFileText,
@@ -14,8 +17,6 @@ import {
   FiPaperclip,
   FiAlertCircle,
   FiCheckCircle,
-  FiMapPin,
-  FiDollarSign,
   FiImage,
   FiFile,
 } from "react-icons/fi";
@@ -50,6 +51,11 @@ const fadeIn = {
   visible: { opacity: 1, transition: { duration: 0.3 } },
 };
 
+const buttonHover = {
+  hover: { scale: 1.05, boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)" },
+  tap: { scale: 0.95 },
+};
+
 function CreatePost() {
   const { token } = useSelector((state) => state.user);
   const { theme } = useTheme();
@@ -58,8 +64,8 @@ function CreatePost() {
     description: "",
     type: "general",
     important: false,
-    poll: { question: "", options: ["", ""], status: "active" },
-    survey: { questions: [], status: "active" },
+    poll: { question: "", options: ["", ""], deadline: null },
+    survey: { questions: [], deadline: null },
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -130,7 +136,7 @@ function CreatePost() {
         ...formData.survey,
         questions: [
           ...formData.survey.questions,
-          { question: "", type: "text", options: [] },
+          { question: "", type: "multiple-choice", options: [] },
         ],
       },
     });
@@ -208,22 +214,25 @@ function CreatePost() {
         throw new Error("Title and description are required");
       }
 
-      if (formData.type === "poll" && !formData.poll.question) {
-        throw new Error("Poll question is required");
+      if (formData.type === "poll") {
+        if (!formData.poll.question) {
+          throw new Error("Poll question is required");
+        }
+        if (formData.poll.options.filter((opt) => opt.trim()).length < 2) {
+          throw new Error("Polls require at least 2 options");
+        }
+        if (!formData.poll.deadline) {
+          throw new Error("Poll deadline is required");
+        }
       }
 
-      if (
-        formData.type === "poll" &&
-        formData.poll.options.filter((opt) => opt.trim()).length < 2
-      ) {
-        throw new Error("Polls require at least 2 options");
-      }
-
-      if (
-        formData.type === "survey" &&
-        formData.survey.questions.length === 0
-      ) {
-        throw new Error("Surveys require at least one question");
+      if (formData.type === "survey") {
+        if (formData.survey.questions.length === 0) {
+          throw new Error("Surveys require at least one question");
+        }
+        if (!formData.survey.deadline) {
+          throw new Error("Survey deadline is required");
+        }
       }
 
       // Prepare data for submission
@@ -233,12 +242,23 @@ function CreatePost() {
       postData.append("type", formData.type);
       postData.append("important", formData.important);
 
+      // Only include poll data if type is poll
       if (formData.type === "poll") {
-        postData.append("poll", JSON.stringify(formData.poll));
+        const pollData = {
+          question: formData.poll.question,
+          options: formData.poll.options,
+          deadline: moment(formData.poll.deadline).format("YYYY-MM-DD"), // Format as date string
+        };
+        postData.append("poll", JSON.stringify(pollData)); // Send as JSON string
       }
 
+      // Only include survey data if type is survey
       if (formData.type === "survey") {
-        postData.append("survey", JSON.stringify(formData.survey));
+        const surveyData = {
+          questions: formData.survey.questions,
+          deadline: moment(formData.survey.deadline).format("YYYY-MM-DD"), // Format as date string
+        };
+        postData.append("survey", JSON.stringify(surveyData)); // Send as JSON string
       }
 
       // Append files if any
@@ -246,6 +266,11 @@ function CreatePost() {
         files.forEach((file) => {
           postData.append("attachments", file);
         });
+      }
+
+      // Debugging: Log FormData contents
+      for (let [key, value] of postData.entries()) {
+        console.log(key, value);
       }
 
       if (!token) {
@@ -272,13 +297,13 @@ function CreatePost() {
         description: "",
         type: "general",
         important: false,
-        poll: { question: "", options: ["", ""], status: "active" },
-        survey: { questions: [], status: "active" },
+        poll: { question: "", options: ["", ""], deadline: null },
+        survey: { questions: [], deadline: null },
       });
       setFiles([]);
       setActiveTab("general");
     } catch (error) {
-      setError(error.message);
+      setError(error.response?.data?.message || error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -491,6 +516,21 @@ function CreatePost() {
                     >
                       <FiPlusCircle className="btn-icon" /> Add Option
                     </motion.button>
+                    <label>Poll Deadline</label>
+                    <DatePicker
+                      selected={formData.poll.deadline}
+                      onChange={(date) =>
+                        setFormData({
+                          ...formData,
+                          poll: { ...formData.poll, deadline: date },
+                        })
+                      }
+                      dateFormat="MMMM d, yyyy" // Only show date
+                      className="form-control"
+                      placeholderText="Select deadline"
+                      minDate={new Date()}
+                      required
+                    />
                   </motion.div>
                 )}
 
@@ -539,10 +579,9 @@ function CreatePost() {
                           }
                           className="form-control"
                         >
-                          <option value="text">Text</option>
-                          <option value="multiple-choice">
-                            Multiple Choice
-                          </option>
+                          <option value="multiple-choice">Multiple Choice</option>
+                          <option value="open-ended">Open Ended</option>
+                          <option value="rating">Rating</option>
                         </select>
                         {question.type === "multiple-choice" && (
                           <div className="survey-options-container">
@@ -589,6 +628,21 @@ function CreatePost() {
                     >
                       <FiPlusCircle className="btn-icon" /> Add Question
                     </motion.button>
+                    <label>Survey Deadline</label>
+                    <DatePicker
+                      selected={formData.survey.deadline}
+                      onChange={(date) =>
+                        setFormData({
+                          ...formData,
+                          survey: { ...formData.survey, deadline: date },
+                        })
+                      }
+                      dateFormat="MMMM d, yyyy" // Only show date
+                      className="form-control"
+                      placeholderText="Select deadline"
+                      minDate={new Date()}
+                      required
+                    />
                   </motion.div>
                 )}
 

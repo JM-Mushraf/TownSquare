@@ -1,7 +1,6 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config();
-
 function generateVerificationCode() {
   return Math.floor(100000 + Math.random() * 900000);
 }
@@ -10,11 +9,11 @@ export const sendMail = async (ReciverMail) => {
   try {
     const verificationCode = generateVerificationCode();
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: 'gmail',
       auth: {
-        user: process.env.TEAM_EMAIL || "devchatapplication@gmail.com",
-        pass: process.env.PASSWORD || "lrlp wbvm lhlx rmxc",
-      },
+          user: 'devchatapplication@gmail.com' || process.env.TEAM_EMAIL,
+          pass: 'wfml fyex dhmt wkzw'
+      }
     });
 
     await transporter.sendMail({
@@ -28,8 +27,7 @@ export const sendMail = async (ReciverMail) => {
              <p>Need help? Contact our support team.</p>
              <p><b>TownSquare Team</b></p>`,
     });
-
-    // console.log("Verification code sent successfully:", verificationCode);
+    console.log("Verification code sent successfully:", verificationCode);
     return verificationCode;
   } catch (error) {
     console.error("Error sending email:", error);

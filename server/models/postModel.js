@@ -12,7 +12,14 @@ const postSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["issue", "poll", "general", "marketplace", "announcements", "survey"],
+      enum: [
+        "issue",
+        "poll",
+        "general",
+        "marketplace",
+        "announcements",
+        "survey",
+      ],
       required: true,
     },
     createdBy: {
@@ -71,7 +78,11 @@ const postSchema = new mongoose.Schema(
       questions: [
         {
           question: { type: String, required: true }, // The survey question
-          type: { type: String, enum: ["multiple-choice", "open-ended", "rating"], required: true }, // Type of question
+          type: {
+            type: String,
+            enum: ["multiple-choice", "open-ended", "rating"],
+            required: true,
+          }, // Type of question
           options: [{ type: String }], // Options for multiple-choice questions
         },
       ],
@@ -85,5 +96,36 @@ const postSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Middleware to dynamically calculate the "past" status based on the deadline
+postSchema.pre("save", function (next) {
+  const now = new Date();
+  const sevenDaysAgo = new Date(now);
+  sevenDaysAgo.setDate(now.getDate() - 7);
+
+  // Update poll status
+  if (this.poll && this.poll.deadline) {
+    if (this.poll.deadline <= sevenDaysAgo) {
+      this.poll.status = "past";
+    } else if (this.poll.status === "upcoming" && this.poll.deadline <= now) {
+      this.poll.status = "active";
+    } else if (this.poll.status === "upcoming" && this.poll.deadline > now) {
+      this.poll.status = "upcoming";
+    }
+  }
+
+  // Update survey status
+  if (this.survey && this.survey.deadline) {
+    if (this.survey.deadline <= sevenDaysAgo) {
+      this.survey.status = "past";
+    } else if (this.survey.status === "upcoming" && this.survey.deadline <= now) {
+      this.survey.status = "active";
+    } else if (this.survey.status === "upcoming" && this.survey.deadline > now) {
+      this.survey.status = "upcoming";
+    }
+  }
+
+  next();
+});
 
 export const Post = mongoose.model("Post", postSchema);
