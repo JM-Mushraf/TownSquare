@@ -1,7 +1,10 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const initialState = {
+// Load state from localStorage
+const storedAuth = JSON.parse(localStorage.getItem("auth"));
+
+const initialState = storedAuth || {
   userData: null,
   token: null,
   isAuthorized: false,
@@ -10,13 +13,10 @@ const initialState = {
 };
 
 const signup = createAsyncThunk("signup", async (userCredentials) => {
-  console.log(userCredentials);
   const { data } = await axios.post(
     `${import.meta.env.VITE_BACKEND_BASEURL}/user/register`,
     userCredentials,
-    {
-      withCredentials: true,
-    }
+    { withCredentials: true }
   );
   return data;
 });
@@ -28,25 +28,11 @@ const login = createAsyncThunk(
       const result = await axios.post(
         `${import.meta.env.VITE_BACKEND_BASEURL}/user/login`,
         userCredentials,
-        {
-          withCredentials: true, // Include cookies
-        }
+        { withCredentials: true }
       );
       return result.data;
     } catch (err) {
-      console.error("Error in login thunk:", err);
-
-      // Return a rejected value with the error message from the backend
-      if (err.response) {
-        // The request was made, and the server responded with a status code
-        return rejectWithValue(err.response.data.error);
-      } else if (err.request) {
-        // The request was made, but no response was received
-        return rejectWithValue("No response from server. Please try again.");
-      } else {
-        // Something else happened
-        return rejectWithValue("An unexpected error occurred.");
-      }
+      return rejectWithValue(err.response?.data?.error || "Login failed");
     }
   }
 );
@@ -55,13 +41,13 @@ const authSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    // Add a logout reducer
     logout: (state) => {
       state.userData = null;
       state.token = null;
       state.isAuthorized = false;
       state.loading = false;
       state.error = null;
+      localStorage.removeItem("auth"); // Clear storage on logout
     },
   },
   extraReducers: (builder) => {
@@ -97,5 +83,5 @@ const authSlice = createSlice({
 });
 
 export { signup, login };
-export const { logout } = authSlice.actions; // Export the logout action
+export const { logout } = authSlice.actions;
 export default authSlice.reducer;

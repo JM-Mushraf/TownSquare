@@ -4,8 +4,8 @@ import { useTheme } from "./ThemeProvider";
 import { Card } from "../components/Card";
 import axios from "axios";
 import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css"; // Import datepicker styles
-import moment from "moment-timezone"; // Import moment-timezone
+import "react-datepicker/dist/react-datepicker.css";
+import moment from "moment-timezone";
 import {
   FiEdit3,
   FiFileText,
@@ -49,6 +49,11 @@ const itemVariants = {
 const fadeIn = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.3 } },
+};
+
+const buttonHover = {
+  hover: { scale: 1.05, boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)" },
+  tap: { scale: 0.95 },
 };
 
 function CreatePost() {
@@ -202,13 +207,13 @@ function CreatePost() {
     setIsSubmitting(true);
     setError("");
     setSuccess("");
-  
+
     try {
       // Validate form
       if (!formData.title || !formData.description) {
         throw new Error("Title and description are required");
       }
-  
+
       if (formData.type === "poll") {
         if (!formData.poll.question) {
           throw new Error("Poll question is required");
@@ -220,7 +225,7 @@ function CreatePost() {
           throw new Error("Poll deadline is required");
         }
       }
-  
+
       if (formData.type === "survey") {
         if (formData.survey.questions.length === 0) {
           throw new Error("Surveys require at least one question");
@@ -229,14 +234,14 @@ function CreatePost() {
           throw new Error("Survey deadline is required");
         }
       }
-  
+
       // Prepare data for submission
       const postData = new FormData();
       postData.append("title", formData.title);
       postData.append("description", formData.description);
       postData.append("type", formData.type);
       postData.append("important", formData.important);
-  
+
       // Only include poll data if type is poll
       if (formData.type === "poll") {
         const pollData = {
@@ -246,7 +251,7 @@ function CreatePost() {
         };
         postData.append("poll", JSON.stringify(pollData)); // Send as JSON string
       }
-  
+
       // Only include survey data if type is survey
       if (formData.type === "survey") {
         const surveyData = {
@@ -255,23 +260,23 @@ function CreatePost() {
         };
         postData.append("survey", JSON.stringify(surveyData)); // Send as JSON string
       }
-  
+
       // Append files if any
       if (files.length > 0) {
         files.forEach((file) => {
           postData.append("attachments", file);
         });
       }
-  
+
       // Debugging: Log FormData contents
       for (let [key, value] of postData.entries()) {
         console.log(key, value);
       }
-  
+
       if (!token) {
         throw new Error("User is not authenticated");
       }
-  
+
       // API call to create post
       const response = await axios.post(
         "http://localhost:3000/post/create",
@@ -283,9 +288,9 @@ function CreatePost() {
           },
         }
       );
-  
+
       setSuccess("Post created successfully!");
-  
+
       // Reset form after successful submission
       setFormData({
         title: "",
