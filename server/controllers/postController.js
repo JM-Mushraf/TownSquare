@@ -1,10 +1,16 @@
 import { Post } from "../models/postModel.js";
 import { Comment } from "../models/commentModel.js";
 import { uploadOnCloudinary,deleteFromCloudinary } from "../utils/cloudinary.js";
-// Create a new post
+import  ErrorHandler  from "../utils/errorHandler.js";
+
 export const createPost = async (req, res) => {
   try {
     const { title, description, type, important, poll, survey } = req.body;
+
+    // Parse poll and survey if they are JSON strings
+    const parsedPoll = poll ? JSON.parse(poll) : null;
+    const parsedSurvey = survey ? JSON.parse(survey) : null;
+
     const createdBy = req.user.id; // Assuming user ID is available via authentication middleware
 
     // Validate required fields
@@ -25,7 +31,7 @@ export const createPost = async (req, res) => {
 
     // Validate poll fields if type is 'poll'
     if (type === "poll") {
-      if (!poll || !poll.question || !poll.options || poll.options.length < 2) {
+      if (!parsedPoll || !parsedPoll.question || !parsedPoll.options || parsedPoll.options.length < 2) {
         return res.status(400).json({
           success: false,
           message: "Polls require a question and at least 2 options.",
@@ -33,20 +39,41 @@ export const createPost = async (req, res) => {
       }
 
       // Ensure each option has text and initialize votes to 0
-      poll.options = poll.options.map((option) => ({
-        text: option.text,
+      parsedPoll.options = parsedPoll.options.map((option) => ({
+        text: option,
         votes: 0,
       }));
 
-      // Set default status if not provided
-      if (!poll.status) {
-        poll.status = "active";
+      // Validate poll deadline (only date, no time)
+      if (!parsedPoll.deadline) {
+        return res.status(400).json({
+          success: false,
+          message: "Poll deadline is required.",
+        });
+      }
+
+      const deadlineDate = new Date(parsedPoll.deadline).toISOString().split('T')[0];
+      const currentDate = new Date().toISOString().split('T')[0];
+
+      if (deadlineDate < currentDate) {
+        return res.status(400).json({
+          success: false,
+          message: "Poll deadline must be in the future.",
+        });
+      }
+
+      // Automatically set poll status based on deadline
+      parsedPoll.deadline = deadlineDate; // Ensure deadline only contains the date
+      if (deadlineDate > currentDate) {
+        parsedPoll.status = "upcoming";
+      } else {
+        parsedPoll.status = "active";
       }
     }
 
     // Validate survey fields if type is 'survey'
     if (type === "survey") {
-      if (!survey || !survey.questions || survey.questions.length === 0) {
+      if (!parsedSurvey || !parsedSurvey.questions || parsedSurvey.questions.length === 0) {
         return res.status(400).json({
           success: false,
           message: "Surveys require at least one question.",
@@ -54,7 +81,7 @@ export const createPost = async (req, res) => {
       }
 
       // Validate each question
-      for (const question of survey.questions) {
+      for (const question of parsedSurvey.questions) {
         if (!question.question || !question.type) {
           return res.status(400).json({
             success: false,
@@ -63,7 +90,10 @@ export const createPost = async (req, res) => {
         }
 
         // Validate options for multiple-choice questions
-        if (question.type === "multiple-choice" && (!question.options || question.options.length < 2)) {
+        if (
+          question.type === "multiple-choice" &&
+          (!question.options || question.options.length < 2)
+        ) {
           return res.status(400).json({
             success: false,
             message: "Multiple-choice questions require at least 2 options.",
@@ -71,9 +101,31 @@ export const createPost = async (req, res) => {
         }
       }
 
-      // Set default status if not provided
-      if (!survey.status) {
-        survey.status = "active";
+      // Validate survey deadline (only date, no time)
+      if (!parsedSurvey.deadline) {
+        return res.status(400).json({
+          success: false,
+          message: "Survey deadline is required.",
+        });
+      }
+
+      const deadlineDate = new Date(parsedSurvey.deadline).toISOString().split('T')[0];
+      const currentDate = new Date().toISOString().split('T')[0];
+      console.log("deadlineDate:", deadlineDate);
+      console.log("currentDate:", currentDate);
+      if (deadlineDate < currentDate) {
+        return res.status(400).json({
+          success: false,
+          message: "Survey deadline must be in the future.",
+        });
+      }
+
+      // Automatically set survey status based on deadline
+      parsedSurvey.deadline = deadlineDate; // Ensure deadline only contains the date
+      if (deadlineDate > currentDate) {
+        parsedSurvey.status = "upcoming";
+      } else {
+        parsedSurvey.status = "active";
       }
     }
 
@@ -92,6 +144,7 @@ export const createPost = async (req, res) => {
           return {
             url: uploaded.url,
             fileType: file.mimetype,
+            publicId: uploaded.public_id,
           };
         })
       );
@@ -105,8 +158,8 @@ export const createPost = async (req, res) => {
       createdBy,
       attachments: uploadedAttachments, // Will be empty if no attachments are provided
       important: type === "announcements" ? important : false, // Set 'important' only for announcements
-      poll: type === "poll" ? poll : undefined, // Add poll data if type is poll
-      survey: type === "survey" ? survey : undefined, // Add survey data if type is survey
+      poll: type === "poll" ? parsedPoll : undefined, // Add poll data if type is poll
+      survey: type === "survey" ? parsedSurvey : undefined, // Add survey data if type is survey
     });
 
     await newPost.save();
