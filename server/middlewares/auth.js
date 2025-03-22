@@ -8,7 +8,7 @@ export const isAuthenticated = async (req, res, next) => {
   try {
     const { token } = req.cookies;
     
-    console.log("AUTH .JS ",token);
+    // console.log("AUTH .JS ",token);
 
     if (!token) {
       return next(
