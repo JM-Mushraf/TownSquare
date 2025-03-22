@@ -124,7 +124,7 @@ const postSchema = new mongoose.Schema(
 postSchema.pre("save", function (next) {
   const now = new Date();
   const sevenDaysAgo = new Date(now);
-  sevenDaysAgo.setDate(now.getDate() - 7);
+  sevenDaysAgo.setDate(now.getDate() - 2);
 
   // Update poll status
   if (this.poll && this.poll.deadline) {

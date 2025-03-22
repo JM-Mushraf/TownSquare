@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"
 import {
   User,
   BarChart3,
@@ -30,48 +30,48 @@ import {
   Bookmark,
   Share2,
   MoreHorizontal,
-} from "lucide-react";
-import { useSelector } from "react-redux";
-import "./SurveysPage.css";
+} from "lucide-react"
+import { useSelector } from "react-redux"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import "./SurveysPage.css"
 
 const ImageCarousel = ({ images }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [touchStart, setTouchStart] = useState(0)
+  const [touchEnd, setTouchEnd] = useState(0)
+  const [isTransitioning, setIsTransitioning] = useState(false)
 
   const handleNext = () => {
-    if (isTransitioning) return;
-    setIsTransitioning(true);
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    setTimeout(() => setIsTransitioning(false), 500);
-  };
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length)
+    setTimeout(() => setIsTransitioning(false), 500)
+  }
 
   const handlePrev = () => {
-    if (isTransitioning) return;
-    setIsTransitioning(true);
-    setCurrentIndex(
-      (prevIndex) => (prevIndex - 1 + images.length) % images.length
-    );
-    setTimeout(() => setIsTransitioning(false), 500);
-  };
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length)
+    setTimeout(() => setIsTransitioning(false), 500)
+  }
 
   const handleTouchStart = (e) => {
-    setTouchStart(e.targetTouches[0].clientX);
-  };
+    setTouchStart(e.targetTouches[0].clientX)
+  }
 
   const handleTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
 
   const handleTouchEnd = () => {
     if (touchStart - touchEnd > 100) {
-      handleNext();
+      handleNext()
     }
     if (touchEnd - touchStart > 100) {
-      handlePrev();
+      handlePrev()
     }
-  };
+  }
 
   return (
     <div className="image-carousel">
@@ -87,38 +87,24 @@ const ImageCarousel = ({ images }) => {
         >
           {images.map((image, index) => (
             <div key={index} className="carousel-slide">
-              <img
-                src={image || "/placeholder.svg"}
-                alt={`Image ${index + 1}`}
-                className="carousel-image"
-              />
+              <img src={image || "/placeholder.svg"} alt={`Image ${index + 1}`} className="carousel-image" />
             </div>
           ))}
         </div>
 
         {images.length > 1 && (
           <>
-            <button
-              onClick={handlePrev}
-              className="carousel-button carousel-button-prev"
-              aria-label="Previous image"
-            >
+            <button onClick={handlePrev} className="carousel-button carousel-button-prev" aria-label="Previous image">
               <ChevronLeft className="carousel-icon" />
             </button>
-            <button
-              onClick={handleNext}
-              className="carousel-button carousel-button-next"
-              aria-label="Next image"
-            >
+            <button onClick={handleNext} className="carousel-button carousel-button-next" aria-label="Next image">
               <ChevronRight className="carousel-icon" />
             </button>
             <div className="carousel-indicators">
               {images.map((_, index) => (
                 <div
                   key={index}
-                  className={`carousel-indicator ${
-                    index === currentIndex ? "active" : ""
-                  }`}
+                  className={`carousel-indicator ${index === currentIndex ? "active" : ""}`}
                   onClick={() => setCurrentIndex(index)}
                 />
               ))}
@@ -127,133 +113,131 @@ const ImageCarousel = ({ images }) => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
 const SurveyCard = ({ post, onVote, onViewResults }) => {
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [openEndedResponse, setOpenEndedResponse] = useState("");
-  const [rating, setRating] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
-  const [charCount, setCharCount] = useState(0);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null)
+  const [openEndedResponse, setOpenEndedResponse] = useState("")
+  const [rating, setRating] = useState(0)
+  const [isHovered, setIsHovered] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
+  const [charCount, setCharCount] = useState(0)
+  const [isBookmarked, setIsBookmarked] = useState(false)
+  const [results, setResults] = useState(null)
 
-  const isPoll = post.type === "poll";
-  const item = isPoll ? post.poll : post.survey;
-  const status = item.status;
-  const deadline = new Date(item.deadline);
-  const question = isPoll ? item.question : item.questions[0]?.question || "";
+  const isPoll = post.type === "poll"
+  const item = isPoll ? post.poll : post.survey
+  const status = item.status
+  const deadline = new Date(item.deadline)
+  const question = isPoll ? item.question : item.questions[0]?.question || ""
   const options = isPoll
     ? post.poll.options
     : post.survey.questions[0]?.options.map((opt, index) => ({
-        _id: opt._id || index, // Use _id if available, otherwise use index
+        _id: opt._id || index,
         text: opt,
-      }));
-  const hasImages = post.attachments && post.attachments.length > 0;
-  const questionType = isPoll
-    ? "multiple-choice"
-    : item.questions[0]?.type || "";
+      }))
+  const hasImages = post.attachments && post.attachments.length > 0
+  const questionType = isPoll ? "multiple-choice" : item.questions[0]?.type || ""
 
   const getStatusIcon = (status) => {
     switch (status) {
       case "active":
-        return <CheckCircle className="status-icon" />;
+        return <CheckCircle className="status-icon" />
       case "upcoming":
-        return <Clock className="status-icon" />;
+        return <Clock className="status-icon" />
       case "past":
-        return <History className="status-icon" />;
+        return <History className="status-icon" />
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   const getStatusClass = (status) => {
     switch (status) {
       case "active":
-        return "status-active";
+        return "status-active"
       case "upcoming":
-        return "status-upcoming";
+        return "status-upcoming"
       case "past":
-        return "status-past";
+        return "status-past"
       default:
-        return "status-default";
+        return "status-default"
     }
-  };
+  }
 
   const getDeadlineText = () => {
     const formattedDate = deadline.toLocaleDateString(undefined, {
       month: "short",
       day: "numeric",
       year: "numeric",
-    });
+    })
 
     switch (status) {
       case "active":
-        return `Ends on ${formattedDate}`;
+        return `Ends on ${formattedDate}`
       case "upcoming":
-        return `Starts on ${formattedDate}`;
+        return `Starts on ${formattedDate}`
       case "past":
-        return `Ended on ${formattedDate}`;
+        return `Ended on ${formattedDate}`
       default:
-        return formattedDate;
+        return formattedDate
     }
-  };
-  const {userData} = useSelector((state) => state.user)
+  }
+
+  const { userData } = useSelector((state) => state.user)
+
   const handleSubmit = async () => {
-    
-    // console.log("id",userData._id);
-    // console.log("Name",userData.username);
     if (selectedOption !== null || openEndedResponse || rating > 0) {
-      setIsSubmitting(true);
-    
+      setIsSubmitting(true)
+
       const voteData = {
         option: null,
         response: null,
         rating: null,
-        userId: userData._id, // Use the actual userId
-      };
+        userId: userData._id,
+      }
 
       if (isPoll) {
-        // For polls, send the _id of the selected option
-        voteData.option = options[selectedOption]?._id;
+        voteData.option = options[selectedOption]?._id
       } else if (post.type === "survey") {
         if (questionType === "multiple-choice") {
-          // For multiple-choice surveys, send the _id of the selected option
-          voteData.option = options[selectedOption]?._id; // Use _id instead of index
+          voteData.option = options[selectedOption]?._id
         } else if (questionType === "open-ended") {
-          // For open-ended surveys, send the response text
-          voteData.response = openEndedResponse;
+          voteData.response = openEndedResponse
         } else if (questionType === "rating") {
-          // For rating surveys, send the selected rating
-          voteData.rating = rating;
+          voteData.rating = rating
         }
       }
 
-      console.log("Vote Data:", voteData); // Debugging
-
-      await onVote(post._id, voteData);
-      setIsSubmitting(false);
+      await onVote(post._id, voteData)
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const handleOptionChange = (index) => {
-    setSelectedOption(index);
-  };
+    setSelectedOption(index)
+  }
 
   const handleRatingChange = (newRating) => {
-    setRating(newRating);
-  };
+    setRating(newRating)
+  }
 
   const handleTextareaChange = (e) => {
-    setOpenEndedResponse(e.target.value);
-    setCharCount(e.target.value.length);
-  };
+    setOpenEndedResponse(e.target.value)
+    setCharCount(e.target.value.length)
+  }
 
   const toggleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
-  };
+    setIsBookmarked(!isBookmarked)
+    toast.success(isBookmarked ? "Removed from bookmarks" : "Added to bookmarks")
+  }
+
+  const handleViewResultsClick = async () => {
+    const results = await onViewResults(post._id)
+    setResults(results)
+  }
 
   return (
     <div
@@ -291,9 +275,7 @@ const SurveyCard = ({ post, onVote, onViewResults }) => {
 
       {hasImages && (
         <div className="survey-card-images">
-          <ImageCarousel
-            images={post.attachments.map((attachment) => attachment.url)}
-          />
+          <ImageCarousel images={post.attachments.map((attachment) => attachment.url)} />
         </div>
       )}
 
@@ -303,16 +285,142 @@ const SurveyCard = ({ post, onVote, onViewResults }) => {
           <p className="survey-card-question">{question}</p>
         </div>
 
-        {status === "active" ? (
+        {status === "past" && results ? (
+          <div className="survey-card-results">
+            {post.type === "poll" ? (
+              <>
+                <h4 className="results-title">Poll Results</h4>
+                {results.poll.options.map((option, index) => {
+                  // Calculate color based on index for variety
+                  const colorClasses = ["blue", "purple", "green", "orange", "red"]
+                  const colorClass = colorClasses[index % colorClasses.length]
+
+                  return (
+                    <div key={index} className="survey-card-result">
+                      <div className="survey-card-result-header">
+                        <span className="survey-card-result-label">{option.text}</span>
+                        <span className={`survey-card-result-percentage ${colorClass}`}>
+                          {Math.round((option.votes / results.poll.totalVotes) * 100)}%
+                        </span>
+                      </div>
+                      <div className="survey-card-result-bar">
+                        <div
+                          className={`survey-card-result-progress ${colorClass}`}
+                          style={{
+                            width: `${Math.round((option.votes / results.poll.totalVotes) * 100)}%`,
+                          }}
+                        ></div>
+                      </div>
+                      <div className="survey-card-result-votes">
+                        <Vote className="votes-icon" />
+                        <span>
+                          {option.votes} {option.votes === 1 ? "vote" : "votes"}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+                <div className="survey-card-total-votes">
+                  <PieChart className="total-votes-icon" />
+                  <span>Total Votes: {results.poll.totalVotes}</span>
+                </div>
+              </>
+            ) : post.type === "survey" ? (
+              <>
+                <h4 className="results-title">Survey Results</h4>
+                {results.survey.questions.map((question, qIndex) => (
+                  <div key={qIndex} className="survey-question-results">
+                    <h5 className="question-title">{question.question}</h5>
+                    {question.type === "multiple-choice" ? (
+                      <>
+                        {question.options.map((option, oIndex) => {
+                          // Calculate color based on index for variety
+                          const colorClasses = ["blue", "purple", "green", "orange", "red"]
+                          const colorClass = colorClasses[oIndex % colorClasses.length]
+
+                          return (
+                            <div key={oIndex} className="survey-card-result">
+                              <div className="survey-card-result-header">
+                                <span className="survey-card-result-label">{option.text}</span>
+                                <span className={`survey-card-result-percentage ${colorClass}`}>
+                                  {Math.round((option.votes / question.totalVotes) * 100)}%
+                                </span>
+                              </div>
+                              <div className="survey-card-result-bar">
+                                <div
+                                  className={`survey-card-result-progress ${colorClass}`}
+                                  style={{
+                                    width: `${Math.round((option.votes / question.totalVotes) * 100)}%`,
+                                  }}
+                                ></div>
+                              </div>
+                              <div className="survey-card-result-votes">
+                                <Vote className="votes-icon" />
+                                <span>
+                                  {option.votes} {option.votes === 1 ? "vote" : "votes"}
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        })}
+                        <div className="survey-card-total-votes">
+                          <PieChart className="total-votes-icon" />
+                          <span>Total Votes: {question.totalVotes}</span>
+                        </div>
+                      </>
+                    ) : question.type === "open-ended" ? (
+                      <div className="open-ended-responses">
+                        {question.responses.map((response, rIndex) => (
+                          <div key={rIndex} className="response-item">
+                            <div className="response-content">
+                              <span className="response-text">{response.response}</span>
+                            </div>
+                            <div className="response-user-info">
+                              <div className="response-user-avatar">{response.username?.charAt(0) || "U"}</div>
+                              <span className="response-username">{response.username}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : question.type === "rating" ? (
+                      <div className="rating-results">
+                        {question.ratings.map((rating, rIndex) => (
+                          <div key={rIndex} className="rating-item">
+                            <div className="rating-stars">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star key={star} className={`rating-star ${star <= rating.rating ? "filled" : ""}`} />
+                              ))}
+                            </div>
+                            <div className="rating-user-info">
+                              <div className="rating-user-avatar">{rating.username?.charAt(0) || "U"}</div>
+                              <span className="rating-username">{rating.username}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </>
+            ) : null}
+          </div>
+        ) : status === "upcoming" ? (
+          // Keep the upcoming section as is
+          <div className="survey-card-upcoming">
+            <Clock className="upcoming-icon" />
+            <div className="upcoming-content">
+              <p>This {isPoll ? "poll" : "survey"} is not yet active.</p>
+              <p>You can set a reminder to be notified when it starts.</p>
+            </div>
+          </div>
+        ) : status === "active" ? (
           <div className="survey-card-options">
             {questionType === "multiple-choice" && (
               <>
                 {options.map((option, index) => (
                   <div
                     key={isPoll ? option._id : index}
-                    className={`survey-card-option ${
-                      selectedOption === index ? "selected" : ""
-                    }`}
+                    className={`survey-card-option ${selectedOption === index ? "selected" : ""}`}
                     onClick={() => handleOptionChange(index)}
                   >
                     <div className="survey-card-radio-container">
@@ -328,24 +436,17 @@ const SurveyCard = ({ post, onVote, onViewResults }) => {
                       <span className="survey-card-radio-checkmark"></span>
                     </div>
                     <label
-                      htmlFor={`option-${post._id}-${
-                        isPoll ? option._id : index
-                      }`}
+                      htmlFor={`option-${post._id}-${isPoll ? option._id : index}`}
                       className="survey-card-option-label"
                     >
-                      {isPoll ? option.text : option.text}{" "}
-                      {/* Render the `text` property */}
+                      {isPoll ? option.text : option.text}
                     </label>
                   </div>
                 ))}
               </>
             )}
             {questionType === "open-ended" && (
-              <div
-                className={`survey-card-open-ended ${
-                  isFocused ? "focused" : ""
-                }`}
-              >
+              <div className={`survey-card-open-ended ${isFocused ? "focused" : ""}`}>
                 <div className="textarea-container">
                   <MessageSquare className="textarea-icon" />
                   <textarea
@@ -360,10 +461,7 @@ const SurveyCard = ({ post, onVote, onViewResults }) => {
                 </div>
                 <div className="textarea-footer">
                   <div className="char-count">
-                    <span className={charCount > 0 ? "has-text" : ""}>
-                      {charCount}
-                    </span>{" "}
-                    characters
+                    <span className={charCount > 0 ? "has-text" : ""}>{charCount}</span> characters
                   </div>
                   <div className="textarea-hint">
                     <Info className="hint-icon" />
@@ -377,16 +475,10 @@ const SurveyCard = ({ post, onVote, onViewResults }) => {
                 {[1, 2, 3, 4, 5].map((star) => (
                   <span
                     key={star}
-                    className={`survey-card-star ${
-                      star <= rating ? "filled" : ""
-                    }`}
+                    className={`survey-card-star ${star <= rating ? "filled" : ""}`}
                     onClick={() => handleRatingChange(star)}
                   >
-                    {star <= rating ? (
-                      <Star className="star-icon filled" />
-                    ) : (
-                      <Star className="star-icon" />
-                    )}
+                    {star <= rating ? <Star className="star-icon filled" /> : <Star className="star-icon" />}
                   </span>
                 ))}
                 <div className="rating-label">
@@ -400,92 +492,29 @@ const SurveyCard = ({ post, onVote, onViewResults }) => {
               </div>
             )}
           </div>
-        ) : status === "past" ? (
-          <div className="survey-card-results">
-            {options.map((option, index) => {
-              const optionText = isPoll ? option.text : option;
-              const votes = isPoll
-                ? option.votes
-                : item.questions[0].votes[index];
-              const totalVotes = isPoll
-                ? options.reduce((sum, opt) => sum + opt.votes, 0)
-                : item.questions[0].votes.reduce((sum, v) => sum + v, 0);
-              const percentage =
-                totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
-
-              const gradientClasses = ["red", "green", "yellow", "blue"];
-              const gradientClass =
-                gradientClasses[index % gradientClasses.length];
-
-              return (
-                <div key={index} className="survey-card-result">
-                  <div className="survey-card-result-header">
-                    <span className="survey-card-result-label">
-                      {optionText}
-                    </span>
-                    <span className="survey-card-result-percentage">
-                      {percentage}%
-                    </span>
-                  </div>
-                  <div className="survey-card-result-bar">
-                    <div
-                      className={`survey-card-result-progress ${gradientClass}`}
-                      style={{ width: `${percentage}%` }}
-                    ></div>
-                  </div>
-                  <div className="survey-card-result-votes">
-                    <Vote className="votes-icon" />
-                    <span>
-                      {votes} {votes === 1 ? "vote" : "votes"}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-            <div className="survey-card-total-votes">
-              <PieChart className="total-votes-icon" />
-              <span>
-                Total Responses:{" "}
-                {options.reduce(
-                  (sum, opt) => sum + (isPoll ? opt.votes : 0),
-                  0
-                )}
-              </span>
-            </div>
-          </div>
-        ) : (
-          <div className="survey-card-upcoming">
-            <Clock className="upcoming-icon" />
-            <div className="upcoming-content">
-              <p>This {isPoll ? "poll" : "survey"} is not yet active.</p>
-              <p>You can set a reminder to be notified when it starts.</p>
-            </div>
-          </div>
-        )}
+        ) : null}
       </div>
 
       <div className="survey-card-footer">
         <div className="survey-card-actions">
           <button
-            className={`survey-card-action-button ${
-              isBookmarked ? "active" : ""
-            }`}
+            className={`survey-card-action-button ${isBookmarked ? "active" : ""}`}
             onClick={toggleBookmark}
-            aria-label={
-              isBookmarked ? "Remove bookmark" : "Bookmark this survey"
-            }
+            aria-label={isBookmarked ? "Remove bookmark" : "Bookmark this survey"}
           >
             <Bookmark className="action-icon" />
           </button>
           <button
             className="survey-card-action-button"
             aria-label="Share this survey"
+            onClick={() => toast.info("Sharing options coming soon!")}
           >
             <Share2 className="action-icon" />
           </button>
           <button
             className="survey-card-action-button"
             aria-label="More options"
+            onClick={() => toast.info("More options coming soon!")}
           >
             <MoreHorizontal className="action-icon" />
           </button>
@@ -494,14 +523,9 @@ const SurveyCard = ({ post, onVote, onViewResults }) => {
         {status === "active" ? (
           <button
             className={`survey-card-button submit-button ${
-              selectedOption === null && !openEndedResponse && rating === 0
-                ? "disabled"
-                : ""
+              selectedOption === null && !openEndedResponse && rating === 0 ? "disabled" : ""
             } ${isSubmitting ? "submitting" : ""}`}
-            disabled={
-              (selectedOption === null && !openEndedResponse && rating === 0) ||
-              isSubmitting
-            }
+            disabled={(selectedOption === null && !openEndedResponse && rating === 0) || isSubmitting}
             onClick={handleSubmit}
           >
             {isSubmitting ? (
@@ -519,127 +543,138 @@ const SurveyCard = ({ post, onVote, onViewResults }) => {
         ) : status === "upcoming" ? (
           <button
             className="survey-card-button reminder-button"
-            onClick={() => {}}
+            onClick={() => toast.success("Reminder set successfully!")}
           >
             <Bell className="button-icon" />
             Set Reminder
           </button>
         ) : (
-          <button
-            className="survey-card-button results-button"
-            onClick={() => onViewResults(post._id)}
-          >
+          <button className="survey-card-button results-button" onClick={handleViewResultsClick}>
             <BarChart3 className="button-icon" />
             View Full Results
           </button>
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
 function SurveysPage() {
-  const [activeTab, setActiveTab] = useState("active");
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [tabTransitioning, setTabTransitioning] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("active")
+  const [posts, setPosts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [tabTransitioning, setTabTransitioning] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [filters, setFilters] = useState({
+    pollsOnly: false,
+    surveysOnly: false,
+    participatedOnly: false,
+  })
 
-  const { token } = useSelector((state) => state.user);
+  const { token } = useSelector((state) => state.user)
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch(
-          "http://localhost:3000/post/survey-and-poll-posts"
-        );
-        if (!response.ok) throw new Error("Failed to fetch posts");
-        const data = await response.json();
-        setPosts(data.posts);
-        setLoading(false);
+        const response = await fetch("http://localhost:3000/post/survey-and-poll-posts")
+        if (!response.ok) throw new Error("Failed to fetch posts")
+        const data = await response.json()
+        setPosts(data.posts)
+        setLoading(false)
       } catch (error) {
-        setError(error.message);
-        setLoading(false);
-        console.error("Error fetching posts:", error.message);
+        setError(error.message)
+        setLoading(false)
+        toast.error("Failed to load surveys and polls. Please try again later.")
       }
-    };
+    }
 
-    fetchPosts();
-  }, []);
+    fetchPosts()
+  }, [])
 
   const handleTabChange = (tab) => {
-    if (tab === activeTab || tabTransitioning) return;
+    if (tab === activeTab || tabTransitioning) return
 
-    setTabTransitioning(true);
+    setTabTransitioning(true)
     setTimeout(() => {
-      setActiveTab(tab);
-      setTabTransitioning(false);
-    }, 300);
-  };
+      setActiveTab(tab)
+      setTabTransitioning(false)
+    }, 300)
+  }
 
   const getFilteredPosts = () => {
     let filtered = posts.filter((post) => {
-      const status = post.poll ? post.poll.status : post.survey.status;
-      return status === activeTab;
-    });
+      const status = post.poll ? post.poll.status : post.survey.status
+      return status === activeTab
+    })
 
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (post) =>
-          post.title.toLowerCase().includes(query) ||
-          post.description.toLowerCase().includes(query)
-      );
+    if (filters.pollsOnly) {
+      filtered = filtered.filter((post) => post.type === "poll")
     }
 
-    return filtered;
-  };
+    if (filters.surveysOnly) {
+      filtered = filtered.filter((post) => post.type === "survey")
+    }
+
+    if (filters.participatedOnly) {
+      filtered = filtered.filter((post) => {
+        if (post.poll) {
+          return post.poll.options && post.poll.options.some((opt) => opt.voters && opt.voters.includes(token.userId))
+        } else if (post.survey) {
+          return (
+            post.survey.questions &&
+            post.survey.questions.some((q) => q.responses && q.responses.some((r) => r.userId === token.userId))
+          )
+        }
+        return false
+      })
+    }
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(
+        (post) => post.title.toLowerCase().includes(query) || post.description.toLowerCase().includes(query),
+      )
+    }
+
+    return filtered
+  }
 
   const handleVote = async (postId, voteData) => {
     try {
       if (!token) {
-        throw new Error("You must be logged in to vote.");
+        toast.error("You must be logged in to vote.")
+        return
       }
 
-      const response = await fetch(
-        `http://localhost:3000/post/${postId}/vote`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          credentials: "include",
-          body: JSON.stringify(voteData),
-        }
-      );
+      const response = await fetch(`http://localhost:3000/post/${postId}/vote`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: JSON.stringify(voteData),
+      })
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to submit vote");
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to submit vote")
       }
 
       const updatedPosts = posts.map((post) => {
         if (post._id === postId) {
           if (post.poll) {
-            // Update poll votes
             const updatedOptions = post.poll.options.map((opt) =>
-              opt._id === voteData.option
-                ? { ...opt, votes: opt.votes + 1 }
-                : opt
-            );
-            return { ...post, poll: { ...post.poll, options: updatedOptions } };
+              opt._id === voteData.option ? { ...opt, votes: opt.votes + 1 } : opt,
+            )
+            return { ...post, poll: { ...post.poll, options: updatedOptions } }
           } else if (post.survey) {
-            const surveyQuestion = post.survey.questions[0];
+            const surveyQuestion = post.survey.questions[0]
 
             if (surveyQuestion.type === "multiple-choice") {
-              // Update multiple-choice votes
-              const updatedVotes = [
-                ...surveyQuestion.votes,
-                { optionIndex: voteData.option, userId: voteData.userId },
-              ];
+              const updatedVotes = [...surveyQuestion.votes, { optionIndex: voteData.option, userId: voteData.userId }]
               return {
                 ...post,
                 survey: {
@@ -651,13 +686,12 @@ function SurveysPage() {
                     },
                   ],
                 },
-              };
+              }
             } else if (surveyQuestion.type === "open-ended") {
-              // Update open-ended responses
               const updatedResponses = [
                 ...surveyQuestion.responses,
                 { response: voteData.response, userId: voteData.userId },
-              ];
+              ]
               return {
                 ...post,
                 survey: {
@@ -669,13 +703,9 @@ function SurveysPage() {
                     },
                   ],
                 },
-              };
+              }
             } else if (surveyQuestion.type === "rating") {
-              // Update ratings
-              const updatedRatings = [
-                ...surveyQuestion.ratings,
-                { rating: voteData.rating, userId: voteData.userId },
-              ];
+              const updatedRatings = [...surveyQuestion.ratings, { rating: voteData.rating, userId: voteData.userId }]
               return {
                 ...post,
                 survey: {
@@ -687,47 +717,53 @@ function SurveysPage() {
                     },
                   ],
                 },
-              };
+              }
             }
           }
         }
-        return post;
-      });
+        return post
+      })
 
-      setPosts(updatedPosts);
+      setPosts(updatedPosts)
+      toast.success("Your vote has been submitted successfully!")
     } catch (error) {
-      console.error("Error submitting vote:", error.message);
+      toast.error(error.message || "An error occurred while submitting your vote.")
     }
-  };
+  }
 
   const handleViewResults = async (postId) => {
     try {
-      const response = await fetch(
-        `http://localhost:3000/post/${postId}/results`
-      );
-      if (!response.ok) throw new Error("Failed to fetch results");
-      const data = await response.json();
+      const response = await fetch(`http://localhost:3000/post/${postId}/results`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+      })
 
-      const updatedPosts = posts.map((post) => {
-        if (post._id === postId) {
-          return { ...post, results: data.results };
-        }
-        return post;
-      });
-
-      setPosts(updatedPosts);
+      if (!response.ok) throw new Error("Failed to fetch results")
+      const data = await response.json()
+      return data.results // Return the results to be used in the SurveyCard
     } catch (error) {
-      console.error("Error fetching results:", error.message);
+      toast.error(error.message || "An error occurred while fetching results.")
+      return null
     }
-  };
+  }
 
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
+    setSearchQuery(e.target.value)
+  }
 
   const toggleFilter = () => {
-    setIsFilterOpen(!isFilterOpen);
-  };
+    setIsFilterOpen(!isFilterOpen)
+  }
+
+  const handleFilterChange = (filter) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [filter]: !prevFilters[filter],
+    }))
+  }
 
   if (loading) {
     return (
@@ -735,7 +771,7 @@ function SurveysPage() {
         <div className="surveys-loading-spinner"></div>
         <p>Loading surveys and polls...</p>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -744,18 +780,15 @@ function SurveysPage() {
         <AlertTriangle className="error-icon" />
         <h3 className="surveys-error-title">Error Loading Surveys</h3>
         <p className="surveys-error-message">{error}</p>
-        <button
-          className="surveys-error-button"
-          onClick={() => window.location.reload()}
-        >
+        <button className="surveys-error-button" onClick={() => window.location.reload()}>
           <RefreshCw className="button-icon" />
           Try Again
         </button>
       </div>
-    );
+    )
   }
 
-  const filteredPosts = getFilteredPosts();
+  const filteredPosts = getFilteredPosts()
 
   return (
     <div className="surveys-container">
@@ -763,9 +796,7 @@ function SurveysPage() {
         <h1 className="surveys-title">
           Surveys & <span className="gradient-text">Polls</span>
         </h1>
-        <p className="surveys-subtitle">
-          Share your opinion on community matters
-        </p>
+        <p className="surveys-subtitle">Share your opinion on community matters</p>
 
         <div className="surveys-search-container">
           <div className="surveys-search-box">
@@ -778,11 +809,7 @@ function SurveysPage() {
               onChange={handleSearchChange}
             />
             {searchQuery && (
-              <button
-                className="search-clear-button"
-                onClick={() => setSearchQuery("")}
-                aria-label="Clear search"
-              >
+              <button className="search-clear-button" onClick={() => setSearchQuery("")} aria-label="Clear search">
                 ×
               </button>
             )}
@@ -799,18 +826,44 @@ function SurveysPage() {
         {isFilterOpen && (
           <div className="filter-dropdown">
             <div className="filter-option">
-              <input type="checkbox" id="filter-polls" />
+              <input
+                type="checkbox"
+                id="filter-polls"
+                checked={filters.pollsOnly}
+                onChange={() => handleFilterChange("pollsOnly")}
+              />
               <label htmlFor="filter-polls">Polls only</label>
             </div>
             <div className="filter-option">
-              <input type="checkbox" id="filter-surveys" />
-              <label htmlFor="filter-surveys">Surveys only</label>
+              <input
+                type="checkbox"
+                id="filter-surveys"
+                checked={filters.surveysOnly}
+                onChange={() => handleFilterChange("surveysOnly")}
+              />
             </div>
             <div className="filter-option">
-              <input type="checkbox" id="filter-participated" />
-              <label htmlFor="filter-participated">Participated</label>
+              <input
+                type="checkbox"
+                id="filter-participated"
+                checked={filters.participatedOnly}
+                onChange={() => handleFilterChange("participatedOnly")}
+                disabled={!token || !token.userId}
+              />
+              <label htmlFor="filter-participated">
+                Participated
+                {!token || !token.userId ? " (Login required)" : ""}
+              </label>
             </div>
-            <button className="filter-apply-button">Apply Filters</button>
+            <button
+              className="filter-apply-button"
+              onClick={() => {
+                setIsFilterOpen(false)
+                toast.success("Filters applied successfully!")
+              }}
+            >
+              Apply Filters
+            </button>
           </div>
         )}
       </div>
@@ -825,9 +878,7 @@ function SurveysPage() {
             Active
           </button>
           <button
-            className={`surveys-tab ${
-              activeTab === "upcoming" ? "active" : ""
-            }`}
+            className={`surveys-tab ${activeTab === "upcoming" ? "active" : ""}`}
             onClick={() => handleTabChange("upcoming")}
           >
             <Clock className="tab-icon" />
@@ -842,20 +893,11 @@ function SurveysPage() {
           </button>
         </div>
 
-        <div
-          className={`surveys-tab-content ${
-            tabTransitioning ? "tab-transitioning" : ""
-          }`}
-        >
+        <div className={`surveys-tab-content ${tabTransitioning ? "tab-transitioning" : ""}`}>
           {filteredPosts.length > 0 ? (
             <div className="surveys-grid">
               {filteredPosts.map((post) => (
-                <SurveyCard
-                  key={post._id}
-                  post={post}
-                  onVote={handleVote}
-                  onViewResults={handleViewResults}
-                />
+                <SurveyCard key={post._id} post={post} onVote={handleVote} onViewResults={handleViewResults} />
               ))}
             </div>
           ) : (
@@ -864,14 +906,10 @@ function SurveysPage() {
                 <ClipboardList className="empty-icon" />
               </div>
               <p>
-                No {activeTab} surveys or polls{" "}
-                {searchQuery ? "matching your search" : "at the moment"}.
+                No {activeTab} surveys or polls {searchQuery ? "matching your search" : "at the moment"}.
               </p>
               {searchQuery && (
-                <button
-                  className="clear-search-button"
-                  onClick={() => setSearchQuery("")}
-                >
+                <button className="clear-search-button" onClick={() => setSearchQuery("")}>
                   Clear Search
                 </button>
               )}
@@ -893,13 +931,7 @@ function SurveysPage() {
             <Award className="stat-icon" />
             <div className="stat-content">
               <span className="stat-value">
-                {
-                  posts.filter(
-                    (post) =>
-                      post.poll?.status === "active" ||
-                      post.survey?.status === "active"
-                  ).length
-                }
+                {posts.filter((post) => post.poll?.status === "active" || post.survey?.status === "active").length}
               </span>
               <span className="stat-label">Active Now</span>
             </div>
@@ -923,8 +955,10 @@ function SurveysPage() {
           </p>
         </div>
       </div>
+      <ToastContainer position="bottom-right" autoClose={5000} />
     </div>
-  );
+  )
 }
 
-export default SurveysPage;
+export default SurveysPage
+

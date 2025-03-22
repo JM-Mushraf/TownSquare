@@ -3,6 +3,9 @@ import { Comment } from "../models/commentModel.js";
 import { uploadOnCloudinary,deleteFromCloudinary } from "../utils/cloudinary.js";
 import  ErrorHandler  from "../utils/errorHandler.js";
 import mongoose from "mongoose";
+import { User } from "../models/userModel.js"
+
+
 
 export const createPost = async (req, res) => {
   try {
@@ -434,12 +437,23 @@ export const submitVote = async (req, res) => {
     });
   }
 };
+
 export const viewResults = async (req, res) => {
   try {
     const { postId } = req.params;
 
-    // Find the post
-    const post = await Post.findById(postId);
+    // Validate postId
+    if (!postId) {
+      return res.status(400).json({
+        success: false,
+        message: "Post ID is required",
+      });
+    }
+
+    // Find the post with only necessary fields
+    const post = await Post.findById(postId, { type: 1, poll: 1, survey: 1 }).exec();
+
+    // Check if the post exists
     if (!post) {
       return res.status(404).json({
         success: false,
@@ -455,24 +469,112 @@ export const viewResults = async (req, res) => {
       });
     }
 
+    // Initialize the results object
+    const results = {};
+
+    // Handle poll results
+    if (post.type === "poll" && post.poll) {
+      results.poll = {
+        question: post.poll.question,
+        options: post.poll.options.map((option) => ({
+          text: option.text,
+          votes: option.votes,
+          votedBy: option.votedBy,
+        })),
+        totalVotes: post.poll.options.reduce((acc, option) => acc + option.votes, 0),
+      };
+    }
+
+    // Handle survey results
+    if (post.type === "survey" && post.survey) {
+      results.survey = {
+        questions: await Promise.all(
+          post.survey.questions.map(async (question) => {
+            const questionResult = {
+              question: question.question,
+              type: question.type,
+            };
+
+            // Handle multiple-choice questions
+            if (question.type === "multiple-choice") {
+              questionResult.options = await Promise.all(
+                question.options.map(async (option, index) => {
+                  const votes = question.votes.filter((vote) => vote.optionIndex === index);
+                  const votedByUsers = await Promise.all(
+                    votes.map(async (vote) => {
+                      const user = await User.findById(vote.userId, { username: 1 }).exec();
+                      return user ? user.username : "Unknown User";
+                    })
+                  );
+
+                  return {
+                    text: option,
+                    votes: votes.length,
+                    votedBy: votedByUsers,
+                  };
+                })
+              );
+              questionResult.totalVotes = question.votes.length;
+            }
+
+            // Handle open-ended questions
+            if (question.type === "open-ended") {
+              questionResult.responses = await Promise.all(
+                question.responses.map(async (response) => {
+                  const user = await User.findById(response.userId, { username: 1 }).exec();
+                  return {
+                    response: response.response,
+                    userId: response.userId,
+                    username: user ? user.username : "Unknown User",
+                  };
+                })
+              );
+              questionResult.totalResponses = question.responses.length;
+            }
+
+            // Handle rating questions
+            if (question.type === "rating") {
+              const totalRatings = question.ratings.length;
+              const averageRating =
+                totalRatings > 0
+                  ? question.ratings.reduce((acc, rating) => acc + rating.rating, 0) / totalRatings
+                  : 0;
+
+              questionResult.ratings = await Promise.all(
+                question.ratings.map(async (rating) => {
+                  const user = await User.findById(rating.userId, { username: 1 }).exec();
+                  return {
+                    rating: rating.rating,
+                    userId: rating.userId,
+                    username: user ? user.username : "Unknown User",
+                  };
+                })
+              );
+              questionResult.averageRating = averageRating;
+              questionResult.totalRatings = totalRatings;
+            }
+
+            return questionResult;
+          })
+        ),
+        totalQuestions: post.survey.questions.length,
+      };
+    }
+
     // Return the results
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      results: post.poll ? post.poll.options : post.survey.questions[0].options,
+      results: results,
     });
   } catch (error) {
-    res.status(500).json({
+    console.error("Error in viewResults controller:", error);
+    return res.status(500).json({
       success: false,
-      message: "Error fetching results",
+      message: "Internal server error",
       error: error.message,
     });
   }
 };
-
-
-
-
-
 
 
 // Delete a post (Only the creator can delete)

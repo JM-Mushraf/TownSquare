@@ -1,52 +1,65 @@
-import { Post } from "../models/postModel.js";
+import { Post } from "../models/postModel.js"; // Adjust the import path as necessary
+
 export const updatePostStatus = async () => {
   const now = new Date();
   const sevenDaysAgo = new Date(now);
-  sevenDaysAgo.setDate(now.getDate() - 7);
+  sevenDaysAgo.setUTCDate(now.getUTCDate() - 2);
+
+  console.log("Current time:", now.toISOString());
+  console.log("Seven days ago:", sevenDaysAgo.toISOString());
 
   try {
-    // Find posts that need to be updated
-    const postsToUpdate = await Post.find({
+    const posts = await Post.find({
       $or: [
-        // For polls
-        {
-          "poll.status": { $in: ["active", "upcoming"] },
-          $or: [
-            { "poll.deadline": { $lte: sevenDaysAgo } }, // Past deadline
-            { "poll.deadline": { $lte: now } }, // Deadline matches current date
-          ],
-        },
-        // For surveys
-        {
-          "survey.status": { $in: ["active", "upcoming"] },
-          $or: [
-            { "survey.deadline": { $lte: sevenDaysAgo } }, // Past deadline
-            { "survey.deadline": { $lte: now } }, // Deadline matches current date
-          ],
-        },
+        { "poll.status": { $in: ["upcoming", "active"] } },
+        { "survey.status": { $in: ["upcoming", "active"] } },
       ],
     });
 
-    // Update their status
-    for (const post of postsToUpdate) {
-      if (post.poll) {
-        if (post.poll.deadline <= sevenDaysAgo) {
+    console.log(`Found ${posts.length} posts to update.`);
+
+    for (const post of posts) {
+      console.log(`Processing post ID: ${post._id}`);
+
+      // Update poll status
+      if (post.poll && post.poll.deadline) {
+        const creationDate = post.poll.deadline;
+        console.log(`Poll creation date: ${creationDate.toISOString()}`);
+
+        if (creationDate <= sevenDaysAgo) {
           post.poll.status = "past";
-        } else if (post.poll.status === "upcoming" && post.poll.deadline <= now) {
+          console.log("Updated poll status to 'past'");
+        } else if (creationDate <= now) {
           post.poll.status = "active";
+          console.log("Updated poll status to 'active'");
+        } else {
+          post.poll.status = "upcoming";
+          console.log("Updated poll status to 'upcoming'");
         }
       }
-      if (post.survey) {
-        if (post.survey.deadline <= sevenDaysAgo) {
+
+      // Update survey status
+      if (post.survey && post.survey.deadline) {
+        const creationDate = post.survey.deadline;
+        console.log(`Survey creation date: ${creationDate.toISOString()}`);
+
+        if (creationDate <= sevenDaysAgo) {
           post.survey.status = "past";
-        } else if (post.survey.status === "upcoming" && post.survey.deadline <= now) {
+          console.log("Updated survey status to 'past'");
+        } else if (creationDate <= now) {
           post.survey.status = "active";
+          console.log("Updated survey status to 'active'");
+        } else {
+          post.survey.status = "upcoming";
+          console.log("Updated survey status to 'upcoming'");
         }
       }
+
       await post.save();
+      console.log(`Post ID ${post._id} saved successfully.`);
     }
 
-    console.log(`Updated ${postsToUpdate.length} posts.`);
+    console.log("Post statuses updated successfully.");
   } catch (error) {
     console.error("Error updating post statuses:", error);
   }
