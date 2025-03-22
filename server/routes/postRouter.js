@@ -3,7 +3,7 @@ import { upload } from "../middlewares/multer.js";
 export const postRouter=express.Router();
 
 import { isAuthenticated } from '../middlewares/auth.js';
-import { addComment, createPost, deletePost, downvotePost, getAllPosts, getPostById, upvotePost,createPoll,getAllAnnouncements} from '../controllers/postController.js';
+import { addComment, createPost, deletePost, downvotePost, getAllPosts, getPostById, upvotePost,createPoll,getAllAnnouncements,getSurveyAndPollPosts,submitVote,viewResults} from '../controllers/postController.js';
 
 postRouter.post(
     "/create",
@@ -14,6 +14,9 @@ postRouter.post(
 postRouter.get('/all',isAuthenticated,getAllPosts);
 postRouter.delete('/:postId',isAuthenticated,deletePost)
 postRouter.post('/comment',isAuthenticated,addComment)
+postRouter.get("/survey-and-poll-posts", getSurveyAndPollPosts);
+postRouter.post('/:postId/vote',isAuthenticated, submitVote);
+postRouter.get('/:postId/results',isAuthenticated,viewResults);
 
 postRouter.get('/up/:postId',isAuthenticated,upvotePost)
 postRouter.get('/down/:postId',isAuthenticated,downvotePost)

@@ -2,6 +2,7 @@ import { Post } from "../models/postModel.js";
 import { Comment } from "../models/commentModel.js";
 import { uploadOnCloudinary,deleteFromCloudinary } from "../utils/cloudinary.js";
 import  ErrorHandler  from "../utils/errorHandler.js";
+import mongoose from "mongoose";
 
 export const createPost = async (req, res) => {
   try {
@@ -176,6 +177,304 @@ export const createPost = async (req, res) => {
     });
   }
 };
+export const getSurveyAndPollPosts = async (req, res) => {
+  try {
+    // Fetch posts where type is either "survey" or "poll"
+    const posts = await Post.find({
+      type: { $in: ["survey", "poll"] },
+    })
+      .populate("createdBy", "username email") // Populate the createdBy field with user details
+      .sort({ createdAt: -1 }); // Sort by creation date in descending order
+
+    // If no posts are found, return a 404 response
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No survey or poll posts found.",
+      });
+    }
+
+    // Map the posts to include the required fields
+    const formattedPosts = posts.map((post) => {
+      const response = {
+        _id:post._id,
+        title: post.title, // Include title
+        description: post.description, // Include description
+        type: post.type, // Include type
+        createdBy: post.createdBy, // Include createdBy
+        createdAt: post.createdAt, // Include createdAt
+        updatedAt: post.updatedAt, // Include updatedAt
+        attachments:post.attachments,
+      };
+
+      // Include survey or poll based on the post type
+      if (post.type === "survey") {
+        response.survey = post.survey; // Include survey details
+      } else if (post.type === "poll") {
+        response.poll = post.poll; // Include poll details
+      }
+
+      return response;
+    });
+
+    // Return the fetched posts
+    res.status(200).json({
+      success: true,
+      message: "Survey and poll posts fetched successfully.",
+      posts: formattedPosts,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching survey and poll posts.",
+      error: error.message,
+    });
+  }
+};
+export const submitVote = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { option, response, rating, userId } = req.body;
+
+    // Validate userId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid userId",
+      });
+    }
+
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
+    }
+
+    // Handle poll voting logic
+    if (post.type === "poll") {
+      // Log poll options and selected option ID
+      console.log("Poll Options:", post.poll.options);
+      console.log("Selected Option ID:", option);
+
+      // Find the selected option
+      const pollOption = post.poll.options.find(
+        (opt) => opt._id.toString() === option
+      );
+
+      if (!pollOption) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid option",
+        });
+      }
+
+      // Initialize votedBy array if it doesn't exist
+      if (!pollOption.votedBy || !Array.isArray(pollOption.votedBy)) {
+        pollOption.votedBy = [];
+      }
+
+      // Check if the user has already voted for this option
+      const hasUserVoted = pollOption.votedBy.some(
+        (vote) => vote && vote.userId && vote.userId.toString() === userId
+      );
+
+      if (hasUserVoted) {
+        return res.status(400).json({
+          success: false,
+          message: "You have already voted for this option",
+        });
+      }
+
+      // Increment the vote count and add the user to votedBy
+      pollOption.votes += 1;
+      pollOption.votedBy.push({ userId });
+    } else if (post.type === "survey") {
+      const surveyQuestion = post.survey.questions[0]; // Assuming there's only one question for simplicity
+
+      if (surveyQuestion.type === "multiple-choice") {
+        // Log survey options and selected option ID
+        console.log("Survey Options:", surveyQuestion.options);
+        console.log("Selected Option ID:", option);
+
+        // Check if options is an array of strings or objects
+        if (typeof surveyQuestion.options[0] === "string") {
+          // If options is an array of strings, treat option as an index
+          const selectedOptionIndex = parseInt(option, 10);
+
+          if (
+            isNaN(selectedOptionIndex) ||
+            selectedOptionIndex < 0 ||
+            selectedOptionIndex >= surveyQuestion.options.length
+          ) {
+            return res.status(400).json({
+              success: false,
+              message: "Invalid option",
+            });
+          }
+
+          // Check if the user has already voted for this question
+          const hasUserVoted = surveyQuestion.votes.some(
+            (vote) => vote && vote.userId && vote.userId.toString() === userId
+          );
+
+          if (hasUserVoted) {
+            return res.status(400).json({
+              success: false,
+              message: "You have already voted for this question",
+            });
+          }
+
+          // Add the vote with userId
+          surveyQuestion.votes.push({
+            optionIndex: selectedOptionIndex,
+            userId,
+          });
+        } else {
+          // If options is an array of objects, treat option as an _id
+          const surveyOption = surveyQuestion.options.find(
+            (opt) => opt._id.toString() === option
+          );
+
+          if (!surveyOption) {
+            return res.status(400).json({
+              success: false,
+              message: "Invalid option",
+            });
+          }
+
+          // Check if the user has already voted for this question
+          const hasUserVoted = surveyQuestion.votes.some(
+            (vote) => vote && vote.userId && vote.userId.toString() === userId
+          );
+
+          if (hasUserVoted) {
+            return res.status(400).json({
+              success: false,
+              message: "You have already voted for this question",
+            });
+          }
+
+          // Add the vote with userId
+          surveyQuestion.votes.push({
+            optionIndex: surveyQuestion.options.indexOf(surveyOption),
+            userId,
+          });
+        }
+      } else if (surveyQuestion.type === "open-ended") {
+        // Handle open-ended response logic
+        if (!response) {
+          return res.status(400).json({
+            success: false,
+            message: "Response is required for open-ended questions",
+          });
+        }
+
+        // Check if the user has already responded to this question
+        const hasUserResponded = surveyQuestion.responses.some(
+          (resp) => resp && resp.userId && resp.userId.toString() === userId
+        );
+
+        if (hasUserResponded) {
+          return res.status(400).json({
+            success: false,
+            message: "You have already responded to this question",
+          });
+        }
+
+        // Add the response with userId
+        surveyQuestion.responses.push({
+          response,
+          userId,
+        });
+      } else if (surveyQuestion.type === "rating") {
+        // Handle rating logic
+        if (typeof rating !== "number" || rating < 1 || rating > 5) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid rating. Must be a number between 1 and 5",
+          });
+        }
+
+        // Check if the user has already rated this question
+        const hasUserRated = surveyQuestion.ratings.some(
+          (rate) => rate && rate.userId && rate.userId.toString() === userId
+        );
+
+        if (hasUserRated) {
+          return res.status(400).json({
+            success: false,
+            message: "You have already rated this question",
+          });
+        }
+
+        // Add the rating with userId
+        surveyQuestion.ratings.push({
+          rating,
+          userId,
+        });
+      }
+    }
+
+    // Save the updated post
+    await post.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Vote submitted successfully",
+    });
+  } catch (error) {
+    console.error("Error submitting vote:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error submitting vote",
+      error: error.message,
+    });
+  }
+};
+export const viewResults = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
+    }
+
+    // Check if the post is a poll or survey
+    if (post.type !== "poll" && post.type !== "survey") {
+      return res.status(400).json({
+        success: false,
+        message: "This post is not a poll or survey",
+      });
+    }
+
+    // Return the results
+    res.status(200).json({
+      success: true,
+      results: post.poll ? post.poll.options : post.survey.questions[0].options,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching results",
+      error: error.message,
+    });
+  }
+};
+
+
+
+
+
+
+
 // Delete a post (Only the creator can delete)
 export const deletePost = async (req, res) => {
   try {

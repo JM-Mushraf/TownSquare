@@ -64,6 +64,11 @@ const postSchema = new mongoose.Schema(
         {
           text: { type: String, required: true }, // The text of the option
           votes: { type: Number, default: 0 }, // Number of votes for this option
+          votedBy: [
+            {
+              userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Users who voted for this option
+            },
+          ],
         },
       ],
       deadline: { type: Date }, // Deadline for the poll
@@ -84,6 +89,24 @@ const postSchema = new mongoose.Schema(
             required: true,
           }, // Type of question
           options: [{ type: String }], // Options for multiple-choice questions
+          votes: [
+            {
+              optionIndex: { type: Number }, // Index of the selected option
+              userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // User who voted
+            },
+          ], // Votes for multiple-choice options
+          responses: [
+            {
+              response: { type: String }, // Open-ended response
+              userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // User who responded
+            },
+          ], // Responses for open-ended questions
+          ratings: [
+            {
+              rating: { type: Number, min: 1, max: 5 }, // Rating value
+              userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // User who rated
+            },
+          ], // Ratings for rating questions
         },
       ],
       deadline: { type: Date }, // Deadline for the survey
@@ -118,9 +141,15 @@ postSchema.pre("save", function (next) {
   if (this.survey && this.survey.deadline) {
     if (this.survey.deadline <= sevenDaysAgo) {
       this.survey.status = "past";
-    } else if (this.survey.status === "upcoming" && this.survey.deadline <= now) {
+    } else if (
+      this.survey.status === "upcoming" &&
+      this.survey.deadline <= now
+    ) {
       this.survey.status = "active";
-    } else if (this.survey.status === "upcoming" && this.survey.deadline > now) {
+    } else if (
+      this.survey.status === "upcoming" &&
+      this.survey.deadline > now
+    ) {
       this.survey.status = "upcoming";
     }
   }
