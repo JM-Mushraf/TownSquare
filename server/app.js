@@ -7,6 +7,7 @@ import { userRouter } from "./routes/userRouter.js";
 import { emergencyRouter } from "./routes/emergencyRouter.js";
 import { error } from "./middlewares/error.js";
 import session from 'express-session';
+import { MessageRouter } from "./routes/messageRouter.js";
 
 export const app = express();
 // app.use(Error)
@@ -32,5 +33,5 @@ app.get("/", (req, res) => {
 app.use("/user", userRouter);
 app.use('/post',postRouter);
 app.use("/emergency",emergencyRouter);
-
+app.use('/message',MessageRouter)
 app.use(error);

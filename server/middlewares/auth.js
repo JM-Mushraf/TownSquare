@@ -9,7 +9,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'cnmsjkenfkljnsjklgnsdljkfjsdkcnmsa
 export const isAuthenticated = async (req, res, next) => {
   try {
     const { token } = req.cookies;
-    console.log("Token from cookies:", token); // Debug: Check if token is present
+    
+    // console.log("AUTH .JS ",token);
 
     if (!token) {
       return next(

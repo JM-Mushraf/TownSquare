@@ -9,13 +9,21 @@ import { User } from "../models/userModel.js"
 
 export const createPost = async (req, res) => {
   try {
-    const { title, description, type, important, poll, survey } = req.body;
+    const { title, description, type, important, poll, survey, marketplace } = req.body;
+    const createdBy = req.user.id;
 
-    // Parse poll and survey if they are JSON strings
-    const parsedPoll = poll ? JSON.parse(poll) : null;
-    const parsedSurvey = survey ? JSON.parse(survey) : null;
+    // Helper function to safely parse JSON
+    const safeParse = (data) => {
+      try {
+        return data ? JSON.parse(data) : null;
+      } catch (e) {
+        return null;
+      }
+    };
 
-    const createdBy = req.user.id; // Assuming user ID is available via authentication middleware
+    const parsedPoll = safeParse(poll);
+    const parsedSurvey = safeParse(survey);
+    const parsedMarketplace = safeParse(marketplace);
 
     // Validate required fields
     if (!title || !description || !type) {
@@ -25,125 +33,123 @@ export const createPost = async (req, res) => {
       });
     }
 
-    // Additional validation for announcements
-    if (type === "announcements" && important === undefined) {
-      return res.status(400).json({
-        success: false,
-        message: "The 'important' field is required for announcements.",
-      });
-    }
-
-    // Validate poll fields if type is 'poll'
-    if (type === "poll") {
-      if (!parsedPoll || !parsedPoll.question || !parsedPoll.options || parsedPoll.options.length < 2) {
-        return res.status(400).json({
-          success: false,
-          message: "Polls require a question and at least 2 options.",
-        });
-      }
-
-      // Ensure each option has text and initialize votes to 0
-      parsedPoll.options = parsedPoll.options.map((option) => ({
-        text: option,
-        votes: 0,
-      }));
-
-      // Validate poll deadline (only date, no time)
-      if (!parsedPoll.deadline) {
-        return res.status(400).json({
-          success: false,
-          message: "Poll deadline is required.",
-        });
-      }
-
-      const deadlineDate = new Date(parsedPoll.deadline).toISOString().split('T')[0];
-      const currentDate = new Date().toISOString().split('T')[0];
-
-      if (deadlineDate < currentDate) {
-        return res.status(400).json({
-          success: false,
-          message: "Poll deadline must be in the future.",
-        });
-      }
-
-      // Automatically set poll status based on deadline
-      parsedPoll.deadline = deadlineDate; // Ensure deadline only contains the date
-      if (deadlineDate > currentDate) {
-        parsedPoll.status = "upcoming";
-      } else {
-        parsedPoll.status = "active";
-      }
-    }
-
-    // Validate survey fields if type is 'survey'
-    if (type === "survey") {
-      if (!parsedSurvey || !parsedSurvey.questions || parsedSurvey.questions.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Surveys require at least one question.",
-        });
-      }
-
-      // Validate each question
-      for (const question of parsedSurvey.questions) {
-        if (!question.question || !question.type) {
+    // Validate post type specific fields
+    let typeSpecificData = {};
+    
+    switch (type) {
+      case "announcements":
+        if (important === undefined) {
           return res.status(400).json({
             success: false,
-            message: "Each survey question must have a question text and type.",
+            message: "The 'important' field is required for announcements.",
+          });
+        }
+        typeSpecificData.important = important;
+        break;
+
+      case "poll":
+        if (!parsedPoll?.question || !parsedPoll?.options || parsedPoll.options.length < 2) {
+          return res.status(400).json({
+            success: false,
+            message: "Polls require a question and at least 2 options.",
           });
         }
 
-        // Validate options for multiple-choice questions
-        if (
-          question.type === "multiple-choice" &&
-          (!question.options || question.options.length < 2)
-        ) {
+        const pollDeadline = new Date(parsedPoll.deadline);
+        if (!parsedPoll.deadline || isNaN(pollDeadline.getTime())) {
           return res.status(400).json({
             success: false,
-            message: "Multiple-choice questions require at least 2 options.",
+            message: "Valid poll deadline is required.",
           });
         }
-      }
 
-      // Validate survey deadline (only date, no time)
-      if (!parsedSurvey.deadline) {
-        return res.status(400).json({
-          success: false,
-          message: "Survey deadline is required.",
-        });
-      }
+        typeSpecificData.poll = {
+          question: parsedPoll.question,
+          options: parsedPoll.options.map(option => ({
+            text: option.text || option,
+            votes: 0,
+            votedBy: []
+          })),
+          deadline: pollDeadline,
+          status: pollDeadline > new Date() ? "upcoming" : "active"
+        };
+        break;
 
-      const deadlineDate = new Date(parsedSurvey.deadline).toISOString().split('T')[0];
-      const currentDate = new Date().toISOString().split('T')[0];
-      console.log("deadlineDate:", deadlineDate);
-      console.log("currentDate:", currentDate);
-      if (deadlineDate < currentDate) {
-        return res.status(400).json({
-          success: false,
-          message: "Survey deadline must be in the future.",
-        });
-      }
+      case "survey":
+        if (!parsedSurvey?.questions || parsedSurvey.questions.length === 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Surveys require at least one question.",
+          });
+        }
 
-      // Automatically set survey status based on deadline
-      parsedSurvey.deadline = deadlineDate; // Ensure deadline only contains the date
-      if (deadlineDate > currentDate) {
-        parsedSurvey.status = "upcoming";
-      } else {
-        parsedSurvey.status = "active";
-      }
+        const surveyDeadline = new Date(parsedSurvey.deadline);
+        if (!parsedSurvey.deadline || isNaN(surveyDeadline.getTime())) {
+          return res.status(400).json({
+            success: false,
+            message: "Valid survey deadline is required.",
+          });
+        }
+
+        typeSpecificData.survey = {
+          questions: parsedSurvey.questions.map(question => ({
+            question: question.question,
+            type: question.type,
+            options: question.options || [],
+            responses: [],
+            ratings: []
+          })),
+          deadline: surveyDeadline,
+          status: surveyDeadline > new Date() ? "upcoming" : "active"
+        };
+        break;
+
+      case "marketplace":
+        if (!parsedMarketplace) {
+          return res.status(400).json({
+            success: false,
+            message: "Marketplace data is required.",
+          });
+        }
+
+        if (!parsedMarketplace.itemType || !parsedMarketplace.location) {
+          return res.status(400).json({
+            success: false,
+            message: "Marketplace posts require itemType and location.",
+          });
+        }
+
+        if (parsedMarketplace.itemType === "sale" && !parsedMarketplace.price) {
+          return res.status(400).json({
+            success: false,
+            message: "Price is required for items listed for sale.",
+          });
+        }
+
+        typeSpecificData.marketplace = {
+          itemType: parsedMarketplace.itemType,
+          price: parsedMarketplace.price,
+          location: parsedMarketplace.location,
+          status: parsedMarketplace.status || "available",
+          tags: parsedMarketplace.tags || [],
+          seller: createdBy,
+          contactMessages: []
+        };
+        break;
+
+      default:
+        // For general posts, no additional validation needed
+        break;
     }
 
-    // Handle attachments (optional)
-    let uploadedAttachments = [];
-    const attachments_files = req.files?.attachments;
-
-    if (attachments_files && attachments_files.length > 0) {
-      // Upload attachments to Cloudinary if provided
-      uploadedAttachments = await Promise.all(
-        attachments_files.map(async (file) => {
+    // Handle attachments
+    let attachments = [];
+    if (req.files?.attachments?.length > 0) {
+      attachments = await Promise.all(
+        req.files.attachments.map(async (file) => {
           const uploaded = await uploadOnCloudinary(file.path);
           if (!uploaded) {
-            throw new ErrorHandler("Error uploading attachment files", 500);
+            throw new Error("Error uploading attachment files");
           }
           return {
             url: uploaded.url,
@@ -154,32 +160,36 @@ export const createPost = async (req, res) => {
       );
     }
 
-    // Create the post
-    const newPost = new Post({
+    // Create post data object
+    const postData = {
       title,
       description,
       type,
       createdBy,
-      attachments: uploadedAttachments, // Will be empty if no attachments are provided
-      important: type === "announcements" ? important : false, // Set 'important' only for announcements
-      poll: type === "poll" ? parsedPoll : undefined, // Add poll data if type is poll
-      survey: type === "survey" ? parsedSurvey : undefined, // Add survey data if type is survey
-    });
+      attachments,
+      ...typeSpecificData
+    };
 
+    // Create and save post
+    const newPost = new Post(postData);
     await newPost.save();
-    res.status(201).json({
+
+    return res.status(201).json({
       success: true,
       message: "Post created successfully",
       post: newPost,
     });
+
   } catch (error) {
-    res.status(500).json({
+    console.error("Error creating post:", error);
+    return res.status(500).json({
       success: false,
       message: "Error creating post",
       error: error.message,
     });
   }
 };
+// SurveyAndPoll
 export const getSurveyAndPollPosts = async (req, res) => {
   try {
     // Fetch posts where type is either "survey" or "poll"
@@ -437,7 +447,6 @@ export const submitVote = async (req, res) => {
     });
   }
 };
-
 export const viewResults = async (req, res) => {
   try {
     const { postId } = req.params;
@@ -575,6 +584,146 @@ export const viewResults = async (req, res) => {
     });
   }
 };
+//MarketPlace
+
+// Fetch marketplace posts
+export const getMarketplacePosts = async (req, res) => {
+  try {
+    const { itemType, searchQuery, minPrice, maxPrice, location, sortOption } = req.query;
+
+    // Build the query
+    const query = { type: "marketplace" };
+
+    // Filter by itemType if provided
+    if (itemType && ["sale", "free", "wanted"].includes(itemType)) {
+      query["marketplace.itemType"] = itemType;
+    }
+
+    // Search by title, description, or location if searchQuery is provided
+    if (searchQuery) {
+      query.$or = [
+        { title: { $regex: searchQuery, $options: "i" } },
+        { description: { $regex: searchQuery, $options: "i" } },
+        { "marketplace.location": { $regex: searchQuery, $options: "i" } },
+      ];
+    }
+
+    // Filter by price range
+    if (minPrice || maxPrice) {
+      query["marketplace.price"] = {};
+      if (minPrice) query["marketplace.price"].$gte = Number(minPrice);
+      if (maxPrice) query["marketplace.price"].$lte = Number(maxPrice);
+    }
+
+    // Filter by location
+    if (location) {
+      query["marketplace.location"] = { $regex: location, $options: "i" };
+    }
+
+    // Fetch posts from the database
+    let posts = await Post.find(query)
+      .populate("createdBy", "username email") // Populate the createdBy field with user details
+      .populate("marketplace.seller", "username email rating") // Populate the seller field with user details
+      .sort({ createdAt: -1 }); // Default sort by latest first
+
+    // Apply sorting
+    if (sortOption) {
+      switch (sortOption) {
+        case "newest":
+          posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          break;
+        case "oldest":
+          posts.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+          break;
+        case "priceAsc":
+          posts.sort((a, b) => a.marketplace.price - b.marketplace.price);
+          break;
+        case "priceDesc":
+          posts.sort((a, b) => b.marketplace.price - a.marketplace.price);
+          break;
+        default:
+          break;
+      }
+    }
+
+    // Format the response
+    const formattedPosts = posts.map((post) => ({
+      id: post._id,
+      title: post.title,
+      description: post.description,
+      itemType: post.marketplace.itemType,
+      price: post.marketplace.price,
+      location: post.marketplace.location,
+      status: post.marketplace.status,
+      tags: post.marketplace.tags || [], // Include tags if available
+      images: post.attachments.map((attachment) => attachment.url), // Use attachments for images
+      seller: post.marketplace.seller, // Use populated seller for seller details
+      createdAt: post.createdAt,
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: formattedPosts,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching marketplace posts",
+      error: error.message,
+    });
+  }
+};
+export const sendMessageToSeller = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { message } = req.body;
+
+    // Validate input
+    if (!message) {
+      return res.status(400).json({
+        success: false,
+        message: "Message is required.",
+      });
+    }
+
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
+    }
+
+    // Ensure the post is a marketplace post
+    if (post.type !== "marketplace") {
+      return res.status(400).json({
+        success: false,
+        message: "This post is not a marketplace post.",
+      });
+    }
+
+    // Add the message to the post
+    post.marketplace.contactMessages.push({
+      userId: req.user._id, // Use the authenticated user's ID
+      message,
+    });
+
+    await post.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Message sent successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error sending message",
+      error: error.message,
+    });
+  }
+};
+
 
 
 // Delete a post (Only the creator can delete)

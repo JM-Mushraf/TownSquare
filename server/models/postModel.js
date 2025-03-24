@@ -116,6 +116,55 @@ const postSchema = new mongoose.Schema(
         default: "active",
       }, // Status of the survey
     },
+    // Fields for marketplace
+    // In your Post schema, change the marketplace field to:
+    marketplace: {
+      type: {
+        itemType: {
+          type: String,
+          enum: ["sale", "free", "wanted"],
+          required: function () {
+            return this.parent().type === "marketplace";
+          },
+        },
+        price: {
+          type: Number,
+          required: function () {
+            return (
+              this.parent().itemType === "sale" &&
+              this.parent().type === "marketplace"
+            );
+          },
+        },
+        location: {
+          type: String,
+          required: function () {
+            return this.parent().type === "marketplace";
+          },
+        },
+        status: {
+          type: String,
+          enum: ["available", "sold", "pending"],
+          default: "available",
+        },
+        tags: [{ type: String }],
+        seller: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: function () {
+            return this.parent().type === "marketplace";
+          },
+        },
+        contactMessages: [
+          {
+            userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+            message: { type: String, required: true },
+            createdAt: { type: Date, default: Date.now },
+          },
+        ],
+      },
+      required: false, // ← This is the key change
+    },
   },
   { timestamps: true }
 );

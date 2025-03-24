@@ -7,7 +7,7 @@ import { ApiResponse } from "../routes/apiResponse.js";
 import { sendMail } from "../nodemailer/nodemailer.js";
 import { Location } from "../models/locationModel.js";
 import { createChat } from "./chatController.js";
-
+import { Chat } from "../models/chatModel.js";
 export const registerUser = AsyncHandler(async (req, res, next) => {
   const { username, email, password, role, phone, address, city, district, county, postcode } = req.body;
 
@@ -52,6 +52,7 @@ export const registerUser = AsyncHandler(async (req, res, next) => {
 export const verifyUser = AsyncHandler(async (req, res, next) => {
   const { verificationCode } = req.body;
   const verificationData = req.session.verificationData;
+
   if (!verificationData) {
     throw new ErrorHandler("No registration process found. Please register again.", 400);
   }
@@ -64,6 +65,8 @@ export const verifyUser = AsyncHandler(async (req, res, next) => {
   }
 
   const { username, email, password, role, phone, location, avatar } = verificationData;
+
+  // Create the new user
   const newUser = await User.create({
     username,
     email,
@@ -73,32 +76,33 @@ export const verifyUser = AsyncHandler(async (req, res, next) => {
     location,
     avatar: avatar.url,
     avatarPublicId: avatar.publicId,
+    communitiesJoined: [location.county], // Add the county name to communitiesJoined
   });
 
+  // Clear the session data
   req.session.verificationData = null;
 
-  let newLocation = await Location.findOne({
-    $or: [
-        { county: location.county },
-        { postcode: location.postcode },
-        { city: location.city }
-    ]
-});
+  // Check if the location (county, postcode, city) already exists
+  let existingLocation = await Location.findOne({
+    county: location.county,
+    postcode: location.postcode,
+    city: location.city,
+  });
 
-if (!newLocation) {
-  // No existing location, create a new entry
-  newLocation = await Location.findOneAndUpdate(
-      {}, 
-      { 
-          $push: { county: location.county, postcode: location.postcode, city: location.city } 
-      }, 
-      { new: true, upsert: true }
-  );
+  if (!existingLocation) {
+    // If the location doesn't exist, create a new entry
+    existingLocation = await Location.create({
+      county: location.county,
+      postcode: location.postcode,
+      city: location.city,
+    });
+  }
 
-  // Call createChat for the new location
-  await createChat(req, res);
-}
+  // Call the createChat function to handle chat creation (if needed)
+  req.user = { id: newUser._id }; // Simulate the user being logged in
+  await createChat(req, res, next); // This will handle chat creation for unique locations
 
+  // Send a single response
   res.status(201).json({
     success: true,
     message: "Your email has been successfully verified! Welcome to TownSquare!",

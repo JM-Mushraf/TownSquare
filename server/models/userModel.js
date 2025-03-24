@@ -55,8 +55,7 @@ const userSchema = new mongoose.Schema(
     },
     communitiesJoined: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Community",
+        type: String, // Change this to String
       },
     ],
     verificationCode: {

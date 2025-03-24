@@ -8,7 +8,7 @@ import {
 import { ThemeProvider } from "./components/ThemeProvider";
 import Layout from "./components/Layout";
 import HomePage from "./pages/HomePage";
-import DiscussionsPage from "./pages/DiscussionsPage";
+import DiscussionsPage from "./Pages/DiscussionsPage";
 import AnnouncementsPage from "./pages/AnnouncementsPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import MarketplacePage from "./pages/MarketplacePage";

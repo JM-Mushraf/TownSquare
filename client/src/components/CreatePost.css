@@ -28,7 +28,7 @@
   text-align: center;
 }
 
-.page-title {
+.create-post-page-title {
   font-size: 2.5rem;
   font-weight: 700;
   background: var(
@@ -41,14 +41,14 @@
   margin: 0 0 0.5rem 0;
 }
 
-.page-subtitle {
+.create-post-page-subtitle {
   color: var(--muted-foreground, #6b7280);
   margin: 0;
   font-size: 1.1rem;
 }
 
 /* Post type tabs */
-.post-type-tabs {
+.create-post-type-tabs {
   display: flex;
   justify-content: center;
   gap: 0.5rem;
@@ -56,7 +56,7 @@
   flex-wrap: wrap;
 }
 
-.post-type-tab {
+.create-post-type-tab {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -70,22 +70,22 @@
   color: var(--muted-foreground, #6b7280);
 }
 
-.post-type-tab svg {
+.create-post-type-tab svg {
   width: 1.25rem;
   height: 1.25rem;
 }
 
-.post-type-tab:hover {
+.create-post-type-tab:hover {
   background-color: var(--muted, #f3f4f6);
   color: var(--foreground, #1f2937);
 }
 
-.post-type-tab.active {
+.create-post-type-tab.active {
   background-color: var(--primary, #4361ee);
   color: var(--primary-foreground, white);
 }
 
-.dark .post-type-tab:hover {
+.dark .create-post-type-tab:hover {
   background-color: var(--muted, #374151);
 }
 
@@ -104,11 +104,11 @@
 }
 
 /* Form styling */
-.form-group {
+.create-post-form-group {
   margin-bottom: 1.5rem;
 }
 
-.form-group label {
+.create-post-form-group label {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -118,11 +118,11 @@
   font-size: 1rem;
 }
 
-.input-icon {
+.create-post-input-icon {
   color: var(--primary, #4361ee);
 }
 
-.form-control {
+.create-post-form-control {
   width: 100%;
   padding: 0.875rem 1rem;
   border: 1px solid var(--border, #e5e7eb);
@@ -133,36 +133,36 @@
   color: var(--foreground, #1f2937);
 }
 
-.dark .form-control {
+.dark .create-post-form-control {
   background-color: var(--card, #1f2937);
   border-color: var(--border, #374151);
   color: var(--foreground, #f9fafb);
 }
 
-.form-control:focus {
+.create-post-form-control:focus {
   outline: none;
   border-color: var(--primary, #4361ee);
   box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
 }
 
-textarea.form-control {
+textarea.create-post-form-control {
   resize: vertical;
   min-height: 150px;
 }
 
 /* Poll options styling */
-.poll-options-container {
+.create-post-poll-options-container {
   margin-bottom: 1.5rem;
   overflow: hidden;
 }
 
-.poll-option-input {
+.create-post-poll-option-input {
   display: flex;
   align-items: center;
   margin-bottom: 0.75rem;
 }
 
-.remove-option-btn {
+.create-post-remove-option-btn {
   background: none;
   border: none;
   color: var(--destructive, #ef4444);
@@ -177,11 +177,11 @@ textarea.form-control {
   transition: all 0.2s ease;
 }
 
-.remove-option-btn:hover {
+.create-post-remove-option-btn:hover {
   background-color: var(--destructive-foreground, rgba(239, 68, 68, 0.1));
 }
 
-.add-option-btn {
+.create-post-add-option-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -198,27 +198,27 @@ textarea.form-control {
   margin-top: 0.5rem;
 }
 
-.add-option-btn:hover {
+.create-post-add-option-btn:hover {
   background-color: var(--primary-foreground, rgba(67, 97, 238, 0.05));
 }
 
-.btn-icon {
+.create-post-btn-icon {
   width: 1rem;
   height: 1rem;
 }
 
 /* Survey questions styling */
-.survey-questions-container {
+.create-post-survey-questions-container {
   margin-bottom: 1.5rem;
   overflow: hidden;
 }
 
-.survey-question-input {
+.create-post-survey-question-input {
   margin-bottom: 1rem;
 }
 
-.survey-question-input input,
-.survey-question-input select {
+.create-post-survey-question-input input,
+.create-post-survey-question-input select {
   width: 100%;
   padding: 0.75rem 1rem;
   border: 1px solid var(--border, #e5e7eb);
@@ -229,29 +229,29 @@ textarea.form-control {
   color: var(--foreground, #1f2937);
 }
 
-.dark .survey-question-input input,
-.dark .survey-question-input select {
+.dark .create-post-survey-question-input input,
+.dark .create-post-survey-question-input select {
   background-color: var(--card, #1f2937);
   border-color: var(--border, #374151);
   color: var(--foreground, #f9fafb);
 }
 
-.survey-question-input input:focus,
-.survey-question-input select:focus {
+.create-post-survey-question-input input:focus,
+.create-post-survey-question-input select:focus {
   outline: none;
   border-color: var(--primary, #4361ee);
   box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
 }
 
-.survey-options-container {
+.create-post-survey-options-container {
   margin-top: 0.5rem;
 }
 
-.survey-options-container input {
+.create-post-survey-options-container input {
   margin-bottom: 0.5rem;
 }
 
-.remove-question-btn {
+.create-post-remove-question-btn {
   background: none;
   border: none;
   color: var(--destructive, #ef4444);
@@ -266,11 +266,11 @@ textarea.form-control {
   transition: all 0.2s ease;
 }
 
-.remove-question-btn:hover {
+.create-post-remove-question-btn:hover {
   background-color: var(--destructive-foreground, rgba(239, 68, 68, 0.1));
 }
 
-.add-question-btn {
+.create-post-add-question-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -287,12 +287,12 @@ textarea.form-control {
   margin-top: 0.5rem;
 }
 
-.add-question-btn:hover {
+.create-post-add-question-btn:hover {
   background-color: var(--primary-foreground, rgba(67, 97, 238, 0.05));
 }
 
 /* File upload styling */
-.file-upload-container {
+.create-post-file-upload-container {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -300,7 +300,7 @@ textarea.form-control {
   margin-bottom: 1rem;
 }
 
-.file-upload-label {
+.create-post-file-upload-label {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -313,24 +313,24 @@ textarea.form-control {
   transition: all 0.2s ease;
 }
 
-.dark .file-upload-label {
+.dark .create-post-file-upload-label {
   background-color: var(--muted, #374151);
 }
 
-.file-upload-label:hover {
+.create-post-file-upload-label:hover {
   background-color: var(--muted-foreground, #e5e7eb);
 }
 
-.dark .file-upload-label:hover {
+.dark .create-post-file-upload-label:hover {
   background-color: var(--muted-foreground, #4b5563);
 }
 
-.upload-icon {
+.create-post-upload-icon {
   width: 1rem;
   height: 1rem;
 }
 
-.file-input {
+.create-post-file-input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -341,18 +341,18 @@ textarea.form-control {
   border: 0;
 }
 
-.file-help-text {
+.create-post-file-help-text {
   font-size: 0.875rem;
   color: var(--muted-foreground, #6b7280);
 }
 
-.file-list {
+.create-post-file-list {
   margin-top: 1rem;
   display: grid;
   gap: 0.5rem;
 }
 
-.file-item {
+.create-post-file-item {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -361,17 +361,17 @@ textarea.form-control {
   border-radius: 0.75rem;
 }
 
-.dark .file-item {
+.dark .create-post-file-item {
   background-color: var(--muted, #374151);
 }
 
-.file-type-icon {
+.create-post-file-type-icon {
   color: var(--primary, #4361ee);
   width: 1.25rem;
   height: 1.25rem;
 }
 
-.file-name {
+.create-post-file-name {
   font-size: 0.875rem;
   color: var(--foreground, #4b5563);
   flex: 1;
@@ -380,7 +380,7 @@ textarea.form-control {
   text-overflow: ellipsis;
 }
 
-.remove-file-btn {
+.create-post-remove-file-btn {
   background: none;
   border: none;
   color: var(--destructive, #ef4444);
@@ -394,19 +394,19 @@ textarea.form-control {
   transition: all 0.2s ease;
 }
 
-.remove-file-btn:hover {
+.create-post-remove-file-btn:hover {
   background-color: var(--destructive-foreground, rgba(239, 68, 68, 0.1));
 }
 
 /* Form actions */
-.form-actions {
+.create-post-form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 2rem;
 }
 
-.primary-button {
+.create-post-primary-button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -423,20 +423,20 @@ textarea.form-control {
   overflow: hidden;
 }
 
-.primary-button:hover {
+.create-post-primary-button:hover {
   background-color: var(--primary-hover, #3a56d4);
 }
 
-.primary-button:disabled {
+.create-post-primary-button:disabled {
   background-color: var(--primary-disabled, #a5b4fc);
   cursor: not-allowed;
 }
 
-.primary-button.submitting {
+.create-post-primary-button.submitting {
   padding-left: 3rem;
 }
 
-.spinner {
+.create-post-spinner {
   position: absolute;
   left: 1.25rem;
   width: 1rem;
@@ -453,7 +453,7 @@ textarea.form-control {
   }
 }
 
-.cancel-button {
+.create-post-cancel-button {
   background-color: var(--card, white);
   color: var(--foreground, #4b5563);
   border: 1px solid var(--border, #d1d5db);
@@ -465,22 +465,22 @@ textarea.form-control {
   transition: all 0.2s ease;
 }
 
-.dark .cancel-button {
+.dark .create-post-cancel-button {
   background-color: var(--card, #1f2937);
   border-color: var(--border, #374151);
 }
 
-.cancel-button:hover {
+.create-post-cancel-button:hover {
   background-color: var(--muted, #f3f4f6);
 }
 
-.dark .cancel-button:hover {
+.dark .create-post-cancel-button:hover {
   background-color: var(--muted, #374151);
 }
 
 /* Error and success messages */
-.error-message,
-.success-message {
+.create-post-error-message,
+.create-post-success-message {
   padding: 1rem;
   border-radius: 0.75rem;
   margin-bottom: 1.5rem;
@@ -489,27 +489,27 @@ textarea.form-control {
   gap: 0.75rem;
 }
 
-.error-message {
+.create-post-error-message {
   background-color: var(--destructive-foreground, #fee2e2);
   color: var(--destructive, #b91c1c);
 }
 
-.dark .error-message {
+.dark .create-post-error-message {
   background-color: rgba(239, 68, 68, 0.2);
   color: #fca5a5;
 }
 
-.success-message {
+.create-post-success-message {
   background-color: var(--success-foreground, #d1fae5);
   color: var(--success, #065f46);
 }
 
-.dark .success-message {
+.dark .create-post-success-message {
   background-color: rgba(16, 185, 129, 0.2);
   color: #6ee7b7;
 }
 
-.message-icon {
+.create-post-message-icon {
   width: 1.25rem;
   height: 1.25rem;
   flex-shrink: 0;
@@ -549,15 +549,15 @@ textarea.form-control {
     padding: 1rem;
   }
 
-  .page-title {
+  .create-post-page-title {
     font-size: 2rem;
   }
 
-  .post-type-tabs {
+  .create-post-type-tabs {
     gap: 0.25rem;
   }
 
-  .post-type-tab {
+  .create-post-type-tab {
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
   }
@@ -566,12 +566,12 @@ textarea.form-control {
     padding: 1.5rem;
   }
 
-  .form-actions {
+  .create-post-form-actions {
     flex-direction: column-reverse;
   }
 
-  .primary-button,
-  .cancel-button {
+  .create-post-primary-button,
+  .create-post-cancel-button {
     width: 100%;
     justify-content: center;
   }
