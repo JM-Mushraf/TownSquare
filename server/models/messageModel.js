@@ -15,6 +15,17 @@ const MessageSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  attachments: [
+    {
+      url: { type: String, required: true },
+      fileType: { type: String, required: true },
+      publicId: { type: String },
+      uploadedAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
 }, {
   timestamps: true,
 });
