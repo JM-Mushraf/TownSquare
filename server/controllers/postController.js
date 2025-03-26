@@ -189,6 +189,279 @@ export const createPost = async (req, res) => {
     });
   }
 };
+
+
+export const getCountyPosts = async (req, res) => {
+  try {
+    const requestingUserId = req.user.id;
+
+    // 1. Get requesting user's county
+    const requestingUser = await User.findById(requestingUserId).select('location.county');
+    if (!requestingUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    const userCounty = requestingUser.location.county;
+
+    // 2. Get posts from users in the same county with all necessary data
+    const posts = await Post.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "creator"
+        }
+      },
+      { $unwind: "$creator" },
+      {
+        $match: {
+          "creator.location.county": userCounty,
+          type: { $in: ["announcement", "poll", "survey", "general", "marketplace"] }
+        }
+      },
+      { $sort: { createdAt: -1 } },
+      {
+        $project: {
+          // Common fields
+          title: 1,
+          description: 1,
+          type: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          attachments: 1,
+          upVotes: 1,
+          downVotes: 1,
+          important: 1,
+          comments: { $size: "$comments" },
+
+          // Creator info
+          "creator._id": 1,
+          "creator.username": 1,
+          "creator.email": 1,
+          "creator.avatar": 1,
+
+          // Poll data
+          poll: {
+            $cond: [
+              { $eq: ["$type", "poll"] },
+              {
+                question: 1,
+                options: 1,
+                deadline: 1,
+                status: 1
+              },
+              "$$REMOVE"
+            ]
+          },
+
+          // Survey data
+          survey: {
+            $cond: [
+              { $eq: ["$type", "survey"] },
+              {
+                questions: 1,
+                deadline: 1,
+                status: 1
+              },
+              "$$REMOVE"
+            ]
+          },
+
+          // Marketplace data
+          marketplace: {
+            $cond: [
+              { $eq: ["$type", "marketplace"] },
+              {
+                itemType: 1,
+                price: 1,
+                location: 1,
+                status: 1,
+                tags: 1
+              },
+              "$$REMOVE"
+            ]
+          },
+
+          // Announcement data
+          event: {
+            $cond: [
+              { $eq: ["$type", "announcement"] },
+              {
+                date: 1,
+                location: 1,
+                time: 1,
+                rsvps: { $size: "$rsvps" }
+              },
+              "$$REMOVE"
+            ]
+          }
+        }
+      }
+    ]);
+
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No posts found in your county"
+      });
+    }
+
+    // 3. Format the response
+    const formattedPosts = posts.map(post => {
+      const basePost = {
+        _id: post._id,
+        title: post.title,
+        description: post.description,
+        type: post.type,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        attachments: post.attachments,
+        upVotes: post.upVotes,
+        downVotes: post.downVotes,
+        important: post.important,
+        commentCount: post.comments,
+        createdBy: {
+          _id: post.creator._id,
+          username: post.creator.username,
+          email: post.creator.email,
+          avatar: post.creator.avatar
+        }
+      };
+
+      // Add type-specific data
+      switch (post.type) {
+        case "poll":
+          const totalVotes = post.poll && Array.isArray(post.poll.options)
+            ? post.poll.options.reduce((sum, opt) => sum + opt.votes, 0)
+            : 0;
+
+          basePost.poll = {
+            question: post.poll?.question || "",
+            options: post.poll && Array.isArray(post.poll.options)
+              ? post.poll.options.map(opt => ({
+                  text: opt.text,
+                  votes: opt.votes,
+                  percentage: totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0
+                }))
+              : [],
+            totalVotes,
+            deadline: post.poll?.deadline || null,
+            status: post.poll?.status || "",
+            timeLeft: getTimeRemaining(post.poll?.deadline)
+          };
+          break;
+
+        case "survey":
+          basePost.survey = {
+            questions: post.survey?.questions || [],
+            deadline: post.survey?.deadline || null,
+            status: post.survey?.status || "",
+            timeLeft: getTimeRemaining(post.survey?.deadline)
+          };
+          break;
+
+        case "marketplace":
+          basePost.marketplace = post.marketplace || {};
+          break;
+
+        case "announcement":
+          basePost.event = {
+            date: post.event?.date || null,
+            formattedDate: post.event?.date ? formatDate(post.event.date) : "",
+            time: post.event?.time || "",
+            location: post.event?.location || "",
+            rsvpCount: post.event?.rsvps || 0
+          };
+          break;
+      }
+
+      return basePost;
+    });
+
+    // 4. Get additional data for sidebar
+    const [trendingPosts, upcomingEvents] = await Promise.all([
+      // Trending posts (most upvoted in last 7 days)
+      Post.find({
+        'creator.location.county': userCounty,
+        createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+      })
+        .sort({ upVotes: -1 })
+        .limit(3)
+        .populate('createdBy', 'username avatar'),
+
+      // Upcoming events (announcements with future dates)
+      Post.find({
+        'creator.location.county': userCounty,
+        type: "announcement",
+        "event.date": { $gte: new Date() }
+      })
+        .sort({ "event.date": 1 })
+        .limit(2)
+        .populate('createdBy', 'username avatar')
+    ]);
+
+    res.status(200).json({
+      success: true,
+      posts: formattedPosts,
+      trending: trendingPosts.map(post => ({
+        _id: post._id,
+        title: post.title,
+        commentCount: post.comments.length,
+        createdAt: post.createdAt,
+        createdBy: post.createdBy
+      })),
+      upcomingEvents: upcomingEvents.map(event => ({
+        _id: event._id,
+        title: event.title,
+        date: event.event.date,
+        formattedDate: formatDate(event.event.date),
+        location: event.event.location,
+        createdBy: event.createdBy
+      })),
+      county: userCounty
+    });
+
+  } catch (error) {
+    console.error("Error in getCountyPosts:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching county posts",
+      error: error.message
+    });
+  }
+};
+
+// Helper functions
+function getTimeRemaining(endtime) {
+  if (!endtime) return { days: 0, hours: 0, formatted: "No deadline" };
+
+  const total = Date.parse(endtime) - Date.parse(new Date());
+  const days = Math.floor(total / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
+
+  return {
+    days,
+    hours,
+    formatted: `${days}d ${hours}h left`
+  };
+}
+
+function formatDate(date) {
+  if (!date) return "";
+  return new Date(date).toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+
+
+
+
 // SurveyAndPoll
 export const getSurveyAndPollPosts = async (req, res) => {
   try {
