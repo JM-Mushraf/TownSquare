@@ -1,7 +1,7 @@
 import express from "express";
 import { isAuthenticated } from "../middlewares/auth.js";
 import { upload } from "../middlewares/multer.js";
-import  { registerUser , verifyUser,loginUser,logoutUser,getUserDetails}  from "../controllers/userController.js";
+import  { registerUser , verifyUser,loginUser,logoutUser,getUserDetails, deleteUser}  from "../controllers/userController.js";
 import { listUserChats } from "../controllers/chatController.js";
 export const userRouter = express.Router();
 
@@ -15,3 +15,4 @@ userRouter.post("/login",loginUser)
 userRouter.get("/logout",logoutUser)
 userRouter.get("/getUserDetails",isAuthenticated,getUserDetails)
 userRouter.get('/chats',isAuthenticated,listUserChats)
+userRouter.delete('/delete',isAuthenticated,deleteUser)

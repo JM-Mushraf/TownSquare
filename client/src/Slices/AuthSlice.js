@@ -12,15 +12,26 @@ const initialState = storedAuth || {
   error: null,
 };
 
-const signup = createAsyncThunk("signup", async (userCredentials) => {
-  const { data } = await axios.post(
-    `${import.meta.env.VITE_BACKEND_BASEURL}/user/register`,
-    userCredentials,
-    { withCredentials: true }
-  );
-  return data;
-});
-
+const signup = createAsyncThunk(
+  "signup",
+  async (formData, { rejectWithValue }) => {
+    try {
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_BACKEND_BASEURL}/user/register`,
+        formData,
+        { 
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.error || "Registration failed");
+    }
+  }
+);
 const login = createAsyncThunk(
   "login",
   async (userCredentials, { rejectWithValue }) => {

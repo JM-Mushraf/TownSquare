@@ -8,6 +8,10 @@ import { sendMail } from "../nodemailer/nodemailer.js";
 import { Location } from "../models/locationModel.js";
 import { createChat } from "./chatController.js";
 import { Chat } from "../models/chatModel.js";
+import { Post } from "../models/postModel.js";
+import { Message } from "../models/messageModel.js";
+import mongoose from "mongoose";
+import { Comment } from "../models/commentModel.js";
 export const registerUser = AsyncHandler(async (req, res, next) => {
   const { username, email, password, role, phone, address, city, district, county, postcode } = req.body;
 
@@ -175,4 +179,141 @@ export const getUserDetails = AsyncHandler(async (req, res, next) => {
   return res
     .status(200)
     .json(new ApiResponse(200, user, "User details fetched successfully"));
+});
+
+
+
+export const deleteUser = AsyncHandler(async (req, res, next) => {
+  const userId = req.user?._id;
+  
+  if (!userId) {
+    throw new ApiError(401, "Unauthorized: User ID not found");
+  }
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // 1. Delete all messages sent by the user
+    await Message.deleteMany({ sender: userId }).session(session);
+
+    // 2. Handle chats where user is a member
+    const chats = await Chat.find({ members: userId }).session(session);
+    for (const chat of chats) {
+      // Remove user from members array
+      chat.members = chat.members.filter(member => !member.equals(userId));
+      
+      if (chat.members.length === 0) {
+        // Delete chat if no members left
+        await Chat.findByIdAndDelete(chat._id).session(session);
+      } else {
+        await chat.save({ session });
+      }
+    }
+
+    // 3. Delete all comments by the user and remove references from posts
+    await Comment.deleteMany({ userId: userId }).session(session);
+    await Post.updateMany(
+      { comments: { $in: await Comment.find({ userId: userId }).distinct('_id') } },
+      { $pull: { comments: { $in: await Comment.find({ userId: userId }).distinct('_id') } } },
+      { session }
+    );
+
+    // 4. Handle posts created by the user
+    const userPosts = await Post.find({ createdBy: userId }).session(session);
+    for (const post of userPosts) {
+      // First delete all comments on these posts
+      await Comment.deleteMany({ postId: post._id }).session(session);
+      // Then delete the post
+      await Post.findByIdAndDelete(post._id).session(session);
+    }
+
+    // 5. Remove user references from other posts (votes, polls, surveys, etc.)
+    await Post.updateMany(
+      {},
+      [
+        {
+          $set: {
+            "votedUsers": {
+              $filter: {
+                input: "$votedUsers",
+                as: "voter",
+                cond: { $ne: ["$$voter.userId", userId] }
+              }
+            },
+            "poll.options.votedBy": {
+              $map: {
+                input: "$poll.options.votedBy",
+                as: "option",
+                in: {
+                  $filter: {
+                    input: "$$option",
+                    as: "voter",
+                    cond: { $ne: ["$$voter.userId", userId] }
+                  }
+                }
+              }
+            },
+            "survey.questions": {
+              $map: {
+                input: "$survey.questions",
+                as: "question",
+                in: {
+                  $mergeObjects: [
+                    "$$question",
+                    {
+                      votes: {
+                        $filter: {
+                          input: "$$question.votes",
+                          as: "vote",
+                          cond: { $ne: ["$$vote.userId", userId] }
+                        }
+                      },
+                      responses: {
+                        $filter: {
+                          input: "$$question.responses",
+                          as: "response",
+                          cond: { $ne: ["$$response.userId", userId] }
+                        }
+                      },
+                      ratings: {
+                        $filter: {
+                          input: "$$question.ratings",
+                          as: "rating",
+                          cond: { $ne: ["$$rating.userId", userId] }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "marketplace.contactMessages": {
+              $filter: {
+                input: "$marketplace.contactMessages",
+                as: "message",
+                cond: { $ne: ["$$message.userId", userId] }
+              }
+            }
+          }
+        }
+      ],
+      { session, multi: true }
+    );
+
+    // 6. Finally, delete the user
+    await User.findByIdAndDelete(userId).session(session);
+
+    await session.commitTransaction();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, null, "User account and all associated data deleted successfully"));
+
+  } catch (error) {
+    await session.abortTransaction();
+    throw new ApiError(500, `Failed to delete user account: ${error.message}`);
+  } finally {
+    session.endSession();
+  }
 });

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux"; // Added
-import { login } from "../Slices/AuthSlice.js"; // Added
+import { login,signup } from "../Slices/AuthSlice.js"; // Added
 import toast from "react-hot-toast"; // Added
 import "./Login.css";
 
@@ -22,10 +22,12 @@ export default function AuthPage() {
     district: "",
     county: "",
     postcode: "",
+    avatar: null,
   });
-  const [isSubmitting, setIsSubmitting] = useState(false); // Added
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [avatar, setAvatar] = useState(null);
   const navigate = useNavigate();
-  const dispatch = useDispatch(); // Added
+  const dispatch = useDispatch();
 
   const handleLoginChange = (e) => {
     const { name, value } = e.target;
@@ -43,35 +45,58 @@ export default function AuthPage() {
     });
   };
 
+
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true); // Added
+    setIsSubmitting(true);
 
     try {
-      const result = await dispatch(login(loginData)).unwrap(); // Added
-      console.log(result)
+      const result = await dispatch(login(loginData)).unwrap();
       if (result) {
-        toast.success("Login successful!"); // Added
+        toast.success("Login successful!");
         navigate("/");
       }
     } catch (err) {
       console.error("LOGIN ERROR:", err);
-      toast.error("Login failed. Please check your credentials."); // Added
+      toast.error(err || "Login failed. Please check your credentials.");
     } finally {
-      setIsSubmitting(false); // Added
+      setIsSubmitting(false);
+    }
+  };
+  const handleAvatarChange = (e) => {
+    setAvatar(e.target.files[0]);
+  };
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const formDataToSend = new FormData();
+    Object.keys(registerData).forEach((key) => {
+      formDataToSend.append(key, registerData[key]);
+    });
+
+    if (avatar) {
+      formDataToSend.append('avatar', avatar);
+    }
+
+    try {
+      const result = await dispatch(signup(formDataToSend)).unwrap();
+      if (result) {
+        toast.success('Verification code sent to your email!');
+        navigate('/verify');
+      }
+    } catch (err) {
+      console.error('REGISTER ERROR:', err);
+      toast.error(err || 'Registration failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleRegisterSubmit = (e) => {
-    e.preventDefault();
-    console.log("Register data:", registerData);
-    navigate("/");
-  };
 
   const flipCard = () => {
     setIsFlipped(!isFlipped);
   };
-
   return (
     <div className="auth-container">
       <div className={`auth-card ${isFlipped ? "flipped" : ""}`}>
@@ -207,6 +232,7 @@ export default function AuthPage() {
 
           <form className="auth-form register-form" onSubmit={handleRegisterSubmit}>
             <div className="register-form-grid">
+              {/* Username */}
               <div className="form-group register-form-group">
                 <label htmlFor="username">Username</label>
                 <div className="input-with-icon register-input-with-icon">
@@ -236,6 +262,7 @@ export default function AuthPage() {
                 </div>
               </div>
 
+              {/* Email */}
               <div className="form-group register-form-group">
                 <label htmlFor="register-email">Email</label>
                 <div className="input-with-icon register-input-with-icon">
@@ -265,6 +292,7 @@ export default function AuthPage() {
                 </div>
               </div>
 
+              {/* Password */}
               <div className="form-group register-form-group">
                 <label htmlFor="register-password">Password</label>
                 <div className="input-with-icon register-input-with-icon">
@@ -294,6 +322,7 @@ export default function AuthPage() {
                 </div>
               </div>
 
+              {/* Role */}
               <div className="form-group register-form-group">
                 <label htmlFor="role">Role</label>
                 <div className="input-with-icon register-input-with-icon">
@@ -313,7 +342,13 @@ export default function AuthPage() {
                     <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                   </svg>
-                  <select id="role" name="role" value={registerData.role} onChange={handleRegisterChange} required>
+                  <select 
+                    id="role" 
+                    name="role" 
+                    value={registerData.role} 
+                    onChange={handleRegisterChange} 
+                    required
+                  >
                     <option value="">Select your role</option>
                     <option value="resident">Resident</option>
                     <option value="business">Business Owner</option>
@@ -323,6 +358,7 @@ export default function AuthPage() {
                 </div>
               </div>
 
+              {/* Phone */}
               <div className="form-group register-form-group">
                 <label htmlFor="phone">Phone</label>
                 <div className="input-with-icon register-input-with-icon">
@@ -351,6 +387,7 @@ export default function AuthPage() {
                 </div>
               </div>
 
+              {/* Address */}
               <div className="form-group register-form-group full-width">
                 <label htmlFor="address">Address</label>
                 <div className="input-with-icon register-input-with-icon">
@@ -380,6 +417,7 @@ export default function AuthPage() {
                 </div>
               </div>
 
+              {/* City */}
               <div className="form-group register-form-group">
                 <label htmlFor="city">City</label>
                 <input
@@ -393,6 +431,7 @@ export default function AuthPage() {
                 />
               </div>
 
+              {/* District */}
               <div className="form-group register-form-group">
                 <label htmlFor="district">District</label>
                 <input
@@ -406,6 +445,7 @@ export default function AuthPage() {
                 />
               </div>
 
+              {/* County */}
               <div className="form-group register-form-group">
                 <label htmlFor="county">County</label>
                 <input
@@ -419,6 +459,7 @@ export default function AuthPage() {
                 />
               </div>
 
+              {/* Postcode */}
               <div className="form-group register-form-group">
                 <label htmlFor="postcode">Postcode</label>
                 <input
@@ -431,6 +472,38 @@ export default function AuthPage() {
                   required
                 />
               </div>
+
+              {/* Avatar Upload */}
+              <div className="form-group register-form-group full-width">
+                <label htmlFor="avatar">Profile Picture</label>
+                <div className="input-with-icon register-input-with-icon">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"></path>
+                    <line x1="16" y1="5" x2="22" y2="5"></line>
+                    <line x1="19" y1="2" x2="19" y2="8"></line>
+                    <circle cx="9" cy="9" r="2"></circle>
+                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+                  </svg>
+                  <input
+                    type="file"
+                    id="avatar"
+                    name="avatar"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    required
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="terms-checkbox register-terms-checkbox">
@@ -440,8 +513,12 @@ export default function AuthPage() {
               </label>
             </div>
 
-            <button type="submit" className="auth-button register-auth-button">
-              Create Account
+            <button 
+              type="submit" 
+              className="auth-button register-auth-button"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Creating account..." : "Create Account"}
             </button>
 
             <div className="auth-footer register-auth-footer">
