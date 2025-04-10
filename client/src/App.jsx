@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, lazy, useEffect } from "react"
+import { Suspense, lazy } from "react"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { ThemeProvider } from "./components/ThemeProvider"
 import Layout from "./components/Layout"
@@ -17,7 +17,7 @@ const HomePage = lazy(() => import("./pages/HomePage"))
 const DiscussionsPage = lazy(() => import("./Pages/DiscussionsPage"))
 const AnnouncementsPage = lazy(() => import("./pages/AnnouncementsPage"))
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"))
-
+const UserProfile = lazy(() => import("./pages/UserProfile/UserProfile"))
 const EmergencyPage = lazy(() => import("./pages/EmergencyPage"))
 
 const AuthPage = lazy(() => import("./components/Login"))
@@ -36,15 +36,14 @@ const Loading = () => (
 function App() {
   const { userData } = useSelector((state) => state.user)
 
-
-const DebugWrapper = ({ Component }) => {
-  try {
-    return <Component />
-  } catch (err) {
-    console.error("Error rendering component:", err)
-    return <div>Error loading component</div>
+  const DebugWrapper = ({ Component }) => {
+    try {
+      return <Component />
+    } catch (err) {
+      console.error("Error rendering component:", err)
+      return <div>Error loading component</div>
+    }
   }
-}
 
   return (
     <ThemeProvider>
@@ -65,6 +64,7 @@ const DebugWrapper = ({ Component }) => {
                 <Route path="/marketplace" element={<MarketplacePage />} />
                 <Route path="/emergency" element={<EmergencyPage />} />
                 <Route path="/createPost" element={<CreatePost />} />
+                <Route path="/profile" element={<UserProfile />} />
               </Routes>
             </Suspense>
           </div>

@@ -317,3 +317,70 @@ export const deleteUser = AsyncHandler(async (req, res, next) => {
     session.endSession();
   }
 });
+
+
+
+
+export const getUserActivities = AsyncHandler(async (req, res, next) => {
+  const userId = req.user?._id;
+  
+  if (!userId) {
+    throw new ErrorHandler("Unauthorized: User ID not found", 401);
+  }
+
+  try {
+    // Get user details
+    const user = await User.findById(userId).select("-password -verificationCode");
+    if (!user) {
+      throw new ErrorHandler("User not found", 404);
+    }
+
+    // Get all posts created by the user, sorted by newest first
+    const posts = await Post.find({ createdBy: userId })
+      .sort({ createdAt: -1 })
+      .populate('createdBy', 'username avatar')
+      .lean(); // Convert to plain JavaScript objects
+
+    // Categorize posts by type
+    const categorizedPosts = {
+      all: posts,
+      regular: posts.filter(post => post.type === 'regular'),
+      poll: posts.filter(post => post.type === 'poll'),
+      announcement: posts.filter(post => post.type === 'announcement'),
+      marketplace: posts.filter(post => post.type === 'marketplace'),
+      event: posts.filter(post => post.type === 'event'),
+      survey: posts.filter(post => post.type === 'survey')
+    };
+
+    // Count comments for each post (optional)
+    if (req.query.includeCommentCount === 'true') {
+      for (const post of posts) {
+        post.commentCount = await Comment.countDocuments({ postId: post._id });
+      }
+    }
+
+    // Format the response
+    const response = {
+      user: {
+        _id: user._id,
+        username: user.username,
+        avatar: user.avatar
+      },
+      posts: categorizedPosts,
+      counts: {
+        total: posts.length,
+        regular: categorizedPosts.regular.length,
+        poll: categorizedPosts.poll.length,
+        announcement: categorizedPosts.announcement.length,
+        marketplace: categorizedPosts.marketplace.length,
+        event: categorizedPosts.event.length,
+        survey: categorizedPosts.survey.length
+      }
+    };
+
+    res.status(200).json(new ApiResponse(200, response, "User posts fetched successfully"));
+
+  } catch (error) {
+    next(new ErrorHandler(error.message || "Failed to fetch user posts", error.statusCode || 500));
+  }
+});
