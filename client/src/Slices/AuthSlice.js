@@ -12,41 +12,33 @@ const initialState = storedAuth || {
   error: null,
 };
 
-const signup = createAsyncThunk(
-  "signup",
-  async (formData, { rejectWithValue }) => {
-    try {
-      const { data } = await axios.post(
-        `${import.meta.env.VITE_BACKEND_BASEURL}/user/register`,
-        formData,
-        { 
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      );
-      return data;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.error || "Registration failed");
-    }
+const signup = createAsyncThunk("signup", async (formData, { rejectWithValue }) => {
+  try {
+    const { data } = await axios.post(`${import.meta.env.VITE_BACKEND_BASEURL}/user/register`, formData, {
+      withCredentials: true,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    // Return only success status; user data will be set after verification
+    return { success: data.success };
+  } catch (err) {
+    return rejectWithValue(err.response?.data?.error || "Registration failed");
   }
-);
-const login = createAsyncThunk(
-  "login",
-  async (userCredentials, { rejectWithValue }) => {
-    try {
-      const result = await axios.post(
-        `${import.meta.env.VITE_BACKEND_BASEURL}/user/login`,
-        userCredentials,
-        { withCredentials: true }
-      );
-      return result.data;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.error || "Login failed");
-    }
+});
+
+const login = createAsyncThunk("login", async (userCredentials, { rejectWithValue }) => {
+  try {
+    const result = await axios.post(
+      `${import.meta.env.VITE_BACKEND_BASEURL}/user/login`,
+      userCredentials,
+      { withCredentials: true }
+    );
+    return result.data;
+  } catch (err) {
+    return rejectWithValue(err.response?.data?.error || "Login failed");
   }
-);
+});
 
 const authSlice = createSlice({
   name: "user",
@@ -58,23 +50,22 @@ const authSlice = createSlice({
       state.isAuthorized = false;
       state.loading = false;
       state.error = null;
-      localStorage.removeItem("auth"); // Clear storage on logout
+      localStorage.removeItem("auth");
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(signup.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
-      .addCase(signup.fulfilled, (state, action) => {
+      .addCase(signup.fulfilled, (state) => {
         state.loading = false;
-        state.userData = action.payload.user;
-        state.token = action.payload.token;
-        state.isAuthorized = true;
+        // Do not set userData or token yet; wait for verification
       })
       .addCase(signup.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload;
       })
       .addCase(login.pending, (state) => {
         state.loading = true;
@@ -88,7 +79,7 @@ const authSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload;
       });
   },
 });

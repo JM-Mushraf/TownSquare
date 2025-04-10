@@ -1,16 +1,34 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux"; // Added
-import { login,signup } from "../Slices/AuthSlice.js"; // Added
-import toast from "react-hot-toast"; // Added
+"use client";
+
+import { useState, useRef } from "react";
+import { FiEye, FiEyeOff, FiEdit2, FiCheck, FiMail, FiLock, FiUser, FiPhone, FiMapPin, FiHome } from "react-icons/fi";
 import "./Login.css";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { login, signup } from "../Slices/AuthSlice.js";
+import toast from "react-hot-toast";
+import axios from "axios";
 
 export default function AuthPage() {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [avatar, setAvatar] = useState(null);
+  const [verificationCode, setVerificationCode] = useState(["", "", "", "", "", ""]);
+  const [isVerified, setIsVerified] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const fileInputRef = useRef(null);
+  const verificationInputRefs = useRef([]);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
   });
+
   const [registerData, setRegisterData] = useState({
     username: "",
     email: "",
@@ -22,12 +40,13 @@ export default function AuthPage() {
     district: "",
     county: "",
     postcode: "",
-    avatar: null,
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [avatar, setAvatar] = useState(null);
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+
+  const flipCard = () => {
+    setIsFlipped(!isFlipped);
+    setError(null);
+    setSuccessMessage(null);
+  };
 
   const handleLoginChange = (e) => {
     const { name, value } = e.target;
@@ -45,493 +64,553 @@ export default function AuthPage() {
     });
   };
 
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setAvatar(event.target?.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     try {
       const result = await dispatch(login(loginData)).unwrap();
       if (result) {
+        localStorage.setItem(
+          "auth",
+          JSON.stringify({
+            userData: result.user,
+            token: result.token,
+            isAuthorized: true,
+          })
+        );
         toast.success("Login successful!");
         navigate("/");
       }
     } catch (err) {
-      console.error("LOGIN ERROR:", err);
-      toast.error(err || "Login failed. Please check your credentials.");
+      const errorMessage = err || "Login failed. Please check your credentials.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
-  const handleAvatarChange = (e) => {
-    setAvatar(e.target.files[0]);
-  };
+
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
+
+    if (!avatar) {
+      setError("Please upload an avatar.");
+      toast.error("Please upload an avatar.");
+      setIsSubmitting(false);
+      return;
+    }
 
     const formDataToSend = new FormData();
     Object.keys(registerData).forEach((key) => {
       formDataToSend.append(key, registerData[key]);
     });
-
-    if (avatar) {
-      formDataToSend.append('avatar', avatar);
+    if (fileInputRef.current?.files[0]) {
+      formDataToSend.append("avatar", fileInputRef.current.files[0]);
     }
 
     try {
       const result = await dispatch(signup(formDataToSend)).unwrap();
-      if (result) {
-        toast.success('Verification code sent to your email!');
-        navigate('/verify');
+      if (result.success) {
+        setShowVerification(true);
+        setSuccessMessage("Verification code sent to your email. Please verify to complete registration.");
+        toast.success("Verification code sent to your email!");
       }
     } catch (err) {
-      console.error('REGISTER ERROR:', err);
-      toast.error(err || 'Registration failed. Please try again.');
+      const errorMessage = err || "Registration failed. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleVerificationCodeChange = (index, value) => {
+    if (value.length <= 1 && /^\d*$/.test(value)) {
+      const newCode = [...verificationCode];
+      newCode[index] = value;
+      setVerificationCode(newCode);
 
-  const flipCard = () => {
-    setIsFlipped(!isFlipped);
+      if (value !== "" && index < 5) {
+        verificationInputRefs.current[index + 1]?.focus();
+      }
+    }
   };
+
+  const handleVerificationSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const code = verificationCode.join("");
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_BASEURL}/user/register/verification`,
+        { email: registerData.email, verificationCode: code },
+        { withCredentials: true }
+      );
+
+      if (response.data.success) {
+        setIsVerified(true);
+        setSuccessMessage("Your email has been successfully verified! Welcome to TownSquare!");
+        toast.success("Verification successful!");
+
+        // Update localStorage with verified user data
+        const authData = {
+          userData: response.data.user,
+          token: response.data.token, // Ensure backend returns token
+          isAuthorized: true,
+        };
+        localStorage.setItem("auth", JSON.stringify(authData));
+
+        // Update Redux state
+        dispatch({
+          type: "user/signup/fulfilled",
+          payload: { user: response.data.user, token: response.data.token },
+        });
+
+        setTimeout(() => navigate("/"), 2000);
+      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || "Verification failed. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_BACKEND_BASEURL}/user/register/resend`,
+        { email: registerData.email },
+        { withCredentials: true }
+      );
+      setSuccessMessage("Verification code resent successfully. Please check your email.");
+      toast.success("Verification code resent successfully!");
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || "Failed to resend verification code.";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleKeyDown = (index, e) => {
+    if (e.key === "Backspace" && verificationCode[index] === "" && index > 0) {
+      verificationInputRefs.current[index - 1]?.focus();
+    }
+  };
+
   return (
     <div className="auth-container">
-      <div className={`auth-card ${isFlipped ? "flipped" : ""}`}>
-        {/* Login Side */}
-        <div className="card-side front">
-          <div className="auth-header">
-            <h2>Welcome Back</h2>
-            <p>Sign in to continue to TownSquare</p>
-          </div>
-
-          <form className="auth-form login-form" onSubmit={handleLoginSubmit}>
-            <div className="form-group login-form-group">
-              <label htmlFor="login-email">Email</label>
-              <div className="input-with-icon login-input-with-icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6z"></path>
-                  <path d="m22 6-10 7L2 6"></path>
-                </svg>
-                <input
-                  type="email"
-                  id="login-email"
-                  name="email"
-                  value={loginData.email}
-                  onChange={handleLoginChange}
-                  placeholder="Enter your email"
-                  required
-                />
-              </div>
+      {!showVerification ? (
+        <div className={`auth-card ${isFlipped ? "flipped" : ""}`}>
+          {/* Login Side */}
+          <div className="card-side front">
+            <div className="auth-header">
+              <h2>Welcome Back</h2>
+              <p>Sign in to continue to TownSquare</p>
             </div>
 
-            <div className="form-group login-form-group">
-              <label htmlFor="login-password">Password</label>
-              <div className="input-with-icon login-input-with-icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-                <input
-                  type="password"
-                  id="login-password"
-                  name="password"
-                  value={loginData.password}
-                  onChange={handleLoginChange}
-                  placeholder="Enter your password"
-                  required
-                />
-              </div>
-            </div>
+            {error && <div className="error-message">{error}</div>}
+            {successMessage && <div className="success-message">{successMessage}</div>}
 
-            <div className="form-options login-form-options">
-              <div className="remember-me login-remember-me">
-                <input type="checkbox" id="remember" />
-                <label htmlFor="remember">Remember me</label>
-              </div>
-              <a href="#" className="forgot-password login-forgot-password">
-                Forgot Password?
-              </a>
-            </div>
-
-            <button
-              type="submit"
-              className="auth-button login-auth-button"
-              disabled={isSubmitting} 
-            >
-              {isSubmitting ? "Logging in..." : "Sign In"} {/* Added */}
-            </button>
-
-            <div className="auth-divider login-auth-divider">
-              <span>OR</span>
-            </div>
-
-            <div className="social-login login-social-login">
-              <button type="button" className="social-button google login-social-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    fill="#4285F4"
-                  />
-                  <path
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    fill="#34A853"
-                  />
-                  <path
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    fill="#FBBC05"
-                  />
-                  <path
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    fill="#EA4335"
-                  />
-                </svg>
-                Sign in with Google
-              </button>
-            </div>
-
-            <div className="auth-footer login-auth-footer">
-              <p>
-                Don't have an account?{" "}
-                <button type="button" onClick={flipCard} className="flip-button login-flip-button">
-                  Sign Up
-                </button>
-              </p>
-            </div>
-          </form>
-        </div>
-
-        {/* Register Side */}
-        <div className="card-side back">
-          <div className="auth-header">
-            <h2>Create Account</h2>
-            <p>Join the TownSquare community</p>
-          </div>
-
-          <form className="auth-form register-form" onSubmit={handleRegisterSubmit}>
-            <div className="register-form-grid">
-              {/* Username */}
-              <div className="form-group register-form-group">
-                <label htmlFor="username">Username</label>
-                <div className="input-with-icon register-input-with-icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                  <input
-                    type="text"
-                    id="username"
-                    name="username"
-                    value={registerData.username}
-                    onChange={handleRegisterChange}
-                    placeholder="Choose a username"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Email */}
-              <div className="form-group register-form-group">
-                <label htmlFor="register-email">Email</label>
-                <div className="input-with-icon register-input-with-icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6z"></path>
-                    <path d="m22 6-10 7L2 6"></path>
-                  </svg>
+            <form className="auth-form login-form" onSubmit={handleLoginSubmit}>
+              <div className="form-group login-form-group">
+                <label htmlFor="login-email">Email</label>
+                <div className="input-with-icon login-input-with-icon">
+                  <FiMail className="input-icon" />
                   <input
                     type="email"
-                    id="register-email"
+                    id="login-email"
                     name="email"
-                    value={registerData.email}
-                    onChange={handleRegisterChange}
+                    value={loginData.email}
+                    onChange={handleLoginChange}
                     placeholder="Enter your email"
                     required
                   />
                 </div>
               </div>
 
-              {/* Password */}
-              <div className="form-group register-form-group">
-                <label htmlFor="register-password">Password</label>
-                <div className="input-with-icon register-input-with-icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                  </svg>
+              <div className="form-group login-form-group">
+                <label htmlFor="login-password">Password</label>
+                <div className="input-with-icon login-input-with-icon">
+                  <FiLock className="input-icon" />
                   <input
-                    type="password"
-                    id="register-password"
+                    type={passwordVisible ? "text" : "password"}
+                    id="login-password"
                     name="password"
-                    value={registerData.password}
-                    onChange={handleRegisterChange}
-                    placeholder="Create a password"
+                    value={loginData.password}
+                    onChange={handleLoginChange}
+                    placeholder="Enter your password"
                     required
                   />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setPasswordVisible(!passwordVisible)}
+                    aria-label={passwordVisible ? "Hide password" : "Show password"}
+                  >
+                    {passwordVisible ? <FiEyeOff /> : <FiEye />}
+                  </button>
                 </div>
               </div>
 
-              {/* Role */}
-              <div className="form-group register-form-group">
-                <label htmlFor="role">Role</label>
-                <div className="input-with-icon register-input-with-icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                  </svg>
-                  <select 
-                    id="role" 
-                    name="role" 
-                    value={registerData.role} 
-                    onChange={handleRegisterChange} 
-                    required
-                  >
-                    <option value="">Select your role</option>
-                    <option value="resident">Resident</option>
-                    <option value="business">Business Owner</option>
-                    <option value="government">Government Official</option>
-                    <option value="visitor">Visitor</option>
-                  </select>
+              <div className="form-options login-form-options">
+                <div className="remember-me login-remember-me">
+                  <input type="checkbox" id="remember" />
+                  <label htmlFor="remember">Remember me</label>
                 </div>
+                <a href="#" className="forgot-password login-forgot-password">
+                  Forgot Password?
+                </a>
               </div>
 
-              {/* Phone */}
-              <div className="form-group register-form-group">
-                <label htmlFor="phone">Phone</label>
-                <div className="input-with-icon register-input-with-icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                  </svg>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    value={registerData.phone}
-                    onChange={handleRegisterChange}
-                    placeholder="Enter your phone number"
-                    required
-                  />
-                </div>
+              <button type="submit" className="auth-button login-auth-button" disabled={isSubmitting}>
+                {isSubmitting ? <span className="loading-spinner"></span> : "Sign In"}
+              </button>
+
+              <div className="auth-divider login-auth-divider">
+                <span>OR</span>
               </div>
 
-              {/* Address */}
-              <div className="form-group register-form-group full-width">
-                <label htmlFor="address">Address</label>
-                <div className="input-with-icon register-input-with-icon">
+              <div className="social-login login-social-login">
+                <button type="button" className="social-button google login-social-button">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                    fill="currentColor"
                   >
-                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
-                    <circle cx="12" cy="10" r="3"></circle>
+                    <path
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      fill="#4285F4"
+                    />
+                    <path
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      fill="#34A853"
+                    />
+                    <path
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                      fill="#FBBC05"
+                    />
+                    <path
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                      fill="#EA4335"
+                    />
                   </svg>
+                  Sign in with Google
+                </button>
+              </div>
+
+              <div className="auth-footer login-auth-footer">
+                <p>
+                  Don't have an account?{" "}
+                  <button type="button" onClick={flipCard} className="flip-button login-flip-button">
+                    Sign Up
+                  </button>
+                </p>
+              </div>
+            </form>
+          </div>
+
+          {/* Register Side */}
+          <div className="card-side back">
+            <div className="auth-header">
+              <div className="avatar-upload">
+                <div
+                  className="avatar-preview"
+                  onClick={handleAvatarClick}
+                  style={{ backgroundImage: avatar ? `url(${avatar})` : "none" }}
+                >
+                  {!avatar && <FiUser className="avatar-placeholder" />}
+                  <div className="avatar-edit">
+                    <FiEdit2 />
+                  </div>
+                </div>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleAvatarChange}
+                  accept="image/*"
+                  className="hidden"
+                  required
+                />
+              </div>
+              <h2>Create Account</h2>
+              <p>Join the TownSquare community</p>
+            </div>
+
+            {error && <div className="error-message">{error}</div>}
+            {successMessage && <div className="success-message">{successMessage}</div>}
+
+            <form className="auth-form register-form" onSubmit={handleRegisterSubmit}>
+              <div className="register-form-grid">
+                <div className="form-group register-form-group">
+                  <label htmlFor="username">Username</label>
+                  <div className="input-with-icon register-input-with-icon">
+                    <FiUser className="input-icon" />
+                    <input
+                      type="text"
+                      id="username"
+                      name="username"
+                      value={registerData.username}
+                      onChange={handleRegisterChange}
+                      placeholder="Choose a username"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group register-form-group">
+                  <label htmlFor="register-email">Email</label>
+                  <div className="input-with-icon register-input-with-icon">
+                    <FiMail className="input-icon" />
+                    <input
+                      type="email"
+                      id="register-email"
+                      name="email"
+                      value={registerData.email}
+                      onChange={handleRegisterChange}
+                      placeholder="Enter your email"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group register-form-group">
+                  <label htmlFor="register-password">Password</label>
+                  <div className="input-with-icon register-input-with-icon">
+                    <FiLock className="input-icon" />
+                    <input
+                      type={passwordVisible ? "text" : "password"}
+                      id="register-password"
+                      name="password"
+                      value={registerData.password}
+                      onChange={handleRegisterChange}
+                      placeholder="Create a password"
+                      required
+                      minLength="6"
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle"
+                      onClick={() => setPasswordVisible(!passwordVisible)}
+                      aria-label={passwordVisible ? "Hide password" : "Show password"}
+                    >
+                      {passwordVisible ? <FiEyeOff /> : <FiEye />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="form-group register-form-group">
+                  <label htmlFor="role">Role</label>
+                  <div className="input-with-icon register-input-with-icon">
+                    <FiUser className="input-icon" />
+                    <select id="role" name="role" value={registerData.role} onChange={handleRegisterChange} required>
+                      <option value="">Select your role</option>
+                      <option value="resident">Resident</option>
+                      <option value="business">Business Owner</option>
+                      <option value="government">Government Official</option>
+                      <option value="visitor">Visitor</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group register-form-group">
+                  <label htmlFor="phone">Phone</label>
+                  <div className="input-with-icon register-input-with-icon">
+                    <FiPhone className="input-icon" />
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      value={registerData.phone}
+                      onChange={handleRegisterChange}
+                      placeholder="Enter your phone number"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group register-form-group full-width">
+                  <label htmlFor="address">Address</label>
+                  <div className="input-with-icon register-input-with-icon">
+                    <FiHome className="input-icon" />
+                    <input
+                      type="text"
+                      id="address"
+                      name="address"
+                      value={registerData.address}
+                      onChange={handleRegisterChange}
+                      placeholder="Enter your street address"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group register-form-group">
+                  <label htmlFor="city">City</label>
+                  <div className="input-with-icon register-input-with-icon">
+                    <FiMapPin className="input-icon" />
+                    <input
+                      type="text"
+                      id="city"
+                      name="city"
+                      value={registerData.city}
+                      onChange={handleRegisterChange}
+                      placeholder="City"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group register-form-group">
+                  <label htmlFor="district">District</label>
                   <input
                     type="text"
-                    id="address"
-                    name="address"
-                    value={registerData.address}
+                    id="district"
+                    name="district"
+                    value={registerData.district}
                     onChange={handleRegisterChange}
-                    placeholder="Enter your street address"
+                    placeholder="District"
                     required
                   />
                 </div>
-              </div>
 
-              {/* City */}
-              <div className="form-group register-form-group">
-                <label htmlFor="city">City</label>
-                <input
-                  type="text"
-                  id="city"
-                  name="city"
-                  value={registerData.city}
-                  onChange={handleRegisterChange}
-                  placeholder="City"
-                  required
-                />
-              </div>
-
-              {/* District */}
-              <div className="form-group register-form-group">
-                <label htmlFor="district">District</label>
-                <input
-                  type="text"
-                  id="district"
-                  name="district"
-                  value={registerData.district}
-                  onChange={handleRegisterChange}
-                  placeholder="District"
-                  required
-                />
-              </div>
-
-              {/* County */}
-              <div className="form-group register-form-group">
-                <label htmlFor="county">County</label>
-                <input
-                  type="text"
-                  id="county"
-                  name="county"
-                  value={registerData.county}
-                  onChange={handleRegisterChange}
-                  placeholder="County"
-                  required
-                />
-              </div>
-
-              {/* Postcode */}
-              <div className="form-group register-form-group">
-                <label htmlFor="postcode">Postcode</label>
-                <input
-                  type="text"
-                  id="postcode"
-                  name="postcode"
-                  value={registerData.postcode}
-                  onChange={handleRegisterChange}
-                  placeholder="Postcode"
-                  required
-                />
-              </div>
-
-              {/* Avatar Upload */}
-              <div className="form-group register-form-group full-width">
-                <label htmlFor="avatar">Profile Picture</label>
-                <div className="input-with-icon register-input-with-icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"></path>
-                    <line x1="16" y1="5" x2="22" y2="5"></line>
-                    <line x1="19" y1="2" x2="19" y2="8"></line>
-                    <circle cx="9" cy="9" r="2"></circle>
-                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
-                  </svg>
+                <div className="form-group register-form-group">
+                  <label htmlFor="county">County</label>
                   <input
-                    type="file"
-                    id="avatar"
-                    name="avatar"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
+                    type="text"
+                    id="county"
+                    name="county"
+                    value={registerData.county}
+                    onChange={handleRegisterChange}
+                    placeholder="County"
+                    required
+                  />
+                </div>
+
+                <div className="form-group register-form-group">
+                  <label htmlFor="postcode">Postcode</label>
+                  <input
+                    type="text"
+                    id="postcode"
+                    name="postcode"
+                    value={registerData.postcode}
+                    onChange={handleRegisterChange}
+                    placeholder="Postcode"
                     required
                   />
                 </div>
               </div>
-            </div>
 
-            <div className="terms-checkbox register-terms-checkbox">
-              <input type="checkbox" id="terms" required />
-              <label htmlFor="terms">
-                I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
-              </label>
-            </div>
+              <div className="terms-checkbox register-terms-checkbox">
+                <input type="checkbox" id="terms" required />
+                <label htmlFor="terms">
+                  I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                </label>
+              </div>
 
-            <button 
-              type="submit" 
-              className="auth-button register-auth-button"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Creating account..." : "Create Account"}
-            </button>
+              <button type="submit" className="auth-button register-auth-button" disabled={isSubmitting}>
+                {isSubmitting ? <span className="loading-spinner"></span> : "Create Account"}
+              </button>
 
-            <div className="auth-footer register-auth-footer">
-              <p>
-                Already have an account?{" "}
-                <button type="button" onClick={flipCard} className="flip-button register-flip-button">
-                  Sign In
-                </button>
-              </p>
-            </div>
-          </form>
+              <div className="auth-footer register-auth-footer">
+                <p>
+                  Already have an account?{" "}
+                  <button type="button" onClick={flipCard} className="flip-button register-flip-button">
+                    Sign In
+                  </button>
+                </p>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className={`verification-card ${isVerified ? "verified" : ""}`}>
+          <div className="auth-header">
+            <div className="verification-icon">
+              <FiMail className={isVerified ? "hidden" : ""} />
+              <FiCheck className={isVerified ? "" : "hidden"} />
+            </div>
+            <h2>{isVerified ? "Verification Successful" : "Verify Your Email"}</h2>
+            <p>
+              {isVerified
+                ? "Your account has been successfully verified!"
+                : `We've sent a verification code to ${registerData.email}`}
+            </p>
+          </div>
+
+          {error && <div className="error-message">{error}</div>}
+          {successMessage && <div className="success-message">{successMessage}</div>}
+
+          {!isVerified && (
+            <form className="auth-form" onSubmit={handleVerificationSubmit}>
+              <div className="verification-code-container">
+                {verificationCode.map((digit, index) => (
+                  <input
+                    key={index}
+                    type="text"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleVerificationCodeChange(index, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    ref={(el) => (verificationInputRefs.current[index] = el)}
+                    className="verification-input"
+                    required
+                  />
+                ))}
+              </div>
+
+              <button
+                type="submit"
+                className="auth-button"
+                disabled={isSubmitting || verificationCode.some((digit) => digit === "")}
+              >
+                {isSubmitting ? <span className="loading-spinner"></span> : "Verify"}
+              </button>
+
+              <div className="resend-code">
+                <p>
+                  Didn't receive the code?{" "}
+                  <button type="button" onClick={handleResendCode} className="resend-button">
+                    Resend
+                  </button>
+                </p>
+              </div>
+            </form>
+          )}
+
+          {isVerified && (
+            <div className="success-animation">
+              <div className="checkmark-circle">
+                <div className="checkmark draw"></div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
