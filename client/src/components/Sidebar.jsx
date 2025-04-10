@@ -180,7 +180,11 @@ function Sidebar() {
         {/* Sidebar footer */}
         <div className="sidebar-footer">
           {!isCollapsed && <div className="theme-toggle-container"><ThemeToggle /></div>}
-          <div className="sidebar-user">
+          <div 
+  className="sidebar-user" 
+  onClick={() => navigate("/profile")}
+  style={{ cursor: "pointer" }} // Add pointer cursor to indicate it's clickable
+>
             {isAuthorized?<img className="sidebar-user-avatar" src={userData?.avatar} ></img>:null}
             {!isCollapsed && (
               <div className="sidebar-user-info">
