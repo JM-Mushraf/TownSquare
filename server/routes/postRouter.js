@@ -3,7 +3,7 @@ import { upload } from "../middlewares/multer.js";
 export const postRouter=express.Router();
 
 import { isAuthenticated } from '../middlewares/auth.js';
-import { addComment, createPost, deletePost, downvotePost, getAllPosts, getPostById, upvotePost,createPoll,getAllAnnouncements,getSurveyAndPollPosts,submitVote,viewResults,getMarketplacePosts,sendMessageToSeller,getCountyPosts} from '../controllers/postController.js';
+import { addComment, createPost, deletePost, downvotePost, getAllPosts, getPostById, upvotePost,createPoll,getAllAnnouncements,getSurveyAndPollPosts,submitVote,viewResults,getMarketplacePosts,sendMessageToSeller,getCountyPosts,getPostComments,removeVote} from '../controllers/postController.js';
 
 postRouter.post(
     "/create",
@@ -20,9 +20,11 @@ postRouter.post('/:postId/vote',isAuthenticated, submitVote);
 postRouter.get('/:postId/results',isAuthenticated,viewResults);
 postRouter.get("/marketplacePosts", isAuthenticated, getMarketplacePosts);
 postRouter.post("/marketplacePosts/:postId/message", isAuthenticated, sendMessageToSeller);
+postRouter.get("/:postId/comments", getPostComments);
 
-postRouter.get('/up/:postId',isAuthenticated,upvotePost)
-postRouter.get('/down/:postId',isAuthenticated,downvotePost)
+postRouter.post('/up/:postId',isAuthenticated,upvotePost)
+postRouter.post('/down/:postId',isAuthenticated,downvotePost)
+postRouter.post('/remove/:postId', isAuthenticated, removeVote);
 postRouter.get('/:postId',isAuthenticated,getPostById);
 postRouter.post('/createPoll',isAuthenticated,createPoll)
 postRouter.get('/announcements/all',isAuthenticated,getAllAnnouncements)

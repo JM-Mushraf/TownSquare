@@ -1090,96 +1090,288 @@ export const getPostById = async (req, res) => {
 
 // Upvote a post (User can only upvote once)
 export const upvotePost = async (req, res) => {
-    try {
-        const { postId } = req.params;
-        const userId = req.user._id; // Assuming authentication middleware is used
+  try {
+      const { postId } = req.params;
+      const userId = req.user._id;
 
-        const post = await Post.findById(postId);
-        if (!post) {
-            return res.status(404).json({ success: false, message: "Post not found" });
-        }
+      if (!mongoose.Types.ObjectId.isValid(postId)) {
+          return res.status(400).json({ success: false, message: "Invalid post ID" });
+      }
 
-        // Check if the user has already voted
-        const existingVote = post.votedUsers.find(vote => vote.userId.toString() === userId.toString());
+      const post = await Post.findById(postId);
+      if (!post) {
+          return res.status(404).json({ success: false, message: "Post not found" });
+      }
 
-        if (existingVote) {
-            if (existingVote.voteType === "upvote") {
-                return res.status(400).json({ success: false, message: "You have already upvoted this post" });
-            } else {
-                // User previously downvoted, switch to upvote
-                post.downVotes -= 1;
-                existingVote.voteType = "upvote";
-                post.upVotes += 1;
-            }
-        } else {
-            // New upvote
-            post.upVotes += 1;
-            post.votedUsers.push({ userId, voteType: "upvote" });
-        }
+      // Check if the user has already voted
+      const existingVoteIndex = post.votedUsers.findIndex(
+          vote => vote.userId.toString() === userId.toString()
+      );
 
-        await post.save();
-        res.status(200).json({ success: true, message: "Post upvoted successfully", upVotes: post.upVotes });
+      if (existingVoteIndex !== -1) {
+          const existingVote = post.votedUsers[existingVoteIndex];
+          if (existingVote.voteType === "upvote") {
+              return res.status(400).json({ 
+                  success: false, 
+                  message: "You have already upvoted this post" 
+              });
+          } else {
+              // User previously downvoted, switch to upvote
+              post.downVotes -= 1;
+              post.votedUsers[existingVoteIndex].voteType = "upvote";
+              post.upVotes += 1;
+          }
+      } else {
+          // New upvote
+          post.upVotes += 1;
+          post.votedUsers.push({ userId, voteType: "upvote" });
+      }
 
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Error upvoting post", error: error.message });
-    }
+      const updatedPost = await post.save();
+      res.status(200).json({ 
+          success: true, 
+          message: "Post upvoted successfully", 
+          upVotes: updatedPost.upVotes,
+          downVotes: updatedPost.downVotes
+      });
+
+  } catch (error) {
+      console.error("Error upvoting post:", error);
+      res.status(500).json({ 
+          success: false, 
+          message: "Error upvoting post", 
+          error: error.message 
+      });
+  }
 };
 
 // Downvote a post (User can only downvote once)
 export const downvotePost = async (req, res) => {
-    try {
-        const { postId } = req.params;
-        const userId = req.user._id; // Assuming authentication middleware is used
+  try {
+      const { postId } = req.params;
+      const userId = req.user._id;
 
-        const post = await Post.findById(postId);
-        if (!post) {
-            return res.status(404).json({ success: false, message: "Post not found" });
-        }
+      if (!mongoose.Types.ObjectId.isValid(postId)) {
+          return res.status(400).json({ success: false, message: "Invalid post ID" });
+      }
 
-        // Check if the user has already voted
-        const existingVote = post.votedUsers.find(vote => vote.userId.toString() === userId.toString());
+      const post = await Post.findById(postId);
+      if (!post) {
+          return res.status(404).json({ success: false, message: "Post not found" });
+      }
 
-        if (existingVote) {
-            if (existingVote.voteType === "downvote") {
-                return res.status(400).json({ success: false, message: "You have already downvoted this post" });
-            } else {
-                // User previously upvoted, switch to downvote
-                post.upVotes -= 1;
-                existingVote.voteType = "downvote";
-                post.downVotes += 1;
-            }
-        } else {
-            // New downvote
-            post.downVotes += 1;
-            post.votedUsers.push({ userId, voteType: "downvote" });
-        }
+      // Check if the user has already voted
+      const existingVoteIndex = post.votedUsers.findIndex(
+          vote => vote.userId.toString() === userId.toString()
+      );
 
-        await post.save();
-        res.status(200).json({ success: true, message: "Post downvoted successfully", downVotes: post.downVotes });
+      if (existingVoteIndex !== -1) {
+          const existingVote = post.votedUsers[existingVoteIndex];
+          if (existingVote.voteType === "downvote") {
+              return res.status(400).json({ 
+                  success: false, 
+                  message: "You have already downvoted this post" 
+              });
+          } else {
+              // User previously upvoted, switch to downvote
+              post.upVotes -= 1;
+              post.votedUsers[existingVoteIndex].voteType = "downvote";
+              post.downVotes += 1;
+          }
+      } else {
+          // New downvote
+          post.downVotes += 1;
+          post.votedUsers.push({ userId, voteType: "downvote" });
+      }
 
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Error downvoting post", error: error.message });
+      const updatedPost = await post.save();
+      res.status(200).json({ 
+          success: true, 
+          message: "Post downvoted successfully", 
+          downVotes: updatedPost.downVotes,
+          upVotes: updatedPost.upVotes
+      });
+
+  } catch (error) {
+      console.error("Error downvoting post:", error);
+      res.status(500).json({ 
+          success: false, 
+          message: "Error downvoting post", 
+          error: error.message 
+      });
+  }
+};
+// Remove a vote from a post
+export const removeVote = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user._id;
+
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(400).json({ success: false, message: "Invalid post ID" });
     }
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ success: false, message: "Post not found" });
+    }
+
+    // Check if the user has voted
+    const existingVoteIndex = post.votedUsers.findIndex(
+      vote => vote.userId.toString() === userId.toString()
+    );
+
+    if (existingVoteIndex === -1) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "You haven't voted on this post yet" 
+      });
+    }
+
+    // Remove the vote and adjust counts
+    const existingVote = post.votedUsers[existingVoteIndex];
+    if (existingVote.voteType === "upvote") {
+      post.upVotes -= 1;
+    } else {
+      post.downVotes -= 1;
+    }
+
+    // Remove the vote from the array
+    post.votedUsers.splice(existingVoteIndex, 1);
+
+    const updatedPost = await post.save();
+    res.status(200).json({ 
+      success: true, 
+      message: "Vote removed successfully", 
+      upVotes: updatedPost.upVotes,
+      downVotes: updatedPost.downVotes
+    });
+
+  } catch (error) {
+    console.error("Error removing vote:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Error removing vote", 
+      error: error.message 
+    });
+  }
 };
 
 
-// COMMENT
+// Add comment to a post
 export const addComment = async (req, res) => {
-    try {
-        const { postId, message } = req.body;
-        const userId = req.user.id; // Assuming user is authenticated
+  try {
+      const { postId, message } = req.body;
+      const userId = req.user.id;
 
-        // Create a new comment
-        const comment = new Comment({ postId, userId, message });
-        await comment.save();
+      if (!postId || !message) {
+          return res.status(400).json({ 
+              success: false, 
+              message: "Post ID and message are required" 
+          });
+      }
 
-        // Add comment reference to the post
-        await Post.findByIdAndUpdate(postId, { $push: { comments: comment._id } });
+      if (!mongoose.Types.ObjectId.isValid(postId)) {
+          return res.status(400).json({ 
+              success: false, 
+              message: "Invalid post ID" 
+          });
+      }
 
-        res.status(201).json({ success: true, message: "Comment added", comment });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
+      // Check if post exists
+      const postExists = await Post.exists({ _id: postId });
+      if (!postExists) {
+          return res.status(404).json({ 
+              success: false, 
+              message: "Post not found" 
+          });
+      }
+
+      // Create a new comment
+      const comment = new Comment({ 
+          postId, 
+          userId, 
+          message 
+      });
+      await comment.save();
+
+      // Add comment reference to the post using $addToSet to prevent duplicates
+      const updatedPost = await Post.findByIdAndUpdate(
+          postId, 
+          { $addToSet: { comments: comment._id } },
+          { new: true }
+      ).populate('comments');
+
+      res.status(201).json({ 
+          success: true, 
+          message: "Comment added successfully", 
+          comment,
+          post: updatedPost
+      });
+  } catch (error) {
+      console.error("Error adding comment:", error);
+      res.status(500).json({ 
+          success: false, 
+          message: "Error adding comment", 
+          error: error.message 
+      });
+  }
+};
+export const getPostComments = async (req, res) => {
+  try {
+      const { postId } = req.params;
+      
+      // Validate postId
+      if (!mongoose.Types.ObjectId.isValid(postId)) {
+          return res.status(400).json({
+              success: false,
+              message: "Invalid post ID format"
+          });
+      }
+
+      // Check if post exists
+      const postExists = await Post.exists({ _id: postId });
+      if (!postExists) {
+          return res.status(404).json({
+              success: false,
+              message: "Post not found"
+          });
+      }
+
+      // Pagination
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      // Get comments with user details and total count
+      const [comments, total] = await Promise.all([
+          Comment.find({ postId })
+              .populate("userId", "username avatar") // Include user details
+              .sort({ createdAt: -1 }) // Newest first
+              .skip(skip)
+              .limit(limit),
+          Comment.countDocuments({ postId })
+      ]);
+
+      res.status(200).json({
+          success: true,
+          message: comments.length ? 
+              "Comments retrieved successfully" : 
+              "No comments found for this post",
+          comments,
+          total,
+          page,
+          pages: Math.ceil(total / limit)
+      });
+
+  } catch (error) {
+      console.error("Error getting post comments:", error);
+      res.status(500).json({
+          success: false,
+          message: "Error retrieving comments",
+          error: error.message
+      });
+  }
 };
 
 //poll
