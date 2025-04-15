@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import { useTheme } from "../components/ThemeProvider"
 import ThemeToggle from "../components/ThemeToggle"
+import { useSelector } from "react-redux"
 import "./HomePage.css"
 
 // Helper function to format time ago
@@ -461,14 +462,42 @@ const PostCard = ({ post, navigate }) => {
   const [userVote, setUserVote] = useState(null)
   const [upVotes, setUpVotes] = useState(post.upVotes || 0)
   const [downVotes, setDownVotes] = useState(post.downVotes || 0)
-  const [token, setToken] = useState("")
+  // const [token, setToken] = useState("")
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
+
+  const {token}=useSelector((state)=>state.user);
   const placeholders = [
     "Transmit your thought...",
     "Share your neural imprint...",
     "Broadcast your perspective...",
     "Quantum-link your ideas...",
   ]
+
+  const handleShareClick = (id)=>async (e) => {
+    e.stopPropagation();
+    
+    if (navigator.share) {
+      // Use Web Share API if available (mobile devices)
+      try {
+        await navigator.share({
+          title: post?.title || "Check out this post",
+          url: `http://localhost:5173/post/${id}`,
+        });
+      } catch (err) {
+        console.error("Error sharing:", err);
+      }
+    } else {
+      // Fallback to clipboard copy
+      try {
+        const postUrl = `http://localhost:5173/post/${id}`;
+        await navigator.clipboard.writeText(postUrl);
+        toast.success("Link copied to clipboard!");
+      } catch (err) {
+        console.error("Failed to copy: ", err);
+        toast.error("Failed to copy link");
+      }
+    }
+  };
 
   // Get token from localStorage on component mount
   useEffect(() => {
@@ -812,7 +841,7 @@ const PostCard = ({ post, navigate }) => {
               </svg>
             </span>
           </button>
-          <button className="neo-action-button" id={`share-${post._id}`}>
+          <button className="neo-action-button" id={`share-${post._id}`} onClick={handleShareClick(post._id)} >
             <span className="neo-action-icon neo-share">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -1469,26 +1498,16 @@ const PostCard = ({ post, navigate }) => {
 
   return (
     <div
-      className={`neo-post-card neo-post-card-${post.type} ${isHovered ? "neo-hovered" : ""}`}
-      onClick={() => {
-        if (post.type === "announcements") {
-          navigate(`/announcements/`)
-        } else if (post.type === "poll") {
-          navigate(`/surveys/`)
-        } else if (post.type === "marketplace") {
-          navigate(`/marketplace/`)
-        } else if (post.type === "survey") {
-          navigate(`/surveys/`)
-        } else {
-          navigate(`/post/${post._id}`)
-        }
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      id={`post-${post._id}`}
-    >
-      {renderPostContent()}
-    </div>
+  className={`neo-post-card neo-post-card-${post.type} ${isHovered ? "neo-hovered" : ""}`}
+  onClick={() => {
+    navigate(`/post/${post._id}`);
+  }}
+  onMouseEnter={() => setIsHovered(true)}
+  onMouseLeave={() => setIsHovered(false)}
+  id={`post-${post._id}`}
+>
+  {renderPostContent()}
+</div>
   )
 }
 
@@ -1505,7 +1524,13 @@ function HomePage() {
   const [token, setToken] = useState("")
   const [contactStates, setContactStates] = useState({})
   const { isDarkMode, toggleDarkMode } = useTheme()
-
+  const {userData}=useSelector((state)=>state.user);
+  // setUser(userData)
+  useEffect(() => {
+    setUser(userData);
+    console.log(userData);
+    
+  }, [userData]);
   // Navigation function to replace useNavigate
   const navigate = (path) => {
     window.location.href = path
@@ -1523,6 +1548,8 @@ function HomePage() {
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser))
+        console.log("1526 ",user);
+        
       } catch (error) {
         console.error("Error parsing user data:", error)
       }
@@ -1540,10 +1567,10 @@ function HomePage() {
           },
         })
 
-        setPosts(response.data.posts)
-        setTrendingPosts(response.data.trending)
-        setUpcomingEvents(response.data.upcomingEvents)
-        setCounty(response.data.county)
+        await setPosts(response.data.posts)
+        await setTrendingPosts(response.data.trending)
+        await setUpcomingEvents(response.data.upcomingEvents)
+        await setCounty(response.data.county)
       } catch (error) {
         console.error("Error fetching posts:", error)
         // Fallback data for development/testing
@@ -2167,84 +2194,7 @@ function HomePage() {
               </main>
               <aside className="ts-sidebar">
                 {/* Enhanced User Profile Card */}
-                <div className="ts-profile-card">
-                  <div className="ts-profile-header">
-                    <div className="ts-profile-avatar">
-                      {user?.avatar ? (
-                        <img src={user.avatar || "/placeholder.svg"} alt={user.username} />
-                      ) : (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="ts-profile-avatar-icon"
-                        >
-                          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
-                          <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                      )}
-                    </div>
-                    <div className="ts-profile-info">
-                      <h3 className="ts-profile-name">{user?.username || "Guest"}</h3>
-                      <p className="ts-profile-location">{county || "Local Area"}</p>
-                      <div className="ts-profile-badges">
-                        <span className="ts-profile-badge">Active</span>
-                        <span className="ts-profile-badge">Verified</span>
-                      </div>
-                    </div>
-                    <button className="ts-profile-settings" onClick={() => navigate("/settings")} id="profile-settings">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="ts-profile-settings-icon"
-                      >
-                        <circle cx="12" cy="12" r="3"></circle>
-                        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"></path>
-                      </svg>
-                    </button>
-                  </div>
-                  <div className="ts-profile-stats">
-                    <div className="ts-profile-stat">
-                      <span className="ts-profile-stat-value">{user?.postCount || 0}</span>
-                      <span className="ts-profile-stat-label">Posts</span>
-                    </div>
-                    <div className="ts-profile-stat">
-                      <span className="ts-profile-stat-value">{user?.commentCount || 0}</span>
-                      <span className="ts-profile-stat-label">Comments</span>
-                    </div>
-                    <div className="ts-profile-stat">
-                      <span className="ts-profile-stat-value">{user?.reputation || 0}</span>
-                      <span className="ts-profile-stat-label">Reputation</span>
-                    </div>
-                  </div>
-                  <div className="ts-profile-progress">
-                    <div className="ts-progress-bar">
-                      <div
-                        className="ts-progress-fill"
-                        style={{
-                          width: `${Math.min((user?.reputation || 0) / 10, 100)}%`,
-                        }}
-                      ></div>
-                    </div>
-                    <div className="ts-progress-text">
-                      <span>Level {Math.floor((user?.reputation || 0) / 100)}</span>
-                      <span>{user?.reputation || 0} points</span>
-                    </div>
-                  </div>
-                </div>
+                
 
                 {/* Trending Section */}
                 <div className="ts-sidebar-section">
@@ -2611,37 +2561,7 @@ function HomePage() {
       </div>
 
       {/* Footer */}
-      <footer className="ts-home-footer">
-        <div className="ts-footer-content">
-          <div className="ts-footer-help">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="ts-footer-icon"
-            >
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-              <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-            <p>
-              Need help?{" "}
-              <a href="#" className="ts-footer-link">
-                Check our guide
-              </a>
-            </p>
-          </div>
-          <div className="ts-footer-copyright">
-            <p>© {new Date().getFullYear()} TownSquare. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      
     </div>
   )
 }

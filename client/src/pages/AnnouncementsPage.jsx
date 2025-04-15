@@ -83,7 +83,7 @@ function AnnouncementsPage() {
     const matchesSearch =
       searchQuery === "" ||
       announcement.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      announcement.content.toLowerCase().includes(searchQuery.toLowerCase())
+      (announcement.description && announcement.description.toLowerCase().includes(searchQuery.toLowerCase()))
 
     if (filter === "all") return matchesSearch
     if (filter === "important") return matchesSearch && announcement.important
@@ -339,13 +339,6 @@ function AnnouncementsPage() {
                       <span>Important</span>
                     </motion.div>
                   )}
-
-                  {announcement.event && (
-                    <motion.div className="announcement-badge event" whileHover={{ y: -2 }}>
-                      <FiCalendar className="badge-icon" size={14} />
-                      <span>Event</span>
-                    </motion.div>
-                  )}
                 </div>
               </div>
 
@@ -361,68 +354,19 @@ function AnnouncementsPage() {
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <p className="announcement-text">{announcement.content}</p>
+                      <p className="announcement-text">{announcement.description}</p>
 
-                      {announcement.event && (
-                        <motion.div
-                          className="announcement-event"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: 0.1 }}
-                        >
-                          <div className="announcement-event-header">
-                            <FiCalendar className="event-icon" />
-                            <span>Event Details</span>
-                          </div>
-
-                          <div className="announcement-event-info">
-                            <motion.div className="announcement-event-date" whileHover={{ x: 5 }}>
-                              <FiCalendar className="info-icon" size={16} />
-                              <span>{formatDate(announcement.event.date)}</span>
-                            </motion.div>
-
-                            <motion.div className="announcement-event-location" whileHover={{ x: 5 }}>
-                              <FiMapPin className="info-icon" size={16} />
-                              <span>{announcement.event.location}</span>
-                            </motion.div>
-                          </div>
-
-                          <div className="announcement-event-meta">
-                            <div className="event-meta-item">
-                              <FiUsers className="meta-icon" size={14} />
-                              <span>Open to public</span>
-                            </div>
-                            <div className="event-meta-item">
-                              <FiAward className="meta-icon" size={14} />
-                              <span>Official event</span>
-                            </div>
-                            <div className="event-meta-item">
-                              <FiTag className="meta-icon" size={14} />
-                              <span>Community</span>
-                            </div>
-                          </div>
-
-                          <div className="announcement-footer">
-                            <motion.button
-                              className="announcement-secondary-button"
-                              onClick={(e) => e.stopPropagation()}
-                              whileHover={{ y: -2 }}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              <FiCalendar className="button-icon" size={16} />
-                              <span>Add to Calendar</span>
-                            </motion.button>
-                            <motion.button
-                              className="announcement-primary-button"
-                              onClick={(e) => e.stopPropagation()}
-                              whileHover={{ y: -2 }}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              <FiPlus className="button-icon" size={16} />
-                              <span>RSVP</span>
-                            </motion.button>
-                          </div>
-                        </motion.div>
+                      {announcement.attachments && announcement.attachments.length > 0 && (
+                        <div className="announcement-attachments">
+                          {announcement.attachments.map((attachment, idx) => (
+                            <img 
+                              key={idx} 
+                              src={attachment.url} 
+                              alt={`Attachment ${idx + 1}`}
+                              className="announcement-attachment"
+                            />
+                          ))}
+                        </div>
                       )}
 
                       <div className="announcement-actions">
@@ -476,11 +420,11 @@ function AnnouncementsPage() {
               <div className="announcement-engagement">
                 <div className="engagement-item">
                   <FiHeart className="engagement-icon" size={16} />
-                  <span>{Math.floor(Math.random() * 50) + 5}</span>
+                  <span>{announcement.upVotes || 0}</span>
                 </div>
                 <div className="engagement-item">
                   <FiMessageSquare className="engagement-icon" size={16} />
-                  <span>{Math.floor(Math.random() * 20)}</span>
+                  <span>{announcement.comments?.length || 0}</span>
                 </div>
                 <div className="engagement-item">
                   <FiEye className="engagement-icon" size={16} />
@@ -513,13 +457,6 @@ function AnnouncementsPage() {
               <span className="stat-label">Important</span>
             </div>
           </motion.div>
-          <motion.div className="stat-item" whileHover={{ y: -5 }}>
-            <FiCalendar className="stat-icon event" />
-            <div className="stat-content">
-              <span className="stat-value">{announcements.filter((a) => a.event).length}</span>
-              <span className="stat-label">Events</span>
-            </div>
-          </motion.div>
         </div>
 
         <div className="announcements-links">
@@ -544,4 +481,3 @@ function AnnouncementsPage() {
 }
 
 export default AnnouncementsPage
-

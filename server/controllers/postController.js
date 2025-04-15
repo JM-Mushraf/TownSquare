@@ -541,9 +541,19 @@ export const submitVote = async (req, res) => {
 
     // Handle poll voting logic
     if (post.type === "poll") {
-      // Log poll options and selected option ID
-      console.log("Poll Options:", post.poll.options);
-      console.log("Selected Option ID:", option);
+      // Check if user has already voted in ANY option of this poll
+      const hasUserVotedInPoll = post.poll.options.some(opt => 
+        opt.votedBy?.some(vote => 
+          vote && vote.userId && vote.userId.toString() === userId
+        )
+      );
+
+      if (hasUserVotedInPoll) {
+        return res.status(400).json({
+          success: false,
+          message: "You have already voted in this poll",
+        });
+      }
 
       // Find the selected option
       const pollOption = post.poll.options.find(
@@ -562,21 +572,10 @@ export const submitVote = async (req, res) => {
         pollOption.votedBy = [];
       }
 
-      // Check if the user has already voted for this option
-      const hasUserVoted = pollOption.votedBy.some(
-        (vote) => vote && vote.userId && vote.userId.toString() === userId
-      );
-
-      if (hasUserVoted) {
-        return res.status(400).json({
-          success: false,
-          message: "You have already voted for this option",
-        });
-      }
-
       // Increment the vote count and add the user to votedBy
       pollOption.votes += 1;
       pollOption.votedBy.push({ userId });
+    
     } else if (post.type === "survey") {
       const surveyQuestion = post.survey.questions[0]; // Assuming there's only one question for simplicity
 
@@ -1066,7 +1065,7 @@ export const getPostById = async (req, res) => {
     const { postId } = req.params;
     const post = await Post.findById(postId).populate(
       "createdBy",
-      "name email"
+      "name email avatar username"
     );
 
     if (!post) {

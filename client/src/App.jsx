@@ -10,6 +10,7 @@ import { Toaster } from "react-hot-toast"
 import { useSelector } from "react-redux"
 import SurveysPage from "./pages/SurveysPage"
 import MarketplacePage from "./pages/MarketplacePage"
+import PostPage from "./Pages/PostPage"
 axios.defaults.withCredentials = true
 
 // Lazy load all page components
@@ -25,6 +26,7 @@ const CreatePost = lazy(() => import("./components/CreatePost"))
 const Login = lazy(() => import("./pages/Login/Login"))
 const Register = lazy(() => import("./pages/Register/Register"))
 const Verify = lazy(() => import("./pages/Verification/Verify"))
+
 
 // Loading component
 const Loading = () => (
@@ -65,6 +67,7 @@ function App() {
                 <Route path="/emergency" element={<EmergencyPage />} />
                 <Route path="/createPost" element={<CreatePost />} />
                 <Route path="/profile" element={<UserProfile />} />
+                <Route path="/post/:id" element={<PostPage />} />
               </Routes>
             </Suspense>
           </div>
