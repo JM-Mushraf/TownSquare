@@ -1,24 +1,76 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { useSelector } from "react-redux"
-import { User, MapPin, Calendar, Shield, Phone, Mail, Edit, CheckCircle, Building, Home } from "lucide-react"
-import "./UserProfile.css"
+"use client";
+import axios from "axios";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
+import {
+  User,
+  MapPin,
+  Calendar,
+  Shield,
+  Phone,
+  Mail,
+  Edit,
+  CheckCircle,
+  Building,
+  Home,
+  Bookmark,
+  Image,
+  File,
+} from "lucide-react";
+import "./UserProfile.css";
 
 const UserProfile = () => {
-  const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState("overview")
-  const userData = useSelector((state) => state.user.userData)
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [bookmarkedPosts, setBookmarkedPosts] = useState([]);
+  const [isFetchingBookmarks, setIsFetchingBookmarks] = useState(false);
+  const { token, userData } = useSelector((state) => state.user);
 
   useEffect(() => {
-    // Simulate loading data
     const timer = setTimeout(() => {
-      setLoading(false)
-    }, 1000)
+      setLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
-    return () => clearTimeout(timer)
-  }, [])
+  useEffect(() => {
+    const fetchBookmarks = async () => {
+      if (activeTab === "bookmarks" && token) {
+        // Added token check
+        setIsFetchingBookmarks(true);
+        try {
+          const response = await axios.get(
+            "http://localhost:3000/user/getbookmarks",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const data = response.data.data;
+
+          console.log("Bookmarks data:", data); // Debug log
+          if (data && data.bookmarks) {
+            setBookmarkedPosts(data.bookmarks);
+          } else {
+            console.error("Unexpected response format:", data);
+            setBookmarkedPosts([]);
+          }
+        } catch (error) {
+          console.error(
+            "Error fetching bookmarks:",
+            error.response?.data?.message || error.message
+          );
+          setBookmarkedPosts([]);
+        } finally {
+          setIsFetchingBookmarks(false);
+        }
+      }
+    };
+
+    fetchBookmarks();
+  }, [activeTab, token]); // Added token to dependencies
 
   if (loading) {
     return (
@@ -26,21 +78,42 @@ const UserProfile = () => {
         <div className="profile-loading-spinner"></div>
         <p>Loading profile...</p>
       </div>
-    )
+    );
   }
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
-    }).format(date)
-  }
+    }).format(date);
+  };
 
   const handleTabChange = (tab) => {
-    setActiveTab(tab)
-  }
+    setActiveTab(tab);
+  };
+
+  const renderAttachment = (attachment) => {
+    if (attachment.fileType.startsWith("image/")) {
+      return (
+        <div className="attachment-preview" key={attachment.publicId}>
+          <img
+            src={attachment.url}
+            alt="attachment"
+            className="attachment-image"
+          />
+        </div>
+      );
+    } else {
+      return (
+        <div className="attachment-preview" key={attachment.publicId}>
+          <File size={16} />
+          <span>File</span>
+        </div>
+      );
+    }
+  };
 
   return (
     <div className="profile-container">
@@ -57,7 +130,11 @@ const UserProfile = () => {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <img src={userData.avatar || "/placeholder.svg"} alt={userData.username} className="profile-avatar" />
+            <img
+              src={userData.avatar || "/placeholder.svg"}
+              alt={userData.username}
+              className="profile-avatar"
+            />
             <div className="profile-avatar-badge">
               <CheckCircle size={24} />
             </div>
@@ -107,10 +184,10 @@ const UserProfile = () => {
           Overview
         </button>
         <button
-          className={`profile-tab ${activeTab === "activity" ? "active" : ""}`}
-          onClick={() => handleTabChange("activity")}
+          className={`profile-tab ${activeTab === "bookmarks" ? "active" : ""}`}
+          onClick={() => handleTabChange("bookmarks")}
         >
-          Activity
+          Bookmarks
         </button>
         <button
           className={`profile-tab ${activeTab === "settings" ? "active" : ""}`}
@@ -143,7 +220,9 @@ const UserProfile = () => {
                   <Mail size={16} />
                   <div>
                     <span className="profile-info-label">Email</span>
-                    <span className="profile-info-value">{userData.email.replace(/(.{2})(.*)(@.*)/, "$1****$3")}</span>
+                    <span className="profile-info-value">
+                      {userData.email.replace(/(.{2})(.*)(@.*)/, "$1****$3")}
+                    </span>
                   </div>
                 </div>
                 <div className="profile-info-item">
@@ -151,7 +230,10 @@ const UserProfile = () => {
                   <div>
                     <span className="profile-info-label">Phone</span>
                     <span className="profile-info-value">
-                      {userData.phone.replace(/(\d{2})(\d+)(\d{2})/, "$1••••••$3")}
+                      {userData.phone.replace(
+                        /(\d{2})(\d+)(\d{2})/,
+                        "$1••••••$3"
+                      )}
                     </span>
                   </div>
                 </div>
@@ -159,7 +241,9 @@ const UserProfile = () => {
                   <Calendar size={16} />
                   <div>
                     <span className="profile-info-label">Member Since</span>
-                    <span className="profile-info-value">{formatDate(userData.createdAt)}</span>
+                    <span className="profile-info-value">
+                      {formatDate(userData.createdAt)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -180,35 +264,45 @@ const UserProfile = () => {
                   <Home size={16} />
                   <div>
                     <span className="profile-info-label">Address</span>
-                    <span className="profile-info-value">{userData.location.address}</span>
+                    <span className="profile-info-value">
+                      {userData.location.address}
+                    </span>
                   </div>
                 </div>
                 <div className="profile-info-item">
                   <MapPin size={16} />
                   <div>
                     <span className="profile-info-label">City</span>
-                    <span className="profile-info-value">{userData.location.city}</span>
+                    <span className="profile-info-value">
+                      {userData.location.city}
+                    </span>
                   </div>
                 </div>
                 <div className="profile-info-item">
                   <Building size={16} />
                   <div>
                     <span className="profile-info-label">District</span>
-                    <span className="profile-info-value">{userData.location.district}</span>
+                    <span className="profile-info-value">
+                      {userData.location.district}
+                    </span>
                   </div>
                 </div>
                 <div className="profile-info-item">
                   <MapPin size={16} />
                   <div>
                     <span className="profile-info-label">County</span>
-                    <span className="profile-info-value">{userData.location.county}</span>
+                    <span className="profile-info-value">
+                      {userData.location.county}
+                    </span>
                   </div>
                 </div>
                 <div className="profile-info-item">
                   <Mail size={16} />
                   <div>
                     <span className="profile-info-label">Postal Code</span>
-                    <span className="profile-info-value">{userData.location.postcode}</span>
+                    <span className="profile-info-value">
+                      {userData.location.postcode}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -244,17 +338,32 @@ const UserProfile = () => {
             </motion.div>
           </div>
         )}
-
-        {activeTab === "activity" && (
-          <div className="profile-activity">
-            <div className="profile-card">
-              <div className="profile-card-header">
-                <h2>Recent Activity</h2>
-              </div>
-              <div className="profile-card-content">
-                <p className="profile-empty-state">Activity timeline will appear here</p>
-              </div>
-            </div>
+        {activeTab === "bookmarks" && (
+          <div className="bookmarks-grid">
+            {isFetchingBookmarks ? (
+              <p>Loading bookmarks...</p>
+            ) : bookmarkedPosts.length === 0 ? (
+              <p>No bookmarks available.</p>
+            ) : (
+              bookmarkedPosts.map((bookmark) => (
+                <div
+                  key={bookmark._id}
+                  className="bookmark-card"
+                  onClick={() =>
+                    (window.location.href = `http://localhost:5173/post/${bookmark._id}`)
+                  }
+                  style={{ cursor: "pointer" }}
+                >
+                  <h3 className="bookmark-title">{bookmark.title}</h3>
+                  <p className="bookmark-description">{bookmark.description}</p>
+                  {bookmark.attachments && bookmark.attachments.length > 0 && (
+                    <div className="bookmark-attachments">
+                      {bookmark.attachments.map(renderAttachment)}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         )}
 
@@ -265,14 +374,16 @@ const UserProfile = () => {
                 <h2>Account Settings</h2>
               </div>
               <div className="profile-card-content">
-                <p className="profile-empty-state">Settings options will appear here</p>
+                <p className="profile-empty-state">
+                  Settings options will appear here
+                </p>
               </div>
             </div>
           </div>
         )}
       </motion.div>
     </div>
-  )
-}
+  );
+};
 
-export default UserProfile
+export default UserProfile;

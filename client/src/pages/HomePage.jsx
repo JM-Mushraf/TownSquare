@@ -466,6 +466,44 @@ const PostCard = ({ post, navigate }) => {
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
 
   const {token}=useSelector((state)=>state.user);
+  
+  // Function to toggle bookmark
+  const toggleBookmark = async (e) => {
+    e.stopPropagation();
+    
+    if (!token) {
+      alert("Please log in to bookmark posts");
+      return;
+    }
+  
+    try {
+      const response = await axios.post(
+        'http://localhost:3000/user/bookmark',
+        { postId: post._id },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+  
+      if (response.data.success) {
+        setIsBookmarked(!isBookmarked);
+        // Optional: Show feedback to user
+        console.log(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error.response?.data?.message || error.message);
+      // Optional: Show error message to user
+    }
+  };
+
+
+
+
+
+
   const placeholders = [
     "Transmit your thought...",
     "Share your neural imprint...",
@@ -818,29 +856,27 @@ const PostCard = ({ post, navigate }) => {
             </span>
             <span className="neo-action-count">{post.commentCount || comments.length || 0}</span>
           </button>
-          <div className="neo-action-spacer"></div>
           <button
-            className={`neo-action-button ${isBookmarked ? "neo-active" : ""}`}
-            id={`bookmark-${post._id}`}
-            onClick={(e) => {
-              e.stopPropagation()
-              setIsBookmarked(!isBookmarked)
-            }}
+        className={`neo-action-button ${isBookmarked ? "neo-active" : ""}`}
+        id={`bookmark-${post._id}`}
+        onClick={toggleBookmark}
+      >
+        <span className="neo-action-icon neo-bookmark">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill={isBookmarked ? "currentColor" : "none"}
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <span className="neo-action-icon neo-bookmark">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill={isBookmarked ? "currentColor" : "none"}
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-              </svg>
-            </span>
-          </button>
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </span>
+      </button>
+          <div className="neo-action-spacer"></div>
+          
           <button className="neo-action-button" id={`share-${post._id}`} onClick={handleShareClick(post._id)} >
             <span className="neo-action-icon neo-share">
               <svg

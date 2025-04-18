@@ -61,6 +61,12 @@ const userSchema = new mongoose.Schema(
     verificationCode: {
       type: Number,
     },
+    bookmarks:[
+      {
+        type:mongoose.Schema.ObjectId,
+        ref:'Post'
+      }
+    ]
   },
   { timestamps: true }
 );
