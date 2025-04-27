@@ -369,40 +369,7 @@ function AnnouncementsPage() {
                         </div>
                       )}
 
-                      <div className="announcement-actions">
-                        <motion.button
-                          className="announcement-action-button"
-                          onClick={(e) => e.stopPropagation()}
-                          whileHover={{ y: -2, backgroundColor: "var(--muted)" }}
-                        >
-                          <FiThumbsUp className="action-icon" size={16} />
-                          <span>Like</span>
-                        </motion.button>
-                        <motion.button
-                          className="announcement-action-button"
-                          onClick={(e) => e.stopPropagation()}
-                          whileHover={{ y: -2, backgroundColor: "var(--muted)" }}
-                        >
-                          <FiBookmark className="action-icon" size={16} />
-                          <span>Save</span>
-                        </motion.button>
-                        <motion.button
-                          className="announcement-action-button"
-                          onClick={(e) => e.stopPropagation()}
-                          whileHover={{ y: -2, backgroundColor: "var(--muted)" }}
-                        >
-                          <FiShare2 className="action-icon" size={16} />
-                          <span>Share</span>
-                        </motion.button>
-                        <motion.button
-                          className="announcement-action-button"
-                          onClick={(e) => e.stopPropagation()}
-                          whileHover={{ y: -2, backgroundColor: "var(--muted)" }}
-                        >
-                          <FiMessageSquare className="action-icon" size={16} />
-                          <span>Comment</span>
-                        </motion.button>
-                      </div>
+
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -417,20 +384,7 @@ function AnnouncementsPage() {
                 </div>
               </div>
 
-              <div className="announcement-engagement">
-                <div className="engagement-item">
-                  <FiHeart className="engagement-icon" size={16} />
-                  <span>{announcement.upVotes || 0}</span>
-                </div>
-                <div className="engagement-item">
-                  <FiMessageSquare className="engagement-icon" size={16} />
-                  <span>{announcement.comments?.length || 0}</span>
-                </div>
-                <div className="engagement-item">
-                  <FiEye className="engagement-icon" size={16} />
-                  <span>{Math.floor(Math.random() * 500) + 100}</span>
-                </div>
-              </div>
+             
             </motion.div>
           ))}
         </motion.div>

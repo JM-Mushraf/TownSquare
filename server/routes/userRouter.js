@@ -2,7 +2,7 @@ import express from "express";
 import { isAuthenticated } from "../middlewares/auth.js";
 import { upload } from "../middlewares/multer.js";
 import  { registerUser , verifyUser,loginUser,logoutUser,getUserDetails, deleteUser, addBookmarks, getBookmarks}  from "../controllers/userController.js";
-import { listUserChats } from "../controllers/chatController.js";
+import { getCommunities, listUserChats } from "../controllers/chatController.js";
 export const userRouter = express.Router();
 
 userRouter.post(
@@ -18,3 +18,4 @@ userRouter.get('/chats',isAuthenticated,listUserChats)
 userRouter.delete('/delete',isAuthenticated,deleteUser)
 userRouter.post('/bookmark',isAuthenticated,addBookmarks)
 userRouter.get('/getbookmarks',isAuthenticated,getBookmarks)
+userRouter.get('/chat/getCommunities',isAuthenticated,getCommunities)

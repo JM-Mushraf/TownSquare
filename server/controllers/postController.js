@@ -1,15 +1,17 @@
 import { Post } from "../models/postModel.js";
 import { Comment } from "../models/commentModel.js";
-import { uploadOnCloudinary,deleteFromCloudinary } from "../utils/cloudinary.js";
-import  ErrorHandler  from "../utils/errorHandler.js";
+import {
+  uploadOnCloudinary,
+  deleteFromCloudinary,
+} from "../utils/cloudinary.js";
+import ErrorHandler from "../utils/errorHandler.js";
 import mongoose from "mongoose";
-import { User } from "../models/userModel.js"
-
-
+import { User } from "../models/userModel.js";
 
 export const createPost = async (req, res) => {
   try {
-    const { title, description, type, important, poll, survey, marketplace } = req.body;
+    const { title, description, type, important, poll, survey, marketplace } =
+      req.body;
     const createdBy = req.user.id;
 
     // Helper function to safely parse JSON
@@ -35,7 +37,7 @@ export const createPost = async (req, res) => {
 
     // Validate post type specific fields
     let typeSpecificData = {};
-    
+
     switch (type) {
       case "announcements":
         if (important === undefined) {
@@ -48,7 +50,11 @@ export const createPost = async (req, res) => {
         break;
 
       case "poll":
-        if (!parsedPoll?.question || !parsedPoll?.options || parsedPoll.options.length < 2) {
+        if (
+          !parsedPoll?.question ||
+          !parsedPoll?.options ||
+          parsedPoll.options.length < 2
+        ) {
           return res.status(400).json({
             success: false,
             message: "Polls require a question and at least 2 options.",
@@ -65,13 +71,13 @@ export const createPost = async (req, res) => {
 
         typeSpecificData.poll = {
           question: parsedPoll.question,
-          options: parsedPoll.options.map(option => ({
+          options: parsedPoll.options.map((option) => ({
             text: option.text || option,
             votes: 0,
-            votedBy: []
+            votedBy: [],
           })),
           deadline: pollDeadline,
-          status: pollDeadline > new Date() ? "upcoming" : "active"
+          status: pollDeadline > new Date() ? "upcoming" : "active",
         };
         break;
 
@@ -92,15 +98,15 @@ export const createPost = async (req, res) => {
         }
 
         typeSpecificData.survey = {
-          questions: parsedSurvey.questions.map(question => ({
+          questions: parsedSurvey.questions.map((question) => ({
             question: question.question,
             type: question.type,
             options: question.options || [],
             responses: [],
-            ratings: []
+            ratings: [],
           })),
           deadline: surveyDeadline,
-          status: surveyDeadline > new Date() ? "upcoming" : "active"
+          status: surveyDeadline > new Date() ? "upcoming" : "active",
         };
         break;
 
@@ -133,7 +139,7 @@ export const createPost = async (req, res) => {
           status: parsedMarketplace.status || "available",
           tags: parsedMarketplace.tags || [],
           seller: createdBy,
-          contactMessages: []
+          contactMessages: [],
         };
         break;
 
@@ -167,7 +173,7 @@ export const createPost = async (req, res) => {
       type,
       createdBy,
       attachments,
-      ...typeSpecificData
+      ...typeSpecificData,
     };
 
     // Create and save post
@@ -179,7 +185,6 @@ export const createPost = async (req, res) => {
       message: "Post created successfully",
       post: newPost,
     });
-
   } catch (error) {
     console.error("Error creating post:", error);
     return res.status(500).json({
@@ -190,15 +195,18 @@ export const createPost = async (req, res) => {
   }
 };
 
-
 export const getCountyPosts = async (req, res) => {
   try {
     const requestingUserId = req.user.id;
 
     // 1. Get requesting user's county
-    const requestingUser = await User.findById(requestingUserId).select('location.county');
+    const requestingUser = await User.findById(requestingUserId).select(
+      "location.county"
+    );
     if (!requestingUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
     const userCounty = requestingUser.location.county;
 
@@ -209,15 +217,17 @@ export const getCountyPosts = async (req, res) => {
           from: "users",
           localField: "createdBy",
           foreignField: "_id",
-          as: "creator"
-        }
+          as: "creator",
+        },
       },
       { $unwind: "$creator" },
       {
         $match: {
           "creator.location.county": userCounty,
-          type: { $in: ["announcement", "poll", "survey", "general", "marketplace"] }
-        }
+          type: {
+            $in: ["announcement", "poll", "survey", "general", "marketplace"],
+          },
+        },
       },
       { $sort: { createdAt: -1 } },
       {
@@ -246,12 +256,12 @@ export const getCountyPosts = async (req, res) => {
               { $eq: ["$type", "poll"] },
               {
                 question: 1,
-                options: 1,
+                options: { $ifNull: ["$poll.options", []] },  // Ensure options are an array
                 deadline: 1,
-                status: 1
+                status: 1,
               },
-              "$$REMOVE"
-            ]
+              "$$REMOVE",
+            ],
           },
 
           // Survey data
@@ -261,10 +271,10 @@ export const getCountyPosts = async (req, res) => {
               {
                 questions: 1,
                 deadline: 1,
-                status: 1
+                status: 1,
               },
-              "$$REMOVE"
-            ]
+              "$$REMOVE",
+            ],
           },
 
           // Marketplace data
@@ -276,10 +286,10 @@ export const getCountyPosts = async (req, res) => {
                 price: 1,
                 location: 1,
                 status: 1,
-                tags: 1
+                tags: 1,
               },
-              "$$REMOVE"
-            ]
+              "$$REMOVE",
+            ],
           },
 
           // Announcement data
@@ -290,24 +300,24 @@ export const getCountyPosts = async (req, res) => {
                 date: 1,
                 location: 1,
                 time: 1,
-                rsvps: { $size: "$rsvps" }
+                rsvps: { $size: "$rsvps" },
               },
-              "$$REMOVE"
-            ]
-          }
-        }
-      }
+              "$$REMOVE",
+            ],
+          },
+        },
+      },
     ]);
 
     if (!posts || posts.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No posts found in your county"
+        message: "No posts found in your county",
       });
     }
 
     // 3. Format the response
-    const formattedPosts = posts.map(post => {
+    const formattedPosts = posts.map((post) => {
       const basePost = {
         _id: post._id,
         title: post.title,
@@ -324,30 +334,35 @@ export const getCountyPosts = async (req, res) => {
           _id: post.creator._id,
           username: post.creator.username,
           email: post.creator.email,
-          avatar: post.creator.avatar
-        }
+          avatar: post.creator.avatar,
+        },
       };
 
       // Add type-specific data
       switch (post.type) {
         case "poll":
-          const totalVotes = post.poll && Array.isArray(post.poll.options)
-            ? post.poll.options.reduce((sum, opt) => sum + opt.votes, 0)
-            : 0;
+          const totalVotes =
+            post.poll && Array.isArray(post.poll.options)
+              ? post.poll.options.reduce((sum, opt) => sum + opt.votes, 0)
+              : 0;
 
           basePost.poll = {
             question: post.poll?.question || "",
-            options: post.poll && Array.isArray(post.poll.options)
-              ? post.poll.options.map(opt => ({
-                  text: opt.text,
-                  votes: opt.votes,
-                  percentage: totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0
-                }))
-              : [],
+            options:
+              post.poll && Array.isArray(post.poll.options)
+                ? post.poll.options.map((opt) => ({
+                    text: opt.text,
+                    votes: opt.votes,
+                    percentage:
+                      totalVotes > 0
+                        ? Math.round((opt.votes / totalVotes) * 100)
+                        : 0,
+                  }))
+                : [],
             totalVotes,
             deadline: post.poll?.deadline || null,
             status: post.poll?.status || "",
-            timeLeft: getTimeRemaining(post.poll?.deadline)
+            timeLeft: getTimeRemaining(post.poll?.deadline),
           };
           break;
 
@@ -356,7 +371,7 @@ export const getCountyPosts = async (req, res) => {
             questions: post.survey?.questions || [],
             deadline: post.survey?.deadline || null,
             status: post.survey?.status || "",
-            timeLeft: getTimeRemaining(post.survey?.deadline)
+            timeLeft: getTimeRemaining(post.survey?.deadline),
           };
           break;
 
@@ -370,7 +385,7 @@ export const getCountyPosts = async (req, res) => {
             formattedDate: post.event?.date ? formatDate(post.event.date) : "",
             time: post.event?.time || "",
             location: post.event?.location || "",
-            rsvpCount: post.event?.rsvps || 0
+            rsvpCount: post.event?.rsvps || 0,
           };
           break;
       }
@@ -379,57 +394,53 @@ export const getCountyPosts = async (req, res) => {
     });
 
     // 4. Get additional data for sidebar
-    const [trendingPosts, upcomingEvents] = await Promise.all([
-      // Trending posts (most upvoted in last 7 days)
-      Post.find({
-        'creator.location.county': userCounty,
-        createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
-      })
-        .sort({ upVotes: -1 })
-        .limit(3)
-        .populate('createdBy', 'username avatar'),
-
-      // Upcoming events (announcements with future dates)
-      Post.find({
-        'creator.location.county': userCounty,
-        type: "announcement",
-        "event.date": { $gte: new Date() }
-      })
-        .sort({ "event.date": 1 })
-        .limit(2)
-        .populate('createdBy', 'username avatar')
+    const trendingPosts = await Post.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "creator",
+        },
+      },
+      { $unwind: "$creator" },
+      {
+        $match: {
+          "creator.location.county": userCounty,
+          createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          upVotes: 1,
+        },
+      },
+      { $sort: { upVotes: -1 } },
+      { $limit: 3 },
     ]);
 
     res.status(200).json({
       success: true,
       posts: formattedPosts,
-      trending: trendingPosts.map(post => ({
+      trending: trendingPosts.map((post) => ({
         _id: post._id,
         title: post.title,
-        commentCount: post.comments.length,
-        createdAt: post.createdAt,
-        createdBy: post.createdBy
+        upVotes: post.upVotes,
       })),
-      upcomingEvents: upcomingEvents.map(event => ({
-        _id: event._id,
-        title: event.title,
-        date: event.event.date,
-        formattedDate: formatDate(event.event.date),
-        location: event.event.location,
-        createdBy: event.createdBy
-      })),
-      county: userCounty
+      county: userCounty,
     });
-
   } catch (error) {
     console.error("Error in getCountyPosts:", error);
     res.status(500).json({
       success: false,
       message: "Error fetching county posts",
-      error: error.message
+      error: error.message,
     });
   }
 };
+
 
 // Helper functions
 function getTimeRemaining(endtime) {
@@ -442,25 +453,21 @@ function getTimeRemaining(endtime) {
   return {
     days,
     hours,
-    formatted: `${days}d ${hours}h left`
+    formatted: `${days}d ${hours}h left`,
   };
 }
 
 function formatDate(date) {
   if (!date) return "";
-  return new Date(date).toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  return new Date(date).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
-
-
-
-
 
 // SurveyAndPoll
 export const getSurveyAndPollPosts = async (req, res) => {
@@ -483,14 +490,14 @@ export const getSurveyAndPollPosts = async (req, res) => {
     // Map the posts to include the required fields
     const formattedPosts = posts.map((post) => {
       const response = {
-        _id:post._id,
+        _id: post._id,
         title: post.title, // Include title
         description: post.description, // Include description
         type: post.type, // Include type
         createdBy: post.createdBy, // Include createdBy
         createdAt: post.createdAt, // Include createdAt
         updatedAt: post.updatedAt, // Include updatedAt
-        attachments:post.attachments,
+        attachments: post.attachments,
       };
 
       // Include survey or poll based on the post type
@@ -542,9 +549,9 @@ export const submitVote = async (req, res) => {
     // Handle poll voting logic
     if (post.type === "poll") {
       // Check if user has already voted in ANY option of this poll
-      const hasUserVotedInPoll = post.poll.options.some(opt => 
-        opt.votedBy?.some(vote => 
-          vote && vote.userId && vote.userId.toString() === userId
+      const hasUserVotedInPoll = post.poll.options.some((opt) =>
+        opt.votedBy?.some(
+          (vote) => vote && vote.userId && vote.userId.toString() === userId
         )
       );
 
@@ -575,7 +582,6 @@ export const submitVote = async (req, res) => {
       // Increment the vote count and add the user to votedBy
       pollOption.votes += 1;
       pollOption.votedBy.push({ userId });
-    
     } else if (post.type === "survey") {
       const surveyQuestion = post.survey.questions[0]; // Assuming there's only one question for simplicity
 
@@ -732,7 +738,11 @@ export const viewResults = async (req, res) => {
     }
 
     // Find the post with only necessary fields
-    const post = await Post.findById(postId, { type: 1, poll: 1, survey: 1 }).exec();
+    const post = await Post.findById(postId, {
+      type: 1,
+      poll: 1,
+      survey: 1,
+    }).exec();
 
     // Check if the post exists
     if (!post) {
@@ -762,7 +772,10 @@ export const viewResults = async (req, res) => {
           votes: option.votes,
           votedBy: option.votedBy,
         })),
-        totalVotes: post.poll.options.reduce((acc, option) => acc + option.votes, 0),
+        totalVotes: post.poll.options.reduce(
+          (acc, option) => acc + option.votes,
+          0
+        ),
       };
     }
 
@@ -780,10 +793,14 @@ export const viewResults = async (req, res) => {
             if (question.type === "multiple-choice") {
               questionResult.options = await Promise.all(
                 question.options.map(async (option, index) => {
-                  const votes = question.votes.filter((vote) => vote.optionIndex === index);
+                  const votes = question.votes.filter(
+                    (vote) => vote.optionIndex === index
+                  );
                   const votedByUsers = await Promise.all(
                     votes.map(async (vote) => {
-                      const user = await User.findById(vote.userId, { username: 1 }).exec();
+                      const user = await User.findById(vote.userId, {
+                        username: 1,
+                      }).exec();
                       return user ? user.username : "Unknown User";
                     })
                   );
@@ -802,7 +819,9 @@ export const viewResults = async (req, res) => {
             if (question.type === "open-ended") {
               questionResult.responses = await Promise.all(
                 question.responses.map(async (response) => {
-                  const user = await User.findById(response.userId, { username: 1 }).exec();
+                  const user = await User.findById(response.userId, {
+                    username: 1,
+                  }).exec();
                   return {
                     response: response.response,
                     userId: response.userId,
@@ -818,12 +837,17 @@ export const viewResults = async (req, res) => {
               const totalRatings = question.ratings.length;
               const averageRating =
                 totalRatings > 0
-                  ? question.ratings.reduce((acc, rating) => acc + rating.rating, 0) / totalRatings
+                  ? question.ratings.reduce(
+                      (acc, rating) => acc + rating.rating,
+                      0
+                    ) / totalRatings
                   : 0;
 
               questionResult.ratings = await Promise.all(
                 question.ratings.map(async (rating) => {
-                  const user = await User.findById(rating.userId, { username: 1 }).exec();
+                  const user = await User.findById(rating.userId, {
+                    username: 1,
+                  }).exec();
                   return {
                     rating: rating.rating,
                     userId: rating.userId,
@@ -861,7 +885,8 @@ export const viewResults = async (req, res) => {
 // Fetch marketplace posts
 export const getMarketplacePosts = async (req, res) => {
   try {
-    const { itemType, searchQuery, minPrice, maxPrice, location, sortOption } = req.query;
+    const { itemType, searchQuery, minPrice, maxPrice, location, sortOption } =
+      req.query;
 
     // Build the query
     const query = { type: "marketplace" };
@@ -996,8 +1021,6 @@ export const sendMessageToSeller = async (req, res) => {
   }
 };
 
-
-
 // Delete a post (Only the creator can delete)
 export const deletePost = async (req, res) => {
   try {
@@ -1023,13 +1046,11 @@ export const deletePost = async (req, res) => {
       .status(200)
       .json({ success: true, message: "Post deleted successfully" });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error deleting post",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error deleting post",
+      error: error.message,
+    });
   }
 };
 
@@ -1047,7 +1068,8 @@ export const getAllPosts = async (req, res) => {
     // Step 3: Return the remaining posts
     res.status(200).json({
       success: true,
-      message: "Posts fetched successfully after cleaning up null createdBy posts",
+      message:
+        "Posts fetched successfully after cleaning up null createdBy posts",
       posts,
     });
   } catch (error) {
@@ -1076,128 +1098,131 @@ export const getPostById = async (req, res) => {
 
     res.status(200).json({ success: true, post });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching post",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching post",
+      error: error.message,
+    });
   }
 };
-
 
 // Upvote a post (User can only upvote once)
 export const upvotePost = async (req, res) => {
   try {
-      const { postId } = req.params;
-      const userId = req.user._id;
+    const { postId } = req.params;
+    const userId = req.user._id;
 
-      if (!mongoose.Types.ObjectId.isValid(postId)) {
-          return res.status(400).json({ success: false, message: "Invalid post ID" });
-      }
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid post ID" });
+    }
 
-      const post = await Post.findById(postId);
-      if (!post) {
-          return res.status(404).json({ success: false, message: "Post not found" });
-      }
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
+    }
 
-      // Check if the user has already voted
-      const existingVoteIndex = post.votedUsers.findIndex(
-          vote => vote.userId.toString() === userId.toString()
-      );
+    // Check if the user has already voted
+    const existingVoteIndex = post.votedUsers.findIndex(
+      (vote) => vote.userId.toString() === userId.toString()
+    );
 
-      if (existingVoteIndex !== -1) {
-          const existingVote = post.votedUsers[existingVoteIndex];
-          if (existingVote.voteType === "upvote") {
-              return res.status(400).json({ 
-                  success: false, 
-                  message: "You have already upvoted this post" 
-              });
-          } else {
-              // User previously downvoted, switch to upvote
-              post.downVotes -= 1;
-              post.votedUsers[existingVoteIndex].voteType = "upvote";
-              post.upVotes += 1;
-          }
+    if (existingVoteIndex !== -1) {
+      const existingVote = post.votedUsers[existingVoteIndex];
+      if (existingVote.voteType === "upvote") {
+        return res.status(400).json({
+          success: false,
+          message: "You have already upvoted this post",
+        });
       } else {
-          // New upvote
-          post.upVotes += 1;
-          post.votedUsers.push({ userId, voteType: "upvote" });
+        // User previously downvoted, switch to upvote
+        post.downVotes -= 1;
+        post.votedUsers[existingVoteIndex].voteType = "upvote";
+        post.upVotes += 1;
       }
+    } else {
+      // New upvote
+      post.upVotes += 1;
+      post.votedUsers.push({ userId, voteType: "upvote" });
+    }
 
-      const updatedPost = await post.save();
-      res.status(200).json({ 
-          success: true, 
-          message: "Post upvoted successfully", 
-          upVotes: updatedPost.upVotes,
-          downVotes: updatedPost.downVotes
-      });
-
+    const updatedPost = await post.save();
+    res.status(200).json({
+      success: true,
+      message: "Post upvoted successfully",
+      upVotes: updatedPost.upVotes,
+      downVotes: updatedPost.downVotes,
+    });
   } catch (error) {
-      console.error("Error upvoting post:", error);
-      res.status(500).json({ 
-          success: false, 
-          message: "Error upvoting post", 
-          error: error.message 
-      });
+    console.error("Error upvoting post:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error upvoting post",
+      error: error.message,
+    });
   }
 };
 
 // Downvote a post (User can only downvote once)
 export const downvotePost = async (req, res) => {
   try {
-      const { postId } = req.params;
-      const userId = req.user._id;
+    const { postId } = req.params;
+    const userId = req.user._id;
 
-      if (!mongoose.Types.ObjectId.isValid(postId)) {
-          return res.status(400).json({ success: false, message: "Invalid post ID" });
-      }
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid post ID" });
+    }
 
-      const post = await Post.findById(postId);
-      if (!post) {
-          return res.status(404).json({ success: false, message: "Post not found" });
-      }
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
+    }
 
-      // Check if the user has already voted
-      const existingVoteIndex = post.votedUsers.findIndex(
-          vote => vote.userId.toString() === userId.toString()
-      );
+    // Check if the user has already voted
+    const existingVoteIndex = post.votedUsers.findIndex(
+      (vote) => vote.userId.toString() === userId.toString()
+    );
 
-      if (existingVoteIndex !== -1) {
-          const existingVote = post.votedUsers[existingVoteIndex];
-          if (existingVote.voteType === "downvote") {
-              return res.status(400).json({ 
-                  success: false, 
-                  message: "You have already downvoted this post" 
-              });
-          } else {
-              // User previously upvoted, switch to downvote
-              post.upVotes -= 1;
-              post.votedUsers[existingVoteIndex].voteType = "downvote";
-              post.downVotes += 1;
-          }
+    if (existingVoteIndex !== -1) {
+      const existingVote = post.votedUsers[existingVoteIndex];
+      if (existingVote.voteType === "downvote") {
+        return res.status(400).json({
+          success: false,
+          message: "You have already downvoted this post",
+        });
       } else {
-          // New downvote
-          post.downVotes += 1;
-          post.votedUsers.push({ userId, voteType: "downvote" });
+        // User previously upvoted, switch to downvote
+        post.upVotes -= 1;
+        post.votedUsers[existingVoteIndex].voteType = "downvote";
+        post.downVotes += 1;
       }
+    } else {
+      // New downvote
+      post.downVotes += 1;
+      post.votedUsers.push({ userId, voteType: "downvote" });
+    }
 
-      const updatedPost = await post.save();
-      res.status(200).json({ 
-          success: true, 
-          message: "Post downvoted successfully", 
-          downVotes: updatedPost.downVotes,
-          upVotes: updatedPost.upVotes
-      });
-
+    const updatedPost = await post.save();
+    res.status(200).json({
+      success: true,
+      message: "Post downvoted successfully",
+      downVotes: updatedPost.downVotes,
+      upVotes: updatedPost.upVotes,
+    });
   } catch (error) {
-      console.error("Error downvoting post:", error);
-      res.status(500).json({ 
-          success: false, 
-          message: "Error downvoting post", 
-          error: error.message 
-      });
+    console.error("Error downvoting post:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error downvoting post",
+      error: error.message,
+    });
   }
 };
 // Remove a vote from a post
@@ -1207,23 +1232,27 @@ export const removeVote = async (req, res) => {
     const userId = req.user._id;
 
     if (!mongoose.Types.ObjectId.isValid(postId)) {
-      return res.status(400).json({ success: false, message: "Invalid post ID" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid post ID" });
     }
 
     const post = await Post.findById(postId);
     if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
     }
 
     // Check if the user has voted
     const existingVoteIndex = post.votedUsers.findIndex(
-      vote => vote.userId.toString() === userId.toString()
+      (vote) => vote.userId.toString() === userId.toString()
     );
 
     if (existingVoteIndex === -1) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "You haven't voted on this post yet" 
+      return res.status(400).json({
+        success: false,
+        message: "You haven't voted on this post yet",
       });
     }
 
@@ -1239,137 +1268,134 @@ export const removeVote = async (req, res) => {
     post.votedUsers.splice(existingVoteIndex, 1);
 
     const updatedPost = await post.save();
-    res.status(200).json({ 
-      success: true, 
-      message: "Vote removed successfully", 
+    res.status(200).json({
+      success: true,
+      message: "Vote removed successfully",
       upVotes: updatedPost.upVotes,
-      downVotes: updatedPost.downVotes
+      downVotes: updatedPost.downVotes,
     });
-
   } catch (error) {
     console.error("Error removing vote:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Error removing vote", 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      message: "Error removing vote",
+      error: error.message,
     });
   }
 };
-
 
 // Add comment to a post
 export const addComment = async (req, res) => {
   try {
-      const { postId, message } = req.body;
-      const userId = req.user.id;
+    const { postId, message } = req.body;
+    const userId = req.user.id;
 
-      if (!postId || !message) {
-          return res.status(400).json({ 
-              success: false, 
-              message: "Post ID and message are required" 
-          });
-      }
-
-      if (!mongoose.Types.ObjectId.isValid(postId)) {
-          return res.status(400).json({ 
-              success: false, 
-              message: "Invalid post ID" 
-          });
-      }
-
-      // Check if post exists
-      const postExists = await Post.exists({ _id: postId });
-      if (!postExists) {
-          return res.status(404).json({ 
-              success: false, 
-              message: "Post not found" 
-          });
-      }
-
-      // Create a new comment
-      const comment = new Comment({ 
-          postId, 
-          userId, 
-          message 
+    if (!postId || !message) {
+      return res.status(400).json({
+        success: false,
+        message: "Post ID and message are required",
       });
-      await comment.save();
+    }
 
-      // Add comment reference to the post using $addToSet to prevent duplicates
-      const updatedPost = await Post.findByIdAndUpdate(
-          postId, 
-          { $addToSet: { comments: comment._id } },
-          { new: true }
-      ).populate('comments');
-
-      res.status(201).json({ 
-          success: true, 
-          message: "Comment added successfully", 
-          comment,
-          post: updatedPost
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid post ID",
       });
+    }
+
+    // Check if post exists
+    const postExists = await Post.exists({ _id: postId });
+    if (!postExists) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
+    }
+
+    // Create a new comment
+    const comment = new Comment({
+      postId,
+      userId,
+      message,
+    });
+    await comment.save();
+
+    // Add comment reference to the post using $addToSet to prevent duplicates
+    const updatedPost = await Post.findByIdAndUpdate(
+      postId,
+      { $addToSet: { comments: comment._id } },
+      { new: true }
+    ).populate("comments");
+
+    res.status(201).json({
+      success: true,
+      message: "Comment added successfully",
+      comment,
+      post: updatedPost,
+    });
   } catch (error) {
-      console.error("Error adding comment:", error);
-      res.status(500).json({ 
-          success: false, 
-          message: "Error adding comment", 
-          error: error.message 
-      });
+    console.error("Error adding comment:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error adding comment",
+      error: error.message,
+    });
   }
 };
 export const getPostComments = async (req, res) => {
   try {
-      const { postId } = req.params;
-      
-      // Validate postId
-      if (!mongoose.Types.ObjectId.isValid(postId)) {
-          return res.status(400).json({
-              success: false,
-              message: "Invalid post ID format"
-          });
-      }
+    const { postId } = req.params;
 
-      // Check if post exists
-      const postExists = await Post.exists({ _id: postId });
-      if (!postExists) {
-          return res.status(404).json({
-              success: false,
-              message: "Post not found"
-          });
-      }
-
-      // Pagination
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 10;
-      const skip = (page - 1) * limit;
-
-      // Get comments with user details and total count
-      const [comments, total] = await Promise.all([
-          Comment.find({ postId })
-              .populate("userId", "username avatar") // Include user details
-              .sort({ createdAt: -1 }) // Newest first
-              .skip(skip)
-              .limit(limit),
-          Comment.countDocuments({ postId })
-      ]);
-
-      res.status(200).json({
-          success: true,
-          message: comments.length ? 
-              "Comments retrieved successfully" : 
-              "No comments found for this post",
-          comments,
-          total,
-          page,
-          pages: Math.ceil(total / limit)
+    // Validate postId
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid post ID format",
       });
+    }
 
+    // Check if post exists
+    const postExists = await Post.exists({ _id: postId });
+    if (!postExists) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
+    }
+
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // Get comments with user details and total count
+    const [comments, total] = await Promise.all([
+      Comment.find({ postId })
+        .populate("userId", "username avatar") // Include user details
+        .sort({ createdAt: -1 }) // Newest first
+        .skip(skip)
+        .limit(limit),
+      Comment.countDocuments({ postId }),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      message: comments.length
+        ? "Comments retrieved successfully"
+        : "No comments found for this post",
+      comments,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+    });
   } catch (error) {
-      console.error("Error getting post comments:", error);
-      res.status(500).json({
-          success: false,
-          message: "Error retrieving comments",
-          error: error.message
-      });
+    console.error("Error getting post comments:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving comments",
+      error: error.message,
+    });
   }
 };
 
@@ -1380,7 +1406,13 @@ export const createPoll = async (req, res) => {
     const createdBy = req.user._id;
 
     // Validate required fields
-    if (!title || !solutions || !Array.isArray(solutions) || solutions.length < 2 || solutions.length > 5) {
+    if (
+      !title ||
+      !solutions ||
+      !Array.isArray(solutions) ||
+      solutions.length < 2 ||
+      solutions.length > 5
+    ) {
       return res.status(400).json({
         success: false,
         message: "Title and 2 to 5 solutions are required.",
@@ -1414,7 +1446,6 @@ export const createPoll = async (req, res) => {
     });
   }
 };
-
 
 export const getAllAnnouncements = async (req, res) => {
   try {

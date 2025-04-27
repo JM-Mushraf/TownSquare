@@ -1,80 +1,84 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import axios from "axios"
-import { useTheme } from "../components/ThemeProvider"
-import ThemeToggle from "../components/ThemeToggle"
-import { useSelector } from "react-redux"
-import "./HomePage.css"
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { useTheme } from "../components/ThemeProvider";
+import ThemeToggle from "../components/ThemeToggle";
+import { useSelector } from "react-redux";
+import "./HomePage.css";
 
 // Helper function to format time ago
 const getTimeAgo = (dateString) => {
-  if (!dateString) return ""
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffInSeconds = Math.floor((now - date) / 1000)
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
 
-  if (diffInSeconds < 60) return `${diffInSeconds} seconds ago`
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
-  return `${Math.floor(diffInSeconds / 86400)} days ago`
-}
+  if (diffInSeconds < 60) return `${diffInSeconds} seconds ago`;
+  if (diffInSeconds < 3600)
+    return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+  if (diffInSeconds < 86400)
+    return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+  return `${Math.floor(diffInSeconds / 86400)} days ago`;
+};
 
 // Format date helper
 const formatDate = (dateString) => {
-  if (!dateString) return ""
-  const date = new Date(dateString)
+  if (!dateString) return "";
+  const date = new Date(dateString);
   return date.toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  })
-}
+  });
+};
 
 // Image Carousel Component
 const ImageCarousel = ({ images }) => {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [touchStart, setTouchStart] = useState(0)
-  const [touchEnd, setTouchEnd] = useState(0)
-  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const handleNext = (e) => {
-    e.stopPropagation()
-    if (isTransitioning || !images || images.length <= 1) return
-    setIsTransitioning(true)
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length)
-    setTimeout(() => setIsTransitioning(false), 500)
-  }
+    e.stopPropagation();
+    if (isTransitioning || !images || images.length <= 1) return;
+    setIsTransitioning(true);
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
 
   const handlePrev = (e) => {
-    e.stopPropagation()
-    if (isTransitioning || !images || images.length <= 1) return
-    setIsTransitioning(true)
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length)
-    setTimeout(() => setIsTransitioning(false), 500)
-  }
+    e.stopPropagation();
+    if (isTransitioning || !images || images.length <= 1) return;
+    setIsTransitioning(true);
+    setCurrentIndex(
+      (prevIndex) => (prevIndex - 1 + images.length) % images.length
+    );
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
 
   const handleTouchStart = (e) => {
-    setTouchStart(e.targetTouches[0].clientX)
-  }
+    setTouchStart(e.targetTouches[0].clientX);
+  };
 
   const handleTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX)
-  }
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
 
   const handleTouchEnd = () => {
     if (touchStart - touchEnd > 100) {
-      handleNext()
+      handleNext();
     }
     if (touchEnd - touchStart > 100) {
-      handlePrev()
+      handlePrev();
     }
-  }
+  };
 
   if (!images || images.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -86,7 +90,9 @@ const ImageCarousel = ({ images }) => {
         onTouchEnd={handleTouchEnd}
       >
         <div
-          className={`ts-carousel-track ${isTransitioning ? "transitioning" : ""}`}
+          className={`ts-carousel-track ${
+            isTransitioning ? "transitioning" : ""
+          }`}
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {images.map((image, index) => (
@@ -104,8 +110,8 @@ const ImageCarousel = ({ images }) => {
           <>
             <button
               onClick={(e) => {
-                handlePrev(e)
-                e.stopPropagation()
+                handlePrev(e);
+                e.stopPropagation();
               }}
               className="ts-carousel-button ts-carousel-button-prev"
               aria-label="Previous image"
@@ -123,12 +129,12 @@ const ImageCarousel = ({ images }) => {
                 <polyline points="15 18 9 12 15 6"></polyline>
               </svg>
             </button>
-            <button 
+            <button
               onClick={(e) => {
-                handleNext(e)
-                e.stopPropagation()
+                handleNext(e);
+                e.stopPropagation();
               }}
-              className="ts-carousel-button ts-carousel-button-next" 
+              className="ts-carousel-button ts-carousel-button-next"
               aria-label="Next image"
             >
               <svg
@@ -148,10 +154,12 @@ const ImageCarousel = ({ images }) => {
               {images.map((_, index) => (
                 <div
                   key={`indicator-${index}`}
-                  className={`ts-carousel-indicator ${index === currentIndex ? "active" : ""}`}
+                  className={`ts-carousel-indicator ${
+                    index === currentIndex ? "active" : ""
+                  }`}
                   onClick={(e) => {
-                    e.stopPropagation()
-                    setCurrentIndex(index)
+                    e.stopPropagation();
+                    setCurrentIndex(index);
                   }}
                 />
               ))}
@@ -160,60 +168,62 @@ const ImageCarousel = ({ images }) => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
 // Hero Carousel Component
 const HeroCarousel = ({ items, navigate }) => {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [touchStart, setTouchStart] = useState(0)
-  const [touchEnd, setTouchEnd] = useState(0)
-  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const handleNext = (e) => {
-    e?.stopPropagation()
-    if (isTransitioning || !items || items.length <= 1) return
-    setIsTransitioning(true)
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % items.length)
-    setTimeout(() => setIsTransitioning(false), 600)
-  }
+    e?.stopPropagation();
+    if (isTransitioning || !items || items.length <= 1) return;
+    setIsTransitioning(true);
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % items.length);
+    setTimeout(() => setIsTransitioning(false), 600);
+  };
 
   const handlePrev = (e) => {
-    e?.stopPropagation()
-    if (isTransitioning || !items || items.length <= 1) return
-    setIsTransitioning(true)
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + items.length) % items.length)
-    setTimeout(() => setIsTransitioning(false), 600)
-  }
+    e?.stopPropagation();
+    if (isTransitioning || !items || items.length <= 1) return;
+    setIsTransitioning(true);
+    setCurrentIndex(
+      (prevIndex) => (prevIndex - 1 + items.length) % items.length
+    );
+    setTimeout(() => setIsTransitioning(false), 600);
+  };
 
   const handleTouchStart = (e) => {
-    setTouchStart(e.targetTouches[0].clientX)
-  }
+    setTouchStart(e.targetTouches[0].clientX);
+  };
 
   const handleTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX)
-  }
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
 
   const handleTouchEnd = () => {
     if (touchStart - touchEnd > 100) {
-      handleNext()
+      handleNext();
     }
     if (touchEnd - touchStart > 100) {
-      handlePrev()
+      handlePrev();
     }
-  }
+  };
 
   useEffect(() => {
     // Auto-advance the carousel
     const interval = setInterval(() => {
-      handleNext()
-    }, 5000)
+      handleNext();
+    }, 5000);
 
-    return () => clearInterval(interval)
-  }, [currentIndex])
+    return () => clearInterval(interval);
+  }, [currentIndex]);
 
   if (!items || items.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -234,15 +244,15 @@ const HeroCarousel = ({ items, navigate }) => {
                 className="ts-hero-card"
                 onClick={() => {
                   if (item.type === "announcements") {
-                    navigate(`/announcements/`)
+                    navigate(`/announcements/`);
                   } else if (item.type === "poll") {
-                    navigate(`/surveys/`)
+                    navigate(`/surveys/`);
                   } else if (item.type === "marketplace") {
-                    navigate(`/marketplace/`)
+                    navigate(`/marketplace/`);
                   } else if (item.type === "survey") {
-                    navigate(`/surveys/`)
+                    navigate(`/surveys/`);
                   } else {
-                    navigate(`/post/${item._id}`)
+                    navigate(`/post/${item._id}`);
                   }
                 }}
               >
@@ -251,7 +261,11 @@ const HeroCarousel = ({ items, navigate }) => {
                   item.attachments.length > 0 &&
                   item.attachments[0].fileType?.startsWith("image/") ? (
                     <img
-                      src={item.attachments[0].url || "/placeholder.svg?height=500&width=1000" || "/placeholder.svg"}
+                      src={
+                        item.attachments[0].url ||
+                        "/placeholder.svg?height=500&width=1000" ||
+                        "/placeholder.svg"
+                      }
                       alt={item.title}
                     />
                   ) : (
@@ -322,9 +336,15 @@ const HeroCarousel = ({ items, navigate }) => {
                   )}
                   <div className="ts-hero-overlay">
                     <div className="ts-hero-content">
-                      <span className={`ts-hero-badge ts-hero-badge-${item.type}`}>{item.type}</span>
+                      <span
+                        className={`ts-hero-badge ts-hero-badge-${item.type}`}
+                      >
+                        {item.type}
+                      </span>
                       <h2 className="ts-hero-title">{item.title}</h2>
-                      <p className="ts-hero-description">{item.description.substring(0, 120)}...</p>
+                      <p className="ts-hero-description">
+                        {item.description.substring(0, 120)}...
+                      </p>
                       <div className="ts-hero-meta">
                         <span className="ts-hero-author">
                           <svg
@@ -388,12 +408,12 @@ const HeroCarousel = ({ items, navigate }) => {
           ))}
         </div>
 
-        <button 
+        <button
           onClick={(e) => {
-            handlePrev(e)
-            e.stopPropagation()
-          }} 
-          className="ts-hero-control ts-hero-control-prev" 
+            handlePrev(e);
+            e.stopPropagation();
+          }}
+          className="ts-hero-control ts-hero-control-prev"
           aria-label="Previous slide"
         >
           <svg
@@ -410,12 +430,12 @@ const HeroCarousel = ({ items, navigate }) => {
             <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
         </button>
-        <button 
+        <button
           onClick={(e) => {
-            handleNext(e)
-            e.stopPropagation()
-          }} 
-          className="ts-hero-control ts-hero-control-next" 
+            handleNext(e);
+            e.stopPropagation();
+          }}
+          className="ts-hero-control ts-hero-control-next"
           aria-label="Next slide"
         >
           <svg
@@ -438,82 +458,82 @@ const HeroCarousel = ({ items, navigate }) => {
         {items.map((_, index) => (
           <button
             key={`hero-indicator-${index}`}
-            className={`ts-hero-indicator ${index === currentIndex ? "active" : ""}`}
+            className={`ts-hero-indicator ${
+              index === currentIndex ? "active" : ""
+            }`}
             onClick={(e) => {
-              e.stopPropagation()
-              setCurrentIndex(index)
+              e.stopPropagation();
+              setCurrentIndex(index);
             }}
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 // Post Card Component - Renders different layouts based on post type
 const PostCard = ({ post, navigate }) => {
-  const [isHovered, setIsHovered] = useState(false)
-  const [isAnimating, setIsAnimating] = useState(false)
-  const [isBookmarked, setIsBookmarked] = useState(false)
-  const [comments, setComments] = useState([])
-  const [showComments, setShowComments] = useState(false)
-  const [commentText, setCommentText] = useState("")
-  const [isLoadingComments, setIsLoadingComments] = useState(false)
-  const [userVote, setUserVote] = useState(null)
-  const [upVotes, setUpVotes] = useState(post.upVotes || 0)
-  const [downVotes, setDownVotes] = useState(post.downVotes || 0)
+  const [isHovered, setIsHovered] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState("");
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [userVote, setUserVote] = useState(null);
+  const [upVotes, setUpVotes] = useState(post.upVotes || 0);
+  const [downVotes, setDownVotes] = useState(post.downVotes || 0);
   // const [token, setToken] = useState("")
-  const [placeholderIndex, setPlaceholderIndex] = useState(0)
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
 
-  const {token}=useSelector((state)=>state.user);
-  
+  const { token } = useSelector((state) => state.user);
+
   // Function to toggle bookmark
   const toggleBookmark = async (e) => {
     e.stopPropagation();
-    
+
     if (!token) {
       alert("Please log in to bookmark posts");
       return;
     }
-  
+
     try {
       const response = await axios.post(
-        'http://localhost:3000/user/bookmark',
+        "http://localhost:3000/user/bookmark",
         { postId: post._id },
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
       );
-  
+
       if (response.data.success) {
         setIsBookmarked(!isBookmarked);
         // Optional: Show feedback to user
         console.log(response.data.message);
       }
     } catch (error) {
-      console.error('Error toggling bookmark:', error.response?.data?.message || error.message);
+      console.error(
+        "Error toggling bookmark:",
+        error.response?.data?.message || error.message
+      );
       // Optional: Show error message to user
     }
   };
-
-
-
-
-
 
   const placeholders = [
     "Transmit your thought...",
     "Share your neural imprint...",
     "Broadcast your perspective...",
     "Quantum-link your ideas...",
-  ]
+  ];
 
-  const handleShareClick = (id)=>async (e) => {
+  const handleShareClick = (id) => async (e) => {
     e.stopPropagation();
-    
+
     if (navigator.share) {
       // Use Web Share API if available (mobile devices)
       try {
@@ -539,34 +559,34 @@ const PostCard = ({ post, navigate }) => {
 
   // Get token from localStorage on component mount
   useEffect(() => {
-    const storedToken = localStorage.getItem("token")
+    const storedToken = localStorage.getItem("token");
     if (storedToken) {
-      setToken(storedToken)
+      setToken(storedToken);
     }
 
     // Check if user has already voted on this post
-    const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}")
+    const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}");
     if (votedPosts[post._id]) {
-      setUserVote(votedPosts[post._id])
+      setUserVote(votedPosts[post._id]);
     }
-  }, [post._id])
+  }, [post._id]);
 
   // Cycle through placeholder texts
   useEffect(() => {
     const interval = setInterval(() => {
-      setPlaceholderIndex((prevIndex) => (prevIndex + 1) % placeholders.length)
-    }, 3000)
+      setPlaceholderIndex((prevIndex) => (prevIndex + 1) % placeholders.length);
+    }, 3000);
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => clearInterval(interval);
+  }, []);
 
   // Function to handle upvoting
   const handleUpvote = async (e) => {
-    e.stopPropagation()
+    e.stopPropagation();
 
     if (!token) {
-      alert("Please log in to vote")
-      return
+      alert("Please log in to vote");
+      return;
     }
 
     try {
@@ -574,7 +594,7 @@ const PostCard = ({ post, navigate }) => {
       const endpoint =
         userVote === "upvote"
           ? `http://localhost:3000/post/remove/${post._id}`
-          : `http://localhost:3000/post/up/${post._id}`
+          : `http://localhost:3000/post/up/${post._id}`;
 
       const response = await axios.post(
         endpoint,
@@ -583,50 +603,54 @@ const PostCard = ({ post, navigate }) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        },
-      )
+        }
+      );
 
       if (response.data.success) {
-        setUpVotes(response.data.upVotes)
-        setDownVotes(response.data.downVotes)
+        setUpVotes(response.data.upVotes);
+        setDownVotes(response.data.downVotes);
 
         // Update user vote state
-        const newVote = userVote === "upvote" ? null : "upvote"
-        setUserVote(newVote)
+        const newVote = userVote === "upvote" ? null : "upvote";
+        setUserVote(newVote);
 
         // Save vote to localStorage
-        const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}")
-        votedPosts[post._id] = newVote
-        localStorage.setItem("votedPosts", JSON.stringify(votedPosts))
+        const votedPosts = JSON.parse(
+          localStorage.getItem("votedPosts") || "{}"
+        );
+        votedPosts[post._id] = newVote;
+        localStorage.setItem("votedPosts", JSON.stringify(votedPosts));
 
         if (newVote === "upvote") {
-          setIsAnimating(true)
-          setTimeout(() => setIsAnimating(false), 1000)
+          setIsAnimating(true);
+          setTimeout(() => setIsAnimating(false), 1000);
 
           // Play sound effect if enabled
-          const soundEnabled = localStorage.getItem("soundEnabled") === "true"
+          const soundEnabled = localStorage.getItem("soundEnabled") === "true";
           if (soundEnabled) {
-            const upvoteSound = new Audio("/upvote-sound.mp3")
-            upvoteSound.volume = 0.3
-            upvoteSound.play().catch((e) => console.log("Audio play failed:", e))
+            const upvoteSound = new Audio("/upvote-sound.mp3");
+            upvoteSound.volume = 0.3;
+            upvoteSound
+              .play()
+              .catch((e) => console.log("Audio play failed:", e));
           }
         }
       } else {
-        alert(response.data.message)
+        alert(response.data.message);
       }
     } catch (error) {
-      console.error("Error upvoting post:", error)
-      alert(error.response?.data?.message || "Error upvoting post")
+      console.error("Error upvoting post:", error);
+      alert(error.response?.data?.message || "Error upvoting post");
     }
-  }
+  };
 
   // Function to handle downvoting
   const handleDownvote = async (e) => {
-    e.stopPropagation()
+    e.stopPropagation();
 
     if (!token) {
-      alert("Please log in to vote")
-      return
+      alert("Please log in to vote");
+      return;
     }
 
     try {
@@ -634,7 +658,7 @@ const PostCard = ({ post, navigate }) => {
       const endpoint =
         userVote === "downvote"
           ? `http://localhost:3000/post/remove/${post._id}`
-          : `http://localhost:3000/post/down/${post._id}`
+          : `http://localhost:3000/post/down/${post._id}`;
 
       const response = await axios.post(
         endpoint,
@@ -643,84 +667,91 @@ const PostCard = ({ post, navigate }) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        },
-      )
+        }
+      );
 
       if (response.data.success) {
-        setUpVotes(response.data.upVotes)
-        setDownVotes(response.data.downVotes)
+        setUpVotes(response.data.upVotes);
+        setDownVotes(response.data.downVotes);
 
         // Update user vote state
-        const newVote = userVote === "downvote" ? null : "downvote"
-        setUserVote(newVote)
+        const newVote = userVote === "downvote" ? null : "downvote";
+        setUserVote(newVote);
 
         // Save vote to localStorage
-        const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}")
-        votedPosts[post._id] = newVote
-        localStorage.setItem("votedPosts", JSON.stringify(votedPosts))
+        const votedPosts = JSON.parse(
+          localStorage.getItem("votedPosts") || "{}"
+        );
+        votedPosts[post._id] = newVote;
+        localStorage.setItem("votedPosts", JSON.stringify(votedPosts));
 
         // Play sound effect if enabled
         if (newVote === "downvote") {
-          const soundEnabled = localStorage.getItem("soundEnabled") === "true"
+          const soundEnabled = localStorage.getItem("soundEnabled") === "true";
           if (soundEnabled) {
-            const downvoteSound = new Audio("/downvote-sound.mp3")
-            downvoteSound.volume = 0.3
-            downvoteSound.play().catch((e) => console.log("Audio play failed:", e))
+            const downvoteSound = new Audio("/downvote-sound.mp3");
+            downvoteSound.volume = 0.3;
+            downvoteSound
+              .play()
+              .catch((e) => console.log("Audio play failed:", e));
           }
         }
       } else {
-        alert(response.data.message)
+        alert(response.data.message);
       }
     } catch (error) {
-      console.error("Error downvoting post:", error)
-      alert(error.response?.data?.message || "Error downvoting post")
+      console.error("Error downvoting post:", error);
+      alert(error.response?.data?.message || "Error downvoting post");
     }
-  }
+  };
 
   // Function to fetch comments
   const fetchComments = async () => {
     if (!showComments) {
-      setIsLoadingComments(true)
+      setIsLoadingComments(true);
       try {
-        const response = await axios.get(`http://localhost:3000/post/${post._id}/comments`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        const response = await axios.get(
+          `http://localhost:3000/post/${post._id}/comments`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (response.data.success) {
-          setComments(response.data.comments)
+          setComments(response.data.comments);
         }
       } catch (error) {
-        console.error("Error fetching comments:", error)
+        console.error("Error fetching comments:", error);
       } finally {
-        setIsLoadingComments(false)
+        setIsLoadingComments(false);
       }
     }
-    setShowComments(!showComments)
+    setShowComments(!showComments);
 
     // Play sound effect if enabled
     if (!showComments) {
-      const soundEnabled = localStorage.getItem("soundEnabled") === "true"
+      const soundEnabled = localStorage.getItem("soundEnabled") === "true";
       if (soundEnabled) {
-        const commentSound = new Audio("/comment-sound.mp3")
-        commentSound.volume = 0.3
-        commentSound.play().catch((e) => console.log("Audio play failed:", e))
+        const commentSound = new Audio("/comment-sound.mp3");
+        commentSound.volume = 0.3;
+        commentSound.play().catch((e) => console.log("Audio play failed:", e));
       }
     }
-  }
+  };
 
   // Function to add a comment
   const addComment = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!token) {
-      alert("Please log in to comment")
-      return
+      alert("Please log in to comment");
+      return;
     }
 
     if (!commentText.trim()) {
-      return
+      return;
     }
 
     try {
@@ -734,27 +765,30 @@ const PostCard = ({ post, navigate }) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        },
-      )
+        }
+      );
 
       if (response.data.success) {
-        setCommentText("")
+        setCommentText("");
         // Refresh comments
-        const commentsResponse = await axios.get(`http://localhost:3000/post/${post._id}/comments`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        const commentsResponse = await axios.get(
+          `http://localhost:3000/post/${post._id}/comments`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (commentsResponse.data.success) {
-          setComments(commentsResponse.data.comments)
+          setComments(commentsResponse.data.comments);
         }
       }
     } catch (error) {
-      console.error("Error adding comment:", error)
-      alert(error.response?.data?.message || "Error adding comment")
+      console.error("Error adding comment:", error);
+      alert(error.response?.data?.message || "Error adding comment");
     }
-  }
+  };
 
   // Common post header component
   const renderPostHeader = () => {
@@ -776,8 +810,12 @@ const PostCard = ({ post, navigate }) => {
         </div>
         <div className="neo-author-info">
           <div className="neo-author-name-container">
-            <h3 className="neo-author-name">{post.createdBy?.username || "Anonymous"}</h3>
-            <span className={`neo-post-type neo-post-type-${post.type}`}>{post.type}</span>
+            <h3 className="neo-author-name">
+              {post.createdBy?.username || "Anonymous"}
+            </h3>
+            <span className={`neo-post-type neo-post-type-${post.type}`}>
+              {post.type}
+            </span>
           </div>
           <div className="neo-post-meta">
             <span className="neo-timestamp">{getTimeAgo(post.createdAt)}</span>
@@ -785,8 +823,8 @@ const PostCard = ({ post, navigate }) => {
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   // Common post actions component
   const renderPostActions = () => {
@@ -794,11 +832,17 @@ const PostCard = ({ post, navigate }) => {
       <div className="neo-post-actions">
         <div className="neo-action-buttons">
           <button
-            className={`neo-action-button ${userVote === "upvote" ? "neo-active" : ""}`}
+            className={`neo-action-button ${
+              userVote === "upvote" ? "neo-active" : ""
+            }`}
             id={`upvote-${post._id}`}
             onClick={handleUpvote}
           >
-            <span className={`neo-action-icon neo-upvote ${isAnimating ? "neo-pulse" : ""}`}>
+            <span
+              className={`neo-action-icon neo-upvote ${
+                isAnimating ? "neo-pulse" : ""
+              }`}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -814,7 +858,9 @@ const PostCard = ({ post, navigate }) => {
             <span className="neo-action-count">{upVotes}</span>
           </button>
           <button
-            className={`neo-action-button ${userVote === "downvote" ? "neo-active" : ""}`}
+            className={`neo-action-button ${
+              userVote === "downvote" ? "neo-active" : ""
+            }`}
             id={`downvote-${post._id}`}
             onClick={handleDownvote}
           >
@@ -837,8 +883,8 @@ const PostCard = ({ post, navigate }) => {
             className={`neo-action-button ${showComments ? "neo-active" : ""}`}
             id={`comment-${post._id}`}
             onClick={(e) => {
-              e.stopPropagation()
-              fetchComments()
+              e.stopPropagation();
+              fetchComments();
             }}
           >
             <span className="neo-action-icon neo-comment">
@@ -854,30 +900,36 @@ const PostCard = ({ post, navigate }) => {
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
               </svg>
             </span>
-            <span className="neo-action-count">{post.commentCount || comments.length || 0}</span>
+            <span className="neo-action-count">
+              {post.commentCount || comments.length || 0}
+            </span>
           </button>
           <button
-        className={`neo-action-button ${isBookmarked ? "neo-active" : ""}`}
-        id={`bookmark-${post._id}`}
-        onClick={toggleBookmark}
-      >
-        <span className="neo-action-icon neo-bookmark">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill={isBookmarked ? "currentColor" : "none"}
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            className={`neo-action-button ${isBookmarked ? "neo-active" : ""}`}
+            id={`bookmark-${post._id}`}
+            onClick={toggleBookmark}
           >
-            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-          </svg>
-        </span>
-      </button>
+            <span className="neo-action-icon neo-bookmark">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill={isBookmarked ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </span>
+          </button>
           <div className="neo-action-spacer"></div>
-          
-          <button className="neo-action-button" id={`share-${post._id}`} onClick={handleShareClick(post._id)} >
+
+          <button
+            className="neo-action-button"
+            id={`share-${post._id}`}
+            onClick={handleShareClick(post._id)}
+          >
             <span className="neo-action-icon neo-share">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -898,39 +950,43 @@ const PostCard = ({ post, navigate }) => {
           </button>
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   // Render attachments/images if available
   const renderAttachments = () => {
     if (post.attachments && post.attachments.length > 0) {
       return (
         <div className="neo-post-images">
-          <ImageCarousel images={post.attachments.filter((attachment) => attachment.fileType?.startsWith("image/"))} />
+          <ImageCarousel
+            images={post.attachments.filter((attachment) =>
+              attachment.fileType?.startsWith("image/")
+            )}
+          />
         </div>
-      )
+      );
     }
-    return null
-  }
+    return null;
+  };
 
   // Render post content based on type
   const renderPostContent = () => {
-    let content
+    let content;
     switch (post.type) {
       case "issue":
-        content = renderIssuePost()
-        break
+        content = renderIssuePost();
+        break;
       case "poll":
-        content = renderPollPost()
-        break
+        content = renderPollPost();
+        break;
       case "marketplace":
-        content = renderMarketplacePost()
-        break
+        content = renderMarketplacePost();
+        break;
       case "announcements":
-        content = renderAnnouncementPost()
-        break
+        content = renderAnnouncementPost();
+        break;
       default:
-        content = renderGeneralPost()
+        content = renderGeneralPost();
     }
 
     return (
@@ -938,8 +994,8 @@ const PostCard = ({ post, navigate }) => {
         {content}
         {renderCommentSection()}
       </>
-    )
-  }
+    );
+  };
 
   // Issue post layout
   const renderIssuePost = () => {
@@ -995,64 +1051,91 @@ const PostCard = ({ post, navigate }) => {
         </div>
         {renderPostActions()}
       </div>
-    )
-  }
+    );
+  };
 
   // Poll post layout
   const renderPollPost = () => {
     // Check if poll is active
-    const isPollActive = post.poll?.isActive !== false && post.poll?.timeLeft?.formatted !== "Closed"
-
+    const [selectedPollOption, setSelectedPollOption] = useState(null);
+    const isPollActive = post.poll?.status !== "closed";
+    const hasVoted = selectedPollOption !== null || post.poll?.options?.some(opt => opt.voters?.includes(user?._id));
+  
     return (
       <div className="neo-post-content neo-poll-post">
         {renderPostHeader()}
         <h4 className="neo-post-title">{post.title}</h4>
         <p className="neo-post-text">{post.description}</p>
         {renderAttachments()}
-
+  
         {post.poll && (
           <div className="neo-poll-details">
             <div className="neo-poll-status">
               {isPollActive ? (
-                <span className="neo-poll-badge neo-poll-badge-active">Active Poll</span>
+                <span className="neo-poll-badge neo-poll-badge-active">
+                  Active Poll
+                </span>
               ) : (
-                <span className="neo-poll-badge neo-poll-badge-closed">Closed</span>
+                <span className="neo-poll-badge neo-poll-badge-closed">
+                  Closed
+                </span>
               )}
-              {post.poll.timeLeft?.formatted && (
-                <span className="neo-poll-time-remaining">{post.poll.timeLeft.formatted}</span>
+              {post.poll.endDate && (
+                <span className="neo-poll-time-remaining">
+                  {isPollActive 
+                    ? `Ends ${formatDate(post.poll.endDate)}` 
+                    : `Ended ${formatDate(post.poll.endDate)}`}
+                </span>
               )}
             </div>
+            
             <h5 className="neo-poll-question">{post.poll.question}</h5>
+            
             <div className="neo-poll-options">
-              {post.poll.options &&
-                post.poll.options.map((option, index) => (
-                  <div key={`poll-option-${post._id}-${index}`} className="neo-poll-option">
+              {post.poll.options?.map((option, index) => {
+                const totalVotes = post.poll.options?.reduce((sum, opt) => sum + (opt.votes || 0), 0);
+                const percentage = totalVotes > 0 ? Math.round((option.votes / totalVotes) * 100) : 0;
+                const isSelected = selectedPollOption === option._id || option.voters?.includes(user?._id);
+  
+                return (
+                  <div
+                    key={`poll-option-${post._id}-${index}`}
+                    className={`neo-poll-option ${isSelected ? "selected" : ""}`}
+                  >
                     <div className="neo-poll-option-header">
                       <span>{option.text}</span>
-                      <span>{option.votes || 0} votes</span>
+                      {(hasVoted || !isPollActive) && (
+                        <span>{option.votes || 0} votes ({percentage}%)</span>
+                      )}
                     </div>
-                    <div className="neo-poll-option-bar">
-                      <div
-                        className={`neo-poll-option-progress neo-poll-color-${index % 4}`}
-                        style={{ width: `${option.percentage || 0}%` }}
-                      ></div>
-                    </div>
-                    {isPollActive && (
+                    
+                    {(hasVoted || !isPollActive) && (
+                      <div className="neo-poll-option-bar">
+                        <div
+                          className={`neo-poll-option-progress neo-poll-color-${
+                            index % 4
+                          }`}
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                      </div>
+                    )}
+  
+                    {isPollActive && !hasVoted && (
                       <button
                         className="neo-poll-vote-button"
                         onClick={(e) => {
-                          e.stopPropagation()
-                          // Handle vote submission
-                          alert(`Voted for: ${option.text}`)
-                          // In a real app, you would call an API to register the vote
+                          e.stopPropagation();
+                          handlePollVote(option._id);
                         }}
                       >
                         Vote
                       </button>
                     )}
                   </div>
-                ))}
+                );
+              })}
             </div>
+            
             <div className="neo-poll-meta">
               <div className="neo-poll-votes">
                 <svg
@@ -1069,7 +1152,7 @@ const PostCard = ({ post, navigate }) => {
                 >
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                 </svg>
-                <span>{post.poll.totalVotes || 0} votes</span>
+                <span>{post.poll.options?.reduce((sum, opt) => sum + (opt.votes || 0), 0) || 0} total votes</span>
               </div>
               <div className="neo-poll-time-left">
                 <svg
@@ -1087,35 +1170,37 @@ const PostCard = ({ post, navigate }) => {
                   <circle cx="12" cy="12" r="10"></circle>
                   <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
-                <span>{isPollActive ? "Poll is active" : "Poll is closed"}</span>
+                <span>
+                  {isPollActive ? "Poll is active" : "Poll has ended"}
+                </span>
               </div>
             </div>
           </div>
         )}
         {renderPostActions()}
       </div>
-    )
-  }
+    );
+  };
 
   // Marketplace post layout
   const renderMarketplacePost = () => {
-    const [showContactForm, setShowContactForm] = useState(false)
-    const [contactMessage, setContactMessage] = useState("")
+    const [showContactForm, setShowContactForm] = useState(false);
+    const [contactMessage, setContactMessage] = useState("");
 
     const handleContactSeller = (e) => {
-      e.stopPropagation()
-      setShowContactForm(!showContactForm)
-    }
+      e.stopPropagation();
+      setShowContactForm(!showContactForm);
+    };
 
     const handleSendMessage = (e) => {
-      e.stopPropagation()
+      e.stopPropagation();
       if (contactMessage.trim()) {
         // In a real app, you would send this message to the seller
-        alert(`Message sent to seller: ${contactMessage}`)
-        setContactMessage("")
-        setShowContactForm(false)
+        alert(`Message sent to seller: ${contactMessage}`);
+        setContactMessage("");
+        setShowContactForm(false);
       }
-    }
+    };
 
     return (
       <div className="neo-post-content neo-marketplace-post">
@@ -1144,9 +1229,13 @@ const PostCard = ({ post, navigate }) => {
                   <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                 </svg>
                 <span>${post.marketplace.price}</span>
-                <span className="neo-marketplace-badge">{post.marketplace.itemType || "Sale"}</span>
+                <span className="neo-marketplace-badge">
+                  {post.marketplace.itemType || "Sale"}
+                </span>
                 {post.marketplace.condition && (
-                  <span className="neo-marketplace-condition">{post.marketplace.condition}</span>
+                  <span className="neo-marketplace-condition">
+                    {post.marketplace.condition}
+                  </span>
                 )}
               </div>
 
@@ -1183,7 +1272,10 @@ const PostCard = ({ post, navigate }) => {
                 </div>
               )}
 
-              <button className="neo-marketplace-contact-button" onClick={handleContactSeller}>
+              <button
+                className="neo-marketplace-contact-button"
+                onClick={handleContactSeller}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -1202,7 +1294,10 @@ const PostCard = ({ post, navigate }) => {
               </button>
 
               {showContactForm && (
-                <div className="neo-marketplace-contact-form" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="neo-marketplace-contact-form"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <textarea
                     className="neo-marketplace-message"
                     placeholder="Write your message to the seller..."
@@ -1211,10 +1306,16 @@ const PostCard = ({ post, navigate }) => {
                     rows={4}
                   ></textarea>
                   <div className="neo-marketplace-form-actions">
-                    <button className="neo-marketplace-cancel-button" onClick={handleContactSeller}>
+                    <button
+                      className="neo-marketplace-cancel-button"
+                      onClick={handleContactSeller}
+                    >
                       Cancel
                     </button>
-                    <button className="neo-marketplace-send-button" onClick={handleSendMessage}>
+                    <button
+                      className="neo-marketplace-send-button"
+                      onClick={handleSendMessage}
+                    >
                       Send Message
                     </button>
                   </div>
@@ -1225,8 +1326,8 @@ const PostCard = ({ post, navigate }) => {
         </div>
         {renderPostActions()}
       </div>
-    )
-  }
+    );
+  };
 
   // Announcement post layout
   const renderAnnouncementPost = () => {
@@ -1270,7 +1371,9 @@ const PostCard = ({ post, navigate }) => {
                     month: "short",
                   })}
                 </div>
-                <div className="neo-event-date-day">{new Date(post.event.date).getDate()}</div>
+                <div className="neo-event-date-day">
+                  {new Date(post.event.date).getDate()}
+                </div>
               </div>
               <div className="neo-event-info">
                 <div className="neo-event-info-item">
@@ -1286,7 +1389,14 @@ const PostCard = ({ post, navigate }) => {
                     strokeLinejoin="round"
                     className="neo-event-icon"
                   >
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <rect
+                      x="3"
+                      y="4"
+                      width="18"
+                      height="18"
+                      rx="2"
+                      ry="2"
+                    ></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
                     <line x1="8" y1="2" x2="8" y2="6"></line>
                     <line x1="3" y1="10" x2="21" y2="10"></line>
@@ -1373,7 +1483,9 @@ const PostCard = ({ post, navigate }) => {
                   </svg>
                   Going
                 </button>
-                <button className="neo-event-rsvp-button neo-event-rsvp-maybe">Maybe</button>
+                <button className="neo-event-rsvp-button neo-event-rsvp-maybe">
+                  Maybe
+                </button>
                 <button className="neo-event-rsvp-button neo-event-rsvp-no">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -1398,8 +1510,8 @@ const PostCard = ({ post, navigate }) => {
         </div>
         {renderPostActions()}
       </div>
-    )
-  }
+    );
+  };
 
   // General post layout
   const renderGeneralPost = () => {
@@ -1411,15 +1523,18 @@ const PostCard = ({ post, navigate }) => {
         {renderAttachments()}
         {renderPostActions()}
       </div>
-    )
-  }
+    );
+  };
 
   // Comment section
   const renderCommentSection = () => {
-    if (!showComments) return null
+    if (!showComments) return null;
 
     return (
-      <div className="neo-comments-section" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="neo-comments-section"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="neo-comments-header">
           <h4 className="neo-comments-title">Neural Transmissions</h4>
           <span className="neo-comments-count">{comments.length}</span>
@@ -1436,7 +1551,11 @@ const PostCard = ({ post, navigate }) => {
             />
             <div className="neo-input-glow"></div>
           </div>
-          <button type="submit" className="neo-comment-submit" disabled={!commentText.trim()}>
+          <button
+            type="submit"
+            className="neo-comment-submit"
+            disabled={!commentText.trim()}
+          >
             <span className="neo-submit-icon">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -1483,9 +1602,13 @@ const PostCard = ({ post, navigate }) => {
                 <div className="neo-comment-content">
                   <div className="neo-comment-header">
                     <div className="neo-comment-author-container">
-                      <h5 className="neo-comment-author">{comment.userId?.username || "Anonymous"}</h5>
+                      <h5 className="neo-comment-author">
+                        {comment.userId?.username || "Anonymous"}
+                      </h5>
                     </div>
-                    <span className="neo-comment-timestamp">{getTimeAgo(comment.createdAt)}</span>
+                    <span className="neo-comment-timestamp">
+                      {getTimeAgo(comment.createdAt)}
+                    </span>
                   </div>
                   <p className="neo-comment-text">{comment.message}</p>
                   <div className="neo-comment-actions">
@@ -1529,280 +1652,201 @@ const PostCard = ({ post, navigate }) => {
           </div>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div
-  className={`neo-post-card neo-post-card-${post.type} ${isHovered ? "neo-hovered" : ""}`}
-  onClick={() => {
-    navigate(`/post/${post._id}`);
-  }}
-  onMouseEnter={() => setIsHovered(true)}
-  onMouseLeave={() => setIsHovered(false)}
-  id={`post-${post._id}`}
->
-  {renderPostContent()}
-</div>
-  )
-}
+      className={`neo-post-card neo-post-card-${post.type} ${
+        isHovered ? "neo-hovered" : ""
+      }`}
+      onClick={() => {
+        navigate(`/post/${post._id}`);
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      id={`post-${post._id}`}
+    >
+      {renderPostContent()}
+    </div>
+  );
+};
 
 // Main HomePage Component
 function HomePage() {
-  const [activeTab, setActiveTab] = useState("all")
-  const [posts, setPosts] = useState([])
-  const [trendingPosts, setTrendingPosts] = useState([])
-  const [upcomingEvents, setUpcomingEvents] = useState([])
-  const [county, setCounty] = useState("")
-  const [loading, setLoading] = useState(true)
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [user, setUser] = useState(null)
-  const [token, setToken] = useState("")
-  const [contactStates, setContactStates] = useState({})
-  const { isDarkMode, toggleDarkMode } = useTheme()
-  const {userData}=useSelector((state)=>state.user);
-  // setUser(userData)
+  const [activeTab, setActiveTab] = useState("all");
+  const [posts, setPosts] = useState([]);
+  const [trendingPosts, setTrendingPosts] = useState([]);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [county, setCounty] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState("");
+  const [contactStates, setContactStates] = useState({});
+  const { isDarkMode, toggleDarkMode } = useTheme();
+  const [communities, setCommunities] = useState([]);
+  const { userData } = useSelector((state) => state.user);
+
+
+  const fetchUpcomingPolls = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/post/survey-and-poll-posts");
+      if (response.data) {
+        return response.data.posts.filter(post => {
+          const status = post.poll ? post.poll.status : post.survey?.status;
+          return status === "upcoming";
+        });
+      }
+      return [];
+    } catch (error) {
+      console.error("Error fetching upcoming polls:", error);
+      return [];
+    }
+  };
   useEffect(() => {
     setUser(userData);
-    console.log(userData);
-    
   }, [userData]);
-  // Navigation function to replace useNavigate
+
   const navigate = (path) => {
-    window.location.href = path
-  }
+    window.location.href = path;
+  };
 
   useEffect(() => {
-    // Get token from localStorage
-    const storedToken = localStorage.getItem("token")
+    const storedToken = localStorage.getItem("token");
     if (storedToken) {
-      setToken(storedToken)
+      setToken(storedToken);
+      console.log(token);
     }
 
-    // Get user from localStorage
-    const storedUser = localStorage.getItem("user")
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser))
-        console.log("1526 ",user);
-        
+        setUser(JSON.parse(storedUser));
       } catch (error) {
-        console.error("Error parsing user data:", error)
+        console.error("Error parsing user data:", error);
       }
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true)
-        // Use the API endpoint for fetching posts
+        setLoading(true);
+
+        // Fetch posts and other data
         const response = await axios.get("http://localhost:3000/post/getFeed", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        })
+        });
 
-        await setPosts(response.data.posts)
-        await setTrendingPosts(response.data.trending)
-        await setUpcomingEvents(response.data.upcomingEvents)
-        await setCounty(response.data.county)
+        if (response.data) {
+          setPosts(response.data.posts || []);
+          console.log(response.data);
+
+          setTrendingPosts(response.data.trending || []);
+          console.log("this is trending post", trendingPosts);
+
+          setUpcomingEvents(response.data.upcomingEvents || []);
+          setCounty(response.data.county || "");
+
+          // Find trending post only if we don't have trending data from the API
+          console.log(posts);
+
+          if (!response.data.trending && response.data.posts?.length > 0) {
+            const postWithHighestUpvotes = response.data.posts.reduce(
+              (prev, current) => {
+                return prev.upVotes > current.upVotes ? prev : current;
+              },
+              {}
+            );
+            setTrendingPosts(postWithHighestUpvotes);
+            console.log(trendingPosts);
+          }
+        }
+
+        // Fetch community data if user has communitiesJoined
+        if (user?.communitiesJoined?.length > 0) {
+          try {
+            const queryParams = new URLSearchParams();
+            user.communitiesJoined.forEach((name) => {
+              queryParams.append("names", name);
+            });
+
+            const communityResponse = await axios.get(
+              `http://localhost:3000/user/chat/getCommunities?${queryParams.toString()}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+
+            setCommunities(communityResponse.data?.communities || []);
+          } catch (error) {
+            console.error("Error fetching communities:", error);
+            setCommunities([]);
+          }
+        }
       } catch (error) {
-        console.error("Error fetching posts:", error)
-        // Fallback data for development/testing
-        setPosts([
-          {
-            _id: "1",
-            title: "Community Garden Project",
-            description:
-              "Join us in creating a beautiful community garden in the heart of our neighborhood. We need volunteers and donations of plants and gardening tools.",
-            type: "announcements",
-            createdAt: new Date(Date.now() - 3600000).toISOString(),
-            createdBy: { username: "GardenLover", avatar: null },
-            upVotes: 24,
-            downVotes: 2,
-            commentCount: 15,
-            important: true,
-            event: {
-              formattedDate: "Saturday, May 15",
-              time: "10:00 AM",
-              location: "Central Park",
-              rsvpCount: 18,
-            },
-            attachments: [
-              {
-                fileType: "image/jpeg",
-                url: "/placeholder.svg?height=300&width=500",
-              },
-            ],
-          },
-          {
-            _id: "2",
-            title: "What should we name the new community center?",
-            description:
-              "The new community center is almost complete and we need your help deciding on a name. Please vote for your favorite option!",
-            type: "poll",
-            createdAt: new Date(Date.now() - 86400000).toISOString(),
-            createdBy: {
-              username: "TownCouncil",
-              avatar: "/placeholder.svg?height=50&width=50",
-            },
-            upVotes: 56,
-            downVotes: 0,
-            commentCount: 32,
-            poll: {
-              question: "What name do you prefer?",
-              options: [
-                { text: "Unity Center", percentage: 45, votes: 56 },
-                { text: "Harmony Hall", percentage: 30, votes: 37 },
-                { text: "Townsquare Hub", percentage: 20, votes: 25 },
-                { text: "Other (comment below)", percentage: 5, votes: 6 },
-              ],
-              totalVotes: 124,
-              timeLeft: { formatted: "2 days left" },
-            },
-          },
-          {
-            _id: "3",
-            title: "Vintage Bicycle for Sale",
-            description:
-              "Beautiful vintage bicycle in excellent condition. Perfect for collectors or anyone who appreciates classic design.",
-            type: "marketplace",
-            createdAt: new Date(Date.now() - 172800000).toISOString(),
-            createdBy: { username: "VintageCollector", avatar: null },
-            upVotes: 12,
-            downVotes: 1,
-            commentCount: 8,
-            marketplace: {
-              price: 250,
-              location: "Downtown",
-              itemType: "sale",
-              tags: ["vintage", "bicycle", "collectible"],
-            },
-            attachments: [
-              {
-                fileType: "image/jpeg",
-                url: "/placeholder.svg?height=300&width=500",
-              },
-            ],
-          },
-          {
-            _id: "4",
-            title: "Pothole on Main Street needs fixing",
-            description:
-              "There's a large pothole on Main Street near the intersection with Oak Avenue. It's causing damage to vehicles and is a safety hazard.",
-            type: "issue",
-            createdAt: new Date(Date.now() - 259200000).toISOString(),
-            createdBy: { username: "ConcernedCitizen", avatar: null },
-            upVotes: 35,
-            downVotes: 0,
-            commentCount: 12,
-            attachments: [
-              {
-                fileType: "image/jpeg",
-                url: "/placeholder.svg?height=300&width=500",
-              },
-            ],
-          },
-          {
-            _id: "5",
-            title: "Weekend Hiking Group",
-            description: "Looking for people interested in joining a weekend hiking group. All skill levels welcome!",
-            type: "general",
-            createdAt: new Date(Date.now() - 345600000).toISOString(),
-            createdBy: {
-              username: "NatureExplorer",
-              avatar: "/placeholder.svg?height=50&width=50",
-            },
-            upVotes: 28,
-            downVotes: 2,
-            commentCount: 22,
-            attachments: [
-              {
-                fileType: "image/jpeg",
-                url: "/placeholder.svg?height=300&width=500",
-              },
-            ],
-          },
-        ])
-        setTrendingPosts([
-          {
-            _id: "6",
-            title: "Road Construction Update",
-            createdAt: new Date(Date.now() - 43200000).toISOString(),
-            commentCount: 47,
-          },
-          {
-            _id: "7",
-            title: "New Restaurant Opening Next Week",
-            createdAt: new Date(Date.now() - 129600000).toISOString(),
-            commentCount: 35,
-          },
-        ])
-        setUpcomingEvents([
-          {
-            _id: "8",
-            title: "Summer Festival",
-            date: new Date(Date.now() + 604800000).toISOString(),
-            location: "City Park",
-          },
-          {
-            _id: "9",
-            title: "Farmers Market",
-            date: new Date(Date.now() + 172800000).toISOString(),
-            location: "Main Street",
-          },
-        ])
-        setCounty("Springfield County")
+        console.error("Error fetching data:", error);
+        // Set default values on error
+        setPosts([]);
+        setTrendingPosts([]);
+        setUpcomingEvents([]);
+        setCounty("");
+        setCommunities([]);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchData()
-  }, [token])
-
+    fetchData();
+  }, [token, user]);
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 50) {
-        setIsScrolled(true)
+        setIsScrolled(true);
       } else {
-        setIsScrolled(false)
+        setIsScrolled(false);
       }
-    }
+    };
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Filter posts based on active tab
   const filteredPosts = posts.filter((post) => {
-    if (activeTab === "all") return true
-    if (activeTab === "polls") return post.type === "poll" && post.poll?.isActive !== false
-    if (activeTab === "announcements") return post.type === "announcements"
-    if (activeTab === "suggestions") return post.type === "suggestion"
-    if (activeTab === "marketplace") return post.type === "marketplace"
-    if (activeTab === "events") return post.type === "announcements" && post.event
-    if (activeTab === "issues") return post.type === "issue"
-    return true
-  })
+    if (activeTab === "all") return true;
+    if (activeTab === "polls")
+      return post.type === "poll" && post.poll?.isActive !== false;
+    if (activeTab === "announcements") return post.type === "announcements";
+    if (activeTab === "suggestions") return post.type === "suggestion";
+    if (activeTab === "marketplace") return post.type === "marketplace";
+    if (activeTab === "events")
+      return post.type === "announcements" && post.event;
+    if (activeTab === "issues") return post.type === "issue";
+    return true;
+  });
 
   const handleContactSeller = (postId) => (e) => {
-    e.stopPropagation()
+    e.stopPropagation();
     setContactStates((prev) => ({
       ...prev,
       [postId]: {
         ...prev[postId],
         showContactForm: !prev[postId]?.showContactForm,
       },
-    }))
-  }
+    }));
+  };
 
   const handleSendMessage = (postId) => (e) => {
-    e.stopPropagation()
+    e.stopPropagation();
     if (contactStates[postId]?.contactMessage?.trim()) {
       // In a real app, you would send this message to the seller
-      alert(`Message sent to seller: ${contactStates[postId].contactMessage}`)
+      alert(`Message sent to seller: ${contactStates[postId].contactMessage}`);
       setContactStates((prev) => ({
         ...prev,
         [postId]: {
@@ -1810,9 +1854,9 @@ function HomePage() {
           contactMessage: "",
           showContactForm: false,
         },
-      }))
+      }));
     }
-  }
+  };
 
   const handleContactMessageChange = (postId) => (e) => {
     setContactStates((prev) => ({
@@ -1821,11 +1865,11 @@ function HomePage() {
         ...prev[postId],
         contactMessage: e.target.value,
       },
-    }))
-  }
+    }));
+  };
 
   useEffect(() => {
-    const styleElement = document.createElement('style');
+    const styleElement = document.createElement("style");
     const commentStyles = `
     .ts-comments-section {
       margin-top: 1rem;
@@ -1960,7 +2004,7 @@ function HomePage() {
     `;
     styleElement.textContent = commentStyles;
     document.head.appendChild(styleElement);
-    
+
     return () => {
       document.head.removeChild(styleElement);
     };
@@ -1976,11 +2020,17 @@ function HomePage() {
               Welcome to <span className="ts-gradient-text">TownSquare</span>
             </h1>
             <div className="ts-title-underline"></div>
-            <p className="ts-home-subtitle">Your community platform for {county || "your local area"}</p>
+            <p className="ts-home-subtitle">
+              Your community platform for {county || "your local area"}
+            </p>
           </div>
           <div className="ts-header-actions">
             <ThemeToggle />
-            <button className="ts-create-button" onClick={() => navigate("/createPost")} id="create-post-button">
+            <button
+              className="ts-create-button"
+              onClick={() => navigate("/createPost")}
+              id="create-post-button"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -2014,14 +2064,22 @@ function HomePage() {
             {/* Hero Carousel */}
             {posts.length > 0 && (
               <HeroCarousel
-                items={posts.filter((post) => post.attachments && post.attachments.length > 0).slice(0, 5)}
+                items={posts
+                  .filter(
+                    (post) => post.attachments && post.attachments.length > 0
+                  )
+                  .slice(0, 5)}
                 navigate={navigate}
               />
             )}
 
             {/* Quick Links */}
             <div className="ts-quick-links">
-              <div className="ts-quick-link" onClick={() => setActiveTab("all")} id="quick-link-all">
+              <div
+                className="ts-quick-link"
+                onClick={() => setActiveTab("all")}
+                id="quick-link-all"
+              >
                 <div className="ts-quick-link-icon">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -2040,7 +2098,11 @@ function HomePage() {
                 </div>
                 <span>All</span>
               </div>
-              <div className="ts-quick-link" onClick={() => setActiveTab("marketplace")} id="quick-link-marketplace">
+              <div
+                className="ts-quick-link"
+                onClick={() => setActiveTab("marketplace")}
+                id="quick-link-marketplace"
+              >
                 <div className="ts-quick-link-icon">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -2060,7 +2122,11 @@ function HomePage() {
                 </div>
                 <span>Marketplace</span>
               </div>
-              <div className="ts-quick-link" onClick={() => setActiveTab("polls")} id="quick-link-polls">
+              <div
+                className="ts-quick-link"
+                onClick={() => setActiveTab("polls")}
+                id="quick-link-polls"
+              >
                 <div className="ts-quick-link-icon">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -2103,7 +2169,11 @@ function HomePage() {
                 </div>
                 <span>Announcements</span>
               </div>
-              <div className="ts-quick-link" onClick={() => setActiveTab("issues")} id="quick-link-issues">
+              <div
+                className="ts-quick-link"
+                onClick={() => setActiveTab("issues")}
+                id="quick-link-issues"
+              >
                 <div className="ts-quick-link-icon">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -2121,7 +2191,11 @@ function HomePage() {
                 </div>
                 <span>Issues</span>
               </div>
-              <div className="ts-quick-link" onClick={() => navigate("/explore")} id="quick-link-explore">
+              <div
+                className="ts-quick-link"
+                onClick={() => navigate("/explore")}
+                id="quick-link-explore"
+              >
                 <div className="ts-quick-link-icon">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -2147,7 +2221,11 @@ function HomePage() {
               <main className="ts-main-feed">
                 <div className="ts-section-header">
                   <h2 className="ts-section-title">Community Feed</h2>
-                  <button className="ts-view-all-button" onClick={() => navigate("/feed")} id="view-all-feed">
+                  <button
+                    className="ts-view-all-button"
+                    onClick={() => navigate("/feed")}
+                    id="view-all-feed"
+                  >
                     View All
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -2186,8 +2264,14 @@ function HomePage() {
                       </svg>
                     </div>
                     <h3>No posts found</h3>
-                    <p>Be the first to create a post in {county || "your area"}!</p>
-                    <button className="ts-create-button" onClick={() => navigate("/createPost")} id="create-post-empty">
+                    <p>
+                      Be the first to create a post in {county || "your area"}!
+                    </p>
+                    <button
+                      className="ts-create-button"
+                      onClick={() => navigate("/createPost")}
+                      id="create-post-empty"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
@@ -2209,29 +2293,32 @@ function HomePage() {
                 ) : (
                   <div className="ts-posts-container">
                     {filteredPosts.map((post) => {
-                      const postId = post._id
+                      const postId = post._id;
                       return (
                         <PostCard
                           key={`post-card-${postId}`}
                           post={{
                             ...post,
-                            showContactForm: contactStates[postId]?.showContactForm || false,
-                            contactMessage: contactStates[postId]?.contactMessage || "",
+                            showContactForm:
+                              contactStates[postId]?.showContactForm || false,
+                            contactMessage:
+                              contactStates[postId]?.contactMessage || "",
                             handleContactSeller: handleContactSeller(postId),
                             handleSendMessage: handleSendMessage(postId),
-                            handleContactMessageChange: handleContactMessageChange(postId),
+                            handleContactMessageChange:
+                              handleContactMessageChange(postId),
                           }}
                           navigate={navigate}
                         />
-                      )
+                      );
                     })}
                   </div>
                 )}
               </main>
               <aside className="ts-sidebar">
                 {/* Enhanced User Profile Card */}
-                
 
+                {/* Trending Section */}
                 {/* Trending Section */}
                 <div className="ts-sidebar-section">
                   <div className="ts-section-header">
@@ -2255,75 +2342,48 @@ function HomePage() {
                     </h2>
                   </div>
                   <div className="ts-section-content">
-                    {trendingPosts.length === 0 ? (
-                      <div className="ts-empty-section">No trending posts yet</div>
+                    {loading ? (
+                      <div className="ts-loading-small">
+                        <div className="ts-loading-spinner"></div>
+                      </div>
+                    ) : !trendingPosts || trendingPosts.length === 0 ? (
+                      <div className="ts-empty-section">
+                        No trending posts yet
+                      </div>
                     ) : (
                       <div className="ts-trending-list">
-                        {trendingPosts.slice(0, 5).map((post) => (
-                          <div
-                            key={`trending-${post._id}`}
-                            className="ts-trending-item"
-                            onClick={() => {
-                              if (post.type === "announcements") {
-                                // navigate(`/announcements/${post._id}`)
-                                navigate(`/announcements/`)
-                              } else if (post.type === "poll") {
-                                // navigate(`/surveys/${post._id}`)
-                                navigate(`/surveys/`)
-                              } else if (post.type === "marketplace") {
-                                // navigate(`/marketplace/${post._id}`)
-                                navigate(`/marketplace/`)
-                              } else if (post.type === "survey") {
-                                // navigate(`/surveys/${post._id}`)
-                                navigate(`/surveys/`)
-                              }
-                               else {
-                                navigate(`/post/${post._id}`)
-                              }
-                            }}
-                          >
-                            <div className="ts-trending-content">
-                              <h3 className="ts-trending-title">{post.title}</h3>
+                        {Array.isArray(trendingPosts) ? (
+                          trendingPosts.map((post) => (
+                            <div
+                              key={post._id}
+                              className="ts-trending-item"
+                              onClick={() => navigate(`/post/${post._id}`)}
+                            >
+                              <h4 className="ts-trending-title">
+                                {post.title}
+                              </h4>
                               <div className="ts-trending-meta">
-                                <span className="ts-trending-comments">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="ts-meta-icon"
-                                  >
-                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                                  </svg>
-                                  {post.commentCount || 0}
-                                </span>
-                                <span className="ts-trending-time">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="ts-meta-icon"
-                                  >
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polyline points="12 6 12 12 16 14"></polyline>
-                                  </svg>
-                                  {getTimeAgo(post.createdAt)}
-                                </span>
+                                <span>{post.upVotes || 0} upvotes</span>
+                                <span>{getTimeAgo(post.createdAt)}</span>
                               </div>
                             </div>
+                          ))
+                        ) : (
+                          <div
+                            className="ts-trending-item"
+                            onClick={() =>
+                              navigate(`/post/${trendingPosts._id}`)
+                            }
+                          >
+                            <h4 className="ts-trending-title">
+                              {trendingPosts.title}
+                            </h4>
+                            <div className="ts-trending-meta">
+                              <span>{trendingPosts.upVotes || 0} upvotes</span>
+                              <span>{getTimeAgo(trendingPosts.createdAt)}</span>
+                            </div>
                           </div>
-                        ))}
+                        )}
                       </div>
                     )}
                   </div>
@@ -2345,14 +2405,25 @@ function HomePage() {
                         strokeLinejoin="round"
                         className="ts-section-icon"
                       >
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <rect
+                          x="3"
+                          y="4"
+                          width="18"
+                          height="18"
+                          rx="2"
+                          ry="2"
+                        ></rect>
                         <line x1="16" y1="2" x2="16" y2="6"></line>
                         <line x1="8" y1="2" x2="8" y2="6"></line>
                         <line x1="3" y1="10" x2="21" y2="10"></line>
                       </svg>
                       Upcoming Events
                     </h2>
-                    <button className="ts-view-all-button" onClick={() => navigate("/events")} id="view-all-events">
+                    <button
+                      className="ts-view-all-button"
+                      onClick={() => navigate("/events")}
+                      id="view-all-events"
+                    >
                       View All
                     </button>
                   </div>
@@ -2365,7 +2436,9 @@ function HomePage() {
                           <div
                             key={`event-${event._id}`}
                             className="ts-event-item"
-                            onClick={() => navigate(`/announcements/${event._id}`)}
+                            onClick={() =>
+                              navigate(`/announcements/${event._id}`)
+                            }
                           >
                             <div className="ts-event-content">
                               <h3 className="ts-event-title">{event.title}</h3>
@@ -2383,7 +2456,14 @@ function HomePage() {
                                     strokeLinejoin="round"
                                     className="ts-meta-icon"
                                   >
-                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <rect
+                                      x="3"
+                                      y="4"
+                                      width="18"
+                                      height="18"
+                                      rx="2"
+                                      ry="2"
+                                    ></rect>
                                     <line x1="16" y1="2" x2="16" y2="6"></line>
                                     <line x1="8" y1="2" x2="8" y2="6"></line>
                                     <line x1="3" y1="10" x2="21" y2="10"></line>
@@ -2442,49 +2522,24 @@ function HomePage() {
                   <div className="ts-alert-content">
                     <h3 className="ts-alert-title">Community Updates</h3>
                     <p className="ts-alert-message">
-                      Stay tuned for important announcements and updates from your community.
+                      Stay tuned for important announcements and updates from
+                      your community.
                     </p>
                   </div>
                 </div>
 
                 {/* Newsletter Subscription */}
-                <div className="ts-newsletter-card">
-                  <h3 className="ts-newsletter-title">Stay Updated</h3>
-                  <p className="ts-newsletter-description">
-                    Subscribe to our newsletter to get the latest community updates.
-                  </p>
-                  <div className="ts-newsletter-form">
-                    <input
-                      type="email"
-                      placeholder="Your email address"
-                      className="ts-newsletter-input"
-                      id="newsletter-email"
-                    />
-                    <button className="ts-newsletter-button" id="newsletter-subscribe">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="ts-button-icon"
-                      >
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                      </svg>
-                      <span>Subscribe</span>
-                    </button>
-                  </div>
-                </div>
 
+                {/* Community Stats */}
                 {/* Community Stats */}
                 <div className="ts-stats-card">
                   <div className="ts-stats-header">
                     <h3 className="ts-stats-title">Community Stats</h3>
+                    {communities[0] && (
+                      <span className="ts-community-name">
+                        {communities[0].name}
+                      </span>
+                    )}
                   </div>
                   <div className="ts-stats-content">
                     <div className="ts-stat-item" id="stat-members">
@@ -2508,7 +2563,9 @@ function HomePage() {
                         </svg>
                       </div>
                       <div className="ts-stat-info">
-                        <span className="ts-stat-value">1,234</span>
+                        <span className="ts-stat-value">
+                          {communities[0]?.members?.length || 0}
+                        </span>
                         <span className="ts-stat-label">Members</span>
                       </div>
                     </div>
@@ -2530,7 +2587,15 @@ function HomePage() {
                         </svg>
                       </div>
                       <div className="ts-stat-info">
-                        <span className="ts-stat-value">5,678</span>
+                        <span className="ts-stat-value">
+                          {
+                            posts.filter(
+                              (post) =>
+                                post.community?._id ===
+                                user?.communitiesJoined?.[0]?._id
+                            ).length
+                          }
+                        </span>
                         <span className="ts-stat-label">Posts</span>
                       </div>
                     </div>
@@ -2584,7 +2649,10 @@ function HomePage() {
                   </div>
                   <div className="ts-support-content">
                     <h3 className="ts-support-title">Support Your Community</h3>
-                    <p className="ts-support-message">Help us keep TownSquare running and improving for everyone.</p>
+                    <p className="ts-support-message">
+                      Help us keep TownSquare running and improving for
+                      everyone.
+                    </p>
                     <button className="ts-support-button" id="donate-button">
                       Donate Now
                     </button>
@@ -2597,9 +2665,8 @@ function HomePage() {
       </div>
 
       {/* Footer */}
-      
     </div>
-  )
+  );
 }
 
 export default HomePage;
