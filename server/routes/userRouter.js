@@ -1,7 +1,7 @@
 import express from "express";
 import { isAuthenticated } from "../middlewares/auth.js";
 import { upload } from "../middlewares/multer.js";
-import  { registerUser , verifyUser,loginUser,logoutUser,getUserDetails, deleteUser, getUserActivities}  from "../controllers/userController.js";
+import  { registerUser , verifyUser,loginUser,logoutUser,getUserDetails, deleteUser, getUserActivities,updateAccountDetails,verifyAccountChanges,updateUserAvatar,resendVerificationOTP}  from "../controllers/userController.js";
 import { listUserChats } from "../controllers/chatController.js";
 export const userRouter = express.Router();
 
@@ -17,3 +17,8 @@ userRouter.get("/getUserDetails",isAuthenticated,getUserDetails)
 userRouter.get('/chats',isAuthenticated,listUserChats)
 userRouter.delete('/delete',isAuthenticated,deleteUser)
 userRouter.get('/activity',isAuthenticated,getUserActivities)
+
+userRouter.put("/update", isAuthenticated,updateAccountDetails);
+userRouter.post("/verify-email", isAuthenticated,verifyAccountChanges);
+userRouter.patch("/avatar",isAuthenticated,upload.single("avatar"),updateUserAvatar);
+userRouter.post("/resend-verification", isAuthenticated, resendVerificationOTP);

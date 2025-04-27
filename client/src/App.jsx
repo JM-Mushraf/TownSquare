@@ -17,7 +17,7 @@ axios.defaults.withCredentials = true
 const HomePage = lazy(() => import("./pages/HomePage"))
 const DiscussionsPage = lazy(() => import("./Pages/DiscussionsPage"))
 const AnnouncementsPage = lazy(() => import("./pages/AnnouncementsPage"))
-const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"))
+// const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"))
 const UserProfile = lazy(() => import("./pages/UserProfile/UserProfile"))
 const EmergencyPage = lazy(() => import("./pages/EmergencyPage"))
 
@@ -62,7 +62,7 @@ function App() {
                 <Route path="/discussions" element={<DiscussionsPage />} />
                 <Route path="/announcements" element={<AnnouncementsPage />} />
                 <Route path="/surveys" element={<SurveysPage />} />
-                <Route path="/leaderboard" element={<LeaderboardPage />} />
+                {/* <Route path="/leaderboard" element={<LeaderboardPage />} /> */}
                 <Route path="/marketplace" element={<MarketplacePage />} />
                 <Route path="/emergency" element={<EmergencyPage />} />
                 <Route path="/createPost" element={<CreatePost />} />

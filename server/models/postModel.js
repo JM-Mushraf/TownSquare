@@ -160,7 +160,8 @@ const postSchema = new mongoose.Schema(
             userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
             message: { type: String, required: true },
             createdAt: { type: Date, default: Date.now },
-          },
+            isRead: { type: Boolean, default: false } // Add this field
+          }
         ],
       },
       required: false, // ← This is the key change

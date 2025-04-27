@@ -12,6 +12,10 @@ import { Post } from "../models/postModel.js";
 import { Message } from "../models/messageModel.js";
 import mongoose from "mongoose";
 import { Comment } from "../models/commentModel.js";
+import jwt from "jsonwebtoken";
+import { sendMessage } from "../nodemailer/mailMessage.js";
+import dotenv from "dotenv";
+dotenv.config();
 export const registerUser = AsyncHandler(async (req, res, next) => {
   const { username, email, password, role, phone, address, city, district, county, postcode } = req.body;
 
@@ -52,7 +56,6 @@ export const registerUser = AsyncHandler(async (req, res, next) => {
     message: "Verification code sent to your email. Please verify to complete registration.",
   });
 });
-
 export const verifyUser = AsyncHandler(async (req, res, next) => {
   const { verificationCode } = req.body;
   const verificationData = req.session.verificationData;
@@ -113,8 +116,6 @@ export const verifyUser = AsyncHandler(async (req, res, next) => {
     user: newUser,
   });
 });
-
-
 export const loginUser = AsyncHandler(async (req, res, next) => {
   try {
     const { email, password, location } = req.body;
@@ -180,8 +181,6 @@ export const getUserDetails = AsyncHandler(async (req, res, next) => {
     .status(200)
     .json(new ApiResponse(200, user, "User details fetched successfully"));
 });
-
-
 
 export const deleteUser = AsyncHandler(async (req, res, next) => {
   const userId = req.user?._id;
@@ -318,8 +317,334 @@ export const deleteUser = AsyncHandler(async (req, res, next) => {
   }
 });
 
+//update user account details
+export const updateAccountDetails = AsyncHandler(async (req, res) => {
+  const { email, username, oldPassword, newPassword, phone, bio } = req.body;
 
+  // Check if at least one field is being updated
+  if (!email && !username && !oldPassword && !newPassword && !bio && !phone) {
+    throw new ErrorHandler("At least one field must be provided for update", 400);
+  }
 
+  // Find user with all necessary fields
+  const user = await User.findById(req.user._id)
+    .select("+password +verificationCode +emailUpdateToken +emailUpdateTokenExpires");
+    
+  if (!user) {
+    throw new ErrorHandler("User not found", 404);
+  }
+
+  let verificationRequired = false;
+
+  // Process email update if email is present AND different
+  if (email && email !== user.email) {
+    // Check if email already exists
+    const existedUser = await User.findOne({ email });
+    if (existedUser) {
+      throw new ErrorHandler("Email already in use", 400);
+    }
+
+    // Send verification code to the NEW email address
+    let verificationCode;
+    try {
+      verificationCode = await sendMail(email); // This now returns the generated code
+    } catch (error) {
+      throw new ErrorHandler("Failed to send verification email", 500);
+    }
+
+    const expiresAt = new Date(Date.now() + 30 * 1000); // 30 seconds from now
+
+    // Generate verification token (includes the verification code)
+    const emailUpdateToken = jwt.sign(
+      { 
+        userId: user._id, 
+        newEmail: email, 
+        purpose: 'email-update',
+        verificationCode: verificationCode.toString()
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '30s' } // Token expires in 30 seconds
+    );
+
+    // Update user fields
+    user.verificationCode = verificationCode.toString();
+    user.emailUpdateToken = emailUpdateToken;
+    user.emailUpdateTokenExpires = expiresAt;
+    verificationRequired = true;
+
+    // Save immediately to ensure tokens are stored
+    await user.save({ validateBeforeSave: false });
+  }
+
+  // Handle password update
+  if (oldPassword || newPassword) {
+    if (!oldPassword || !newPassword) {
+      throw new ErrorHandler("Both current and new passwords are required", 400);
+    }
+    
+    const isPasswordCorrect = await user.comparePassword(oldPassword);
+    if (!isPasswordCorrect) {
+      throw new ErrorHandler("Invalid current password", 401);
+    }
+    
+    user.password = newPassword;
+    // Send password change notification
+    await sendMessage(user.email, "Your password was changed successfully");
+  }
+
+  // Update other fields
+  if (username) user.username = username;
+  if (bio) user.bio = bio;
+  if (phone) user.phone = phone;
+
+  // Final save with validation
+  await user.save({ validateBeforeSave: true });
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        user: {
+          _id: user._id,
+          username: user.username,
+          email: user.email, // Returns old email until verified
+          role: user.role,
+          avatar: user.avatar,
+          phone: user.phone,
+          bio: user.bio
+        },
+        verificationRequired,
+        expiresAt: verificationRequired ? user.emailUpdateTokenExpires : undefined
+      },
+      verificationRequired 
+        ? "Verification code sent to new email address" 
+        : "Profile updated successfully"
+    )
+  );
+});
+export const verifyAccountChanges = AsyncHandler(async (req, res) => {
+  const { verificationCode } = req.body;
+
+  if (!verificationCode) {
+    throw new ErrorHandler("Verification code is required", 400);
+  }
+
+  // Find user with all verification fields
+  const user = await User.findById(req.user._id)
+    .select("+verificationCode +emailUpdateToken +emailUpdateTokenExpires");
+    
+  if (!user) {
+    throw new ErrorHandler("User not found", 404);
+  }
+
+  // Check if verification data exists
+  if (!user.verificationCode || !user.emailUpdateToken) {
+    // Clean up any partial data if exists
+    if (user.verificationCode || user.emailUpdateToken) {
+      user.verificationCode = undefined;
+      user.emailUpdateToken = undefined;
+      user.emailUpdateTokenExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+    }
+    throw new ErrorHandler("No pending email update request. Please initiate email change again.", 400);
+  }
+
+  // Check if OTP has expired
+  if (user.emailUpdateTokenExpires && user.emailUpdateTokenExpires < new Date()) {
+    // Clean up expired data
+    user.verificationCode = undefined;
+    user.emailUpdateToken = undefined;
+    user.emailUpdateTokenExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    
+    throw new ErrorHandler("Verification code has expired. Please request a new one.", 400);
+  }
+
+  // Verify code matches (convert both to strings for comparison)
+  if (verificationCode.toString() !== user.verificationCode.toString()) {
+    throw new ErrorHandler("Invalid verification code", 400);
+  }
+
+  try {
+    // Verify the token
+    const decoded = jwt.verify(user.emailUpdateToken, process.env.JWT_SECRET);
+    
+    // Validate token contents
+    if (decoded.purpose !== 'email-update') {
+      throw new ErrorHandler("Invalid token purpose", 400);
+    }
+    
+    if (decoded.userId.toString() !== user._id.toString()) {
+      throw new ErrorHandler("Token doesn't match user", 400);
+    }
+
+    // Verify email availability again
+    const emailExists = await User.findOne({ email: decoded.newEmail });
+    if (emailExists && emailExists._id.toString() !== user._id.toString()) {
+      throw new ErrorHandler("Email is now in use by another account", 400);
+    }
+
+    // Store old email for notification
+    const oldEmail = user.email;
+    
+    // Update user data
+    user.email = decoded.newEmail;
+    user.emailVerified = true;
+    user.verificationCode = undefined;
+    user.emailUpdateToken = undefined;
+    user.emailUpdateTokenExpires = undefined;
+    
+    await user.save({ validateBeforeSave: true });
+
+    // Send notifications
+    await Promise.all([
+      sendMessage(oldEmail, `Your account email has been changed to ${decoded.newEmail}`),
+      sendMessage(decoded.newEmail, "Your email has been successfully verified")
+    ]);
+
+    res.status(200).json(
+      new ApiResponse(
+        200,
+        { 
+          email: user.email,
+          emailVerified: true 
+        },
+        "Email updated successfully"
+      )
+    );
+
+  } catch (err) {
+    // Handle specific JWT errors
+    if (err.name === 'TokenExpiredError') {
+      // Clean up expired tokens
+      user.verificationCode = undefined;
+      user.emailUpdateToken = undefined;
+      user.emailUpdateTokenExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      
+      throw new ErrorHandler("Verification token expired. Please request a new verification email.", 400);
+    }
+    
+    if (err.name === 'JsonWebTokenError') {
+      throw new ErrorHandler("Invalid verification token", 400);
+    }
+    
+    // Handle other errors
+    throw new ErrorHandler(err.message || "Verification failed", 400);
+  }
+});
+export const resendVerificationOTP = AsyncHandler(async (req, res) => {
+  // Find user with verification fields
+  const user = await User.findById(req.user._id)
+    .select('+verificationCode +emailUpdateToken +emailUpdateTokenExpires');
+  
+  if (!user) {
+    throw new ErrorHandler("User not found", 404);
+  }
+
+  // Check if there's any verification data
+  if (!user.emailUpdateToken || !user.verificationCode) {
+    throw new ErrorHandler("No pending email update request", 400);
+  }
+
+  try {
+    // Decode the token to get the new email (don't verify as it might be expired)
+    const decoded = jwt.decode(user.emailUpdateToken);
+    
+    if (!decoded || !decoded.newEmail) {
+      throw new ErrorHandler("Invalid verification data", 400);
+    }
+
+    // Generate and send new verification code
+    const newVerificationCode = await sendMail(decoded.newEmail);
+
+    const expiresAt = new Date(Date.now() + 30 * 1000); // New OTP expires in 30 seconds
+    
+    // Generate new token with the new verification code
+    const newEmailUpdateToken = jwt.sign(
+      {
+        userId: user._id,
+        newEmail: decoded.newEmail,
+        purpose: 'email-update',
+        verificationCode: newVerificationCode.toString()
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '30s' } // New token expires in 30 seconds
+    );
+    
+    // Update user fields
+    user.verificationCode = newVerificationCode.toString();
+    user.emailUpdateToken = newEmailUpdateToken;
+    user.emailUpdateTokenExpires = expiresAt;
+    
+    await user.save({ validateBeforeSave: false });
+
+    res.status(200).json(
+      new ApiResponse(
+        200,
+        { 
+          email: decoded.newEmail,
+          expiresAt: user.emailUpdateTokenExpires
+        },
+        "New verification code sent successfully"
+      )
+    );
+
+  } catch (err) {
+    // Clean up verification data if something went wrong
+    user.verificationCode = undefined;
+    user.emailUpdateToken = undefined;
+    user.emailUpdateTokenExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    // Handle specific errors
+    if (err.message.includes("Failed to send verification email")) {
+      throw new ErrorHandler("Failed to resend verification email", 500);
+    }
+    
+    // Handle other errors
+    throw new ErrorHandler(err.message || "Failed to resend verification code", 400);
+  }
+});
+export const updateUserAvatar = AsyncHandler(async (req, res) => {
+  const avatarLocalPath = req.file?.path;
+
+  if (!avatarLocalPath) {
+    throw new ErrorHandler("Avatar file is missing", 400);
+  }
+
+  // Upload new avatar to Cloudinary
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
+  if (!avatar?.url || !avatar?.public_id) {
+    throw new ErrorHandler("Error while uploading avatar", 400);
+  }
+
+  const user = await User.findById(req.user?._id);
+  if (!user) {
+    throw new ErrorHandler("User not found", 404);
+  }
+
+  // Delete old avatar if it exists
+  if (user.avatarPublicId) {
+    await deleteFromCloudinary(user.avatarPublicId).catch(error => {
+      console.error("Error deleting old avatar:", error);
+    });
+  }
+
+  // Update user's avatar
+  user.avatar = avatar.url;
+  user.avatarPublicId = avatar.public_id;
+
+  await user.save({ validateBeforeSave: true });
+
+  res.status(200).json(
+    new ApiResponse(
+      200, 
+      { avatar: avatar.url }, 
+      "Avatar updated successfully"
+    )
+  );
+});
 
 export const getUserActivities = AsyncHandler(async (req, res, next) => {
   const userId = req.user?._id;

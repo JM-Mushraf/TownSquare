@@ -48,19 +48,27 @@ const userSchema = new mongoose.Schema(
       county: { type: String, required: true },
       postcode: { type: String, required: true },
     },
-
     bio: {
       type: String,
       maxlength: 500,
     },
     communitiesJoined: [
       {
-        type: String, // Change this to String
+        type: String,
       },
     ],
     verificationCode: {
       type: Number,
+      select: false,
     },
+    emailUpdateToken: {
+      type: String,
+      select: false,
+    },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    }
   },
   { timestamps: true }
 );

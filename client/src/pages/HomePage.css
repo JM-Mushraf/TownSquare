@@ -2345,14 +2345,14 @@ a {
 }
 
 /* Dark mode */
-.dark {
+/* .dark {
   --background: #030014;
   --foreground: #e2e8ff;
   --card: rgba(23, 25, 35, 0.6);
   --muted: rgba(30, 41, 59, 0.6);
   --muted-foreground: #94a3b8;
   --border: rgba(255, 255, 255, 0.1);
-}
+} */
 
 /* Responsive styles */
 @media (max-width: 1023px) {
@@ -4093,3 +4093,5 @@ button {
     background-position: 0% 50%;
   }
 }
+
+

@@ -216,7 +216,7 @@ export const getCountyPosts = async (req, res) => {
       {
         $match: {
           "creator.location.county": userCounty,
-          type: { $in: ["announcement", "poll", "survey", "general", "marketplace"] }
+          type: { $in: ["announcements", "poll", "survey", "general", "marketplace","issue"] }
         }
       },
       { $sort: { createdAt: -1 } },
@@ -1443,6 +1443,196 @@ export const getAllAnnouncements = async (req, res) => {
       success: false,
       message: "Error fetching announcements",
       error: error.message,
+    });
+  }
+};
+
+//marketPlace ContactMessage fetching
+// Get marketplace contact messages for a seller
+export const getMarketplaceMessages = async (req, res) => {
+  try {
+    const sellerId = req.user._id;
+
+    // Find all marketplace posts by this seller that have contact messages
+    const postsWithMessages = await Post.find({
+      type: "marketplace",
+      "marketplace.seller": sellerId,
+      "marketplace.contactMessages.0": { $exists: true }
+    })
+    .populate({
+      path: "marketplace.contactMessages.userId",
+      select: "username email avatar"
+    })
+    .sort({ "marketplace.contactMessages.createdAt": -1 });
+
+    if (!postsWithMessages || postsWithMessages.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No marketplace messages found",
+        messages: []
+      });
+    }
+
+    // Format the response to include all messages (both read and unread)
+    const formattedMessages = postsWithMessages.flatMap(post => {
+      return post.marketplace.contactMessages.map(message => ({
+        postId: post._id,
+        postTitle: post.title,
+        postDescription: post.description,
+        postPrice: post.marketplace.price,
+        postLocation: post.marketplace.location,
+        postStatus: post.marketplace.status,
+        postAttachments: post.attachments.map(attachment => ({
+          url: attachment.url,
+          fileType: attachment.fileType
+        })),
+        messageId: message._id,
+        message: message.message,
+        createdAt: message.createdAt,
+        isRead: message.isRead,
+        sender: {
+          userId: message.userId._id,
+          username: message.userId.username,
+          email: message.userId.email,
+          avatar: message.userId.avatar
+        }
+      }));
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Marketplace messages retrieved successfully",
+      messages: formattedMessages,
+      totalMessages: formattedMessages.length
+    });
+
+  } catch (error) {
+    console.error("Error fetching marketplace messages:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching marketplace messages",
+      error: error.message
+    });
+  }
+};
+
+// Mark message as read
+export const markMessageAsRead = async (req, res) => {
+  try {
+    const { postId, messageId } = req.params;
+    const sellerId = req.user._id;
+
+    // Find the post and verify the seller owns it
+    const post = await Post.findOne({
+      _id: postId,
+      type: "marketplace",
+      "marketplace.seller": sellerId
+    });
+
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found or you are not the seller"
+      });
+    }
+
+    // Find the message and update its read status
+    const message = post.marketplace.contactMessages.id(messageId);
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: "Message not found"
+      });
+    }
+
+    message.isRead = true;
+    await post.save();
+
+    // Return the updated message
+    const updatedMessage = {
+      messageId: message._id,
+      isRead: message.isRead
+    };
+
+    res.status(200).json({
+      success: true,
+      message: "Message marked as read",
+      updatedMessage
+    });
+
+  } catch (error) {
+    console.error("Error marking message as read:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error marking message as read",
+      error: error.message
+    });
+  }
+};
+
+// Get messages for a specific marketplace post
+export const getPostMessages = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const sellerId = req.user._id; // Authenticated user must be the seller
+
+    // Find the post and verify the seller owns it
+    const post = await Post.findOne({
+      _id: postId,
+      type: "marketplace",
+      "marketplace.seller": sellerId
+    })
+    .populate({
+      path: "marketplace.contactMessages.userId",
+      select: "username email avatar" // User details of message senders
+    });
+
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found or you are not the seller"
+      });
+    }
+
+    // Format the messages
+    const formattedMessages = post.marketplace.contactMessages.map(message => ({
+      messageId: message._id,
+      message: message.message,
+      createdAt: message.createdAt,
+      isRead: message.isRead || false,
+      sender: {
+        userId: message.userId._id,
+        username: message.userId.username,
+        email: message.userId.email,
+        avatar: message.userId.avatar
+      }
+    }));
+
+    res.status(200).json({
+      success: true,
+      message: "Post messages retrieved successfully",
+      post: {
+        id: post._id,
+        title: post.title,
+        description: post.description,
+        price: post.marketplace.price,
+        location: post.marketplace.location,
+        status: post.marketplace.status,
+        attachments: post.attachments.map(attachment => ({
+          url: attachment.url,
+          fileType: attachment.fileType
+        }))
+      },
+      messages: formattedMessages,
+      totalMessages: formattedMessages.length
+    });
+
+  } catch (error) {
+    console.error("Error fetching post messages:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching post messages",
+      error: error.message
     });
   }
 };

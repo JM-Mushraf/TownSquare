@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useTheme } from "./ThemeProvider";
-import ThemeToggle from "./ThemeToggle";
-import "./Sidebar.css";
-import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../Slices/AuthSlice";
+"use client"
+
+import { useState, useEffect } from "react"
+import { Link, useLocation, useNavigate } from "react-router-dom"
+import { useTheme } from "./ThemeProvider"
+import ThemeToggle from "./ThemeToggle"
+import "./Sidebar.css"
+import { useDispatch, useSelector } from "react-redux"
+import { logout } from "../Slices/AuthSlice"
 
 // Icons
 import {
@@ -12,64 +14,59 @@ import {
   MessageSquare,
   FileText,
   Vote,
-  Trophy,
   ShoppingBag,
   Phone,
   ChevronLeft,
   ChevronRight,
   LogIn,
   LogOut,
-} from "./Icons";
+} from "./Icons"
 
 function Sidebar() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { theme } = useTheme();
-  const dispatch = useDispatch();
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const { theme } = useTheme()
+  const dispatch = useDispatch()
 
   // Access user data and authorization status from Redux store
-  const isAuthorized = useSelector((state) => state.user.isAuthorized);
-  const userData = useSelector((state) => state.user.userData); // Access userData
+  const isAuthorized = useSelector((state) => state.user.isAuthorized)
+  const userData = useSelector((state) => state.user.userData) // Access userData
 
   // Animation on mount
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setTimeout(() => setMounted(true), 0);
+    setTimeout(() => setMounted(true), 0)
 
     // Close sidebar on mobile when clicking outside
     const handleClickOutside = (e) => {
-      if (
-        isMobileOpen &&
-        !e.target.closest(".sidebar") &&
-        !e.target.closest(".sidebar-mobile-toggle")
-      ) {
-        setIsMobileOpen(false);
+      if (isMobileOpen && !e.target.closest(".sidebar") && !e.target.closest(".sidebar-mobile-toggle")) {
+        setIsMobileOpen(false)
       }
-    };
+    }
 
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, [isMobileOpen]);
+    document.addEventListener("click", handleClickOutside)
+    return () => document.removeEventListener("click", handleClickOutside)
+  }, [isMobileOpen])
 
   // Redirect to login page if not logged in
   useEffect(() => {
     if (!isAuthorized && location.pathname !== "/login") {
-      navigate("/login");
+      navigate("/login")
     }
-  }, [isAuthorized, location.pathname, navigate]);
+  }, [isAuthorized, location.pathname, navigate])
 
-  if (!mounted) return null;
+  if (!mounted) return null
 
-  const toggleSidebar = () => setIsCollapsed(!isCollapsed);
-  const toggleMobileSidebar = () => setIsMobileOpen(!isMobileOpen);
+  const toggleSidebar = () => setIsCollapsed(!isCollapsed)
+  const toggleMobileSidebar = () => setIsMobileOpen(!isMobileOpen)
 
   const handleLogout = () => {
-    dispatch(logout()); // Dispatch the logout action
-    navigate("/login"); // Redirect to login page after logout
-  };
+    dispatch(logout()) // Dispatch the logout action
+    navigate("/login") // Redirect to login page after logout
+  }
 
   const sidebarItems = [
     {
@@ -84,7 +81,7 @@ function Sidebar() {
       section: "Engagement",
       items: [
         { icon: <Vote />, label: "Surveys & Polls", href: "/surveys", badge: null },
-        { icon: <Trophy />, label: "Leaderboard", href: "/leaderboard", badge: null },
+        // { icon: <Trophy />, label: "Leaderboard", href: "/leaderboard", badge: null },
         { icon: <ShoppingBag />, label: "Marketplace", href: "/marketplace", badge: null },
       ],
     },
@@ -92,7 +89,7 @@ function Sidebar() {
       section: "Services",
       items: [{ icon: <Phone />, label: "Emergency", href: "/emergency", badge: null, isEmergency: true }],
     },
-  ];
+  ]
 
   return (
     <>
@@ -118,7 +115,9 @@ function Sidebar() {
       {/* Mobile backdrop */}
       <div className={`sidebar-backdrop ${isMobileOpen ? "active" : ""}`} onClick={() => setIsMobileOpen(false)}></div>
 
-      <div className={`sidebar ${isCollapsed ? "sidebar-collapsed" : ""} ${isMobileOpen ? "open" : ""} ${theme}`}>
+      <div
+        className={`sidebar ${isCollapsed ? "sidebar-collapsed" : ""} ${isMobileOpen ? "open" : ""} ${theme === "dark" ? "dark" : ""}`}
+      >
         {/* Sidebar header */}
         <div className="sidebar-header">
           <Link to="/" className="sidebar-logo">
@@ -158,7 +157,7 @@ function Sidebar() {
               {!isCollapsed && <div className="sidebar-section-title">{section.section}</div>}
               <nav className="sidebar-nav">
                 {section.items.map((item, itemIndex) => {
-                  const isActive = location.pathname === item.href;
+                  const isActive = location.pathname === item.href
                   return (
                     <Link key={itemIndex} to={item.href} className={`sidebar-nav-item ${isActive ? "active" : ""}`}>
                       <div className="sidebar-nav-icon">{item.icon}</div>
@@ -170,7 +169,7 @@ function Sidebar() {
                         </>
                       )}
                     </Link>
-                  );
+                  )
                 })}
               </nav>
             </div>
@@ -179,13 +178,19 @@ function Sidebar() {
 
         {/* Sidebar footer */}
         <div className="sidebar-footer">
-          {!isCollapsed && <div className="theme-toggle-container"><ThemeToggle /></div>}
-          <div 
-  className="sidebar-user" 
-  onClick={() => navigate("/profile")}
-  style={{ cursor: "pointer" }} // Add pointer cursor to indicate it's clickable
->
-            {isAuthorized?<img className="sidebar-user-avatar" src={userData?.avatar} ></img>:null}
+          {!isCollapsed && (
+            <div className="theme-toggle-container">
+              <ThemeToggle />
+            </div>
+          )}
+          <div
+            className="sidebar-user"
+            onClick={() => navigate("/profile")}
+            style={{ cursor: "pointer" }} // Add pointer cursor to indicate it's clickable
+          >
+            {isAuthorized ? (
+              <img className="sidebar-user-avatar" src={userData?.avatar || "/placeholder.svg"}></img>
+            ) : null}
             {!isCollapsed && (
               <div className="sidebar-user-info">
                 {/* Conditionally render username if logged in */}
@@ -200,19 +205,23 @@ function Sidebar() {
           </div>
           {isAuthorized ? (
             <button className="sidebar-nav-item" onClick={handleLogout}>
-              <div className="sidebar-nav-icon"><LogOut /></div>
+              <div className="sidebar-nav-icon">
+                <LogOut />
+              </div>
               {!isCollapsed && <span className="sidebar-nav-text">Logout</span>}
             </button>
           ) : (
             <Link to="/login" className="sidebar-nav-item">
-              <div className="sidebar-nav-icon"><LogIn /></div>
+              <div className="sidebar-nav-icon">
+                <LogIn />
+              </div>
               {!isCollapsed && <span className="sidebar-nav-text">Login</span>}
             </Link>
           )}
         </div>
       </div>
     </>
-  );
+  )
 }
 
-export default Sidebar;
+export default Sidebar

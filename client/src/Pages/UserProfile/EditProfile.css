@@ -1,0 +1,758 @@
+/* EditProfile.css - Updated with unique class names */
+.neo-ep-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 12, 22, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.neo-ep-container {
+  width: 100%;
+  max-width: 800px;
+  height: 600px;
+  perspective: 2000px;
+  position: relative;
+}
+
+.neo-ep-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-style: preserve-3d;
+}
+
+.neo-ep-container.flipped .neo-ep-card-inner {
+  transform: rotateY(180deg);
+}
+
+.neo-ep-card-front,
+.neo-ep-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: var(--neo-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--neo-shadow-lg);
+  background: var(--neo-glass-bg);
+  border: 1px solid var(--neo-glass-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.neo-ep-card-front {
+  z-index: 2;
+  transform: rotateY(0deg);
+}
+
+.neo-ep-card-back {
+  transform: rotateY(180deg);
+}
+
+/* Card Header */
+.neo-ep-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--neo-glass-border);
+  background: var(--neo-glass-highlight);
+}
+
+.neo-ep-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  background: var(--neo-gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.neo-ep-back-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--neo-glass-highlight);
+  color: var(--neo-text-primary);
+  border: 1px solid var(--neo-glass-border);
+  transition: all var(--neo-transition-normal);
+}
+
+.neo-ep-back-button:hover {
+  background: var(--neo-primary);
+  color: white;
+  transform: translateX(-5px);
+  box-shadow: var(--neo-glow-primary);
+}
+
+.neo-ep-edit-button {
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--neo-radius-md);
+  background: var(--neo-primary);
+  color: white;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all var(--neo-transition-bounce);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.neo-ep-edit-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--neo-gradient-primary);
+  opacity: 0;
+  transition: opacity var(--neo-transition-normal);
+  z-index: -1;
+}
+
+.neo-ep-edit-button:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--neo-glow-primary);
+}
+
+.neo-ep-edit-button:hover::before {
+  opacity: 1;
+}
+
+/* Profile Preview */
+.neo-ep-profile-preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.neo-ep-avatar-preview {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  margin-bottom: 2rem;
+}
+
+.neo-ep-avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  z-index: 1;
+  position: relative;
+}
+
+.neo-ep-avatar-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--neo-gradient-primary);
+  filter: blur(15px);
+  opacity: 0.7;
+  z-index: 0;
+  animation: pulseGlow 3s infinite alternate;
+}
+
+.neo-ep-profile-info {
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.neo-ep-profile-info h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: var(--neo-gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.neo-ep-profile-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.neo-ep-profile-meta-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--neo-glass-highlight);
+  border-radius: var(--neo-radius-md);
+  color: var(--neo-text-primary);
+  border: 1px solid var(--neo-glass-border);
+}
+
+.neo-ep-profile-meta-item svg {
+  color: var(--neo-primary);
+}
+
+.neo-ep-profile-bio {
+  background: var(--neo-glass-highlight);
+  border-radius: var(--neo-radius-md);
+  padding: 1.5rem;
+  text-align: left;
+  border: 1px solid var(--neo-glass-border);
+}
+
+.neo-ep-profile-bio h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--neo-text-primary);
+}
+
+.neo-ep-profile-bio p {
+  color: var(--neo-text-secondary);
+  line-height: 1.6;
+}
+
+/* Edit Form */
+.neo-ep-edit-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.neo-ep-avatar-editor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.neo-ep-avatar-upload {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  cursor: pointer;
+  overflow: hidden;
+  border: 3px solid var(--neo-glass-border);
+  transition: all var(--neo-transition-normal);
+}
+
+.neo-ep-avatar-upload:hover {
+  border-color: var(--neo-primary);
+  box-shadow: var(--neo-glow-primary);
+}
+
+.neo-ep-avatar-upload img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.neo-ep-avatar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 12, 22, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--neo-transition-normal);
+  color: white;
+  gap: 0.5rem;
+}
+
+.neo-ep-avatar-upload:hover .neo-ep-avatar-overlay {
+  opacity: 1;
+}
+
+.neo-ep-avatar-hint {
+  font-size: 0.875rem;
+  color: var(--neo-text-secondary);
+  margin-top: 0.75rem;
+}
+
+.neo-ep-upload-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.neo-ep-upload-progress-bar {
+  height: 100%;
+  background: var(--neo-primary);
+  transition: width 0.3s ease;
+}
+
+.neo-ep-edit-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--neo-glass-border);
+  padding-bottom: 0.5rem;
+}
+
+.neo-ep-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--neo-radius-md);
+  font-weight: 500;
+  color: var(--neo-text-secondary);
+  transition: all var(--neo-transition-normal);
+  background: transparent;
+}
+
+.neo-ep-tab:hover {
+  color: var(--neo-text-primary);
+  background: var(--neo-glass-highlight);
+  transform: translateY(-2px);
+}
+
+.neo-ep-tab.active {
+  color: white;
+  background: var(--neo-primary);
+  box-shadow: var(--neo-glow-primary);
+}
+
+.neo-ep-tab svg {
+  width: 18px;
+  height: 18px;
+}
+
+.neo-ep-edit-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.neo-ep-edit-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.neo-ep-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.neo-ep-form-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: var(--neo-text-primary);
+}
+
+.neo-ep-form-label svg {
+  color: var(--neo-primary);
+}
+
+.neo-ep-form-input,
+.neo-ep-form-textarea {
+  padding: 0.75rem 1rem;
+  border-radius: var(--neo-radius-md);
+  background: var(--neo-bg-input);
+  border: 1px solid var(--neo-glass-border);
+  color: var(--neo-text-primary);
+  font-family: inherit;
+  transition: all var(--neo-transition-normal);
+}
+
+.neo-ep-form-input:focus,
+.neo-ep-form-textarea:focus {
+  outline: none;
+  border-color: var(--neo-primary);
+  box-shadow: var(--neo-glow-primary);
+}
+
+.neo-ep-form-input.neo-ep-input-error,
+.neo-ep-form-textarea.neo-ep-input-error {
+  border-color: var(--neo-danger);
+  box-shadow: 0 0 0 1px var(--neo-danger);
+}
+
+.neo-ep-form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.neo-ep-error-message {
+  color: var(--neo-danger);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.neo-ep-char-count {
+  font-size: 0.75rem;
+  color: var(--neo-text-secondary);
+  text-align: right;
+  margin-top: 0.25rem;
+}
+
+.neo-ep-form-note {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--neo-text-secondary);
+  margin-top: 0.25rem;
+}
+
+.neo-ep-form-note svg {
+  color: var(--neo-warning);
+}
+
+.neo-ep-security-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.neo-ep-security-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--neo-text-primary);
+}
+
+.neo-ep-security-header svg {
+  color: var(--neo-primary);
+}
+
+.neo-ep-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: var(--neo-radius-md);
+  margin-bottom: 1.5rem;
+}
+
+.neo-ep-alert-success {
+  background: rgba(16, 185, 129, 0.1);
+  border-left: 4px solid var(--neo-secondary);
+  color: var(--neo-secondary);
+}
+
+.neo-ep-alert-error {
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 4px solid var(--neo-danger);
+  color: var(--neo-danger);
+}
+
+.neo-ep-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 1.5rem;
+}
+
+.neo-ep-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--neo-radius-md);
+  font-weight: 500;
+  transition: all var(--neo-transition-bounce);
+}
+
+.neo-ep-button-primary {
+  background: var(--neo-primary);
+  color: white;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.neo-ep-button-primary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--neo-gradient-primary);
+  opacity: 0;
+  transition: opacity var(--neo-transition-normal);
+  z-index: -1;
+}
+
+.neo-ep-button-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--neo-glow-primary);
+}
+
+.neo-ep-button-primary:hover::before {
+  opacity: 1;
+}
+
+.neo-ep-button-secondary {
+  background: var(--neo-glass-highlight);
+  color: var(--neo-text-primary);
+  border: 1px solid var(--neo-glass-border);
+}
+
+.neo-ep-button-secondary:hover {
+  background: var(--neo-glass-border);
+  transform: translateY(-3px);
+}
+
+.neo-ep-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.neo-ep-spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Verification Form */
+.neo-ep-verification-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  height: 100%;
+}
+
+.neo-ep-verification-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.neo-ep-verification-header svg {
+  width: 48px;
+  height: 48px;
+  color: var(--neo-primary);
+  padding: 0.75rem;
+  background: var(--neo-glass-highlight);
+  border-radius: 50%;
+  box-shadow: var(--neo-glow-primary);
+}
+
+.neo-ep-verification-header h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  background: var(--neo-gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.neo-ep-verification-message {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--neo-text-secondary);
+  line-height: 1.6;
+  max-width: 500px;
+}
+
+.neo-ep-verification-form {
+  width: 100%;
+  max-width: 400px;
+}
+
+.neo-ep-verification-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+/* Timer Styles */
+.neo-ep-verification-timer {
+  background: var(--neo-glass-highlight);
+  border-radius: var(--neo-radius-md);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--neo-glass-border);
+  width: 100%;
+}
+
+.neo-ep-timer-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--neo-primary);
+  margin: 0 auto;
+  box-shadow: var(--neo-glow-primary);
+}
+
+.neo-ep-timer-clock {
+  color: white;
+  animation: pulse 2s infinite alternate;
+}
+
+.neo-ep-timer-text {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--neo-text-primary);
+  margin: 0.5rem 0;
+}
+
+.neo-ep-timer-countdown-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.neo-ep-timer-countdown {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: var(--neo-gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  min-width: 2ch; /* Ensures the width doesn't change as numbers change */
+  text-align: center;
+}
+
+.neo-ep-timer-expired {
+  color: var(--neo-danger);
+  font-weight: 600;
+}
+
+.neo-ep-timer-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: var(--neo-primary);
+  transition: width 1s linear;
+}
+
+/* Add visual feedback for the button states */
+.neo-ep-button-outline {
+  background: transparent;
+  color: var(--neo-text-secondary);
+  border: 1px solid var(--neo-glass-border);
+}
+
+.neo-ep-button-outline:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.neo-ep-button-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background: var(--neo-glass-highlight);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .neo-ep-overlay {
+    padding: 1rem;
+  }
+
+  .neo-ep-container {
+    height: 90vh;
+  }
+
+  .neo-ep-header {
+    padding: 1rem;
+  }
+
+  .neo-ep-edit-content {
+    padding: 1rem;
+  }
+
+  .neo-ep-form-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .neo-ep-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .neo-ep-verification-container {
+    padding: 1rem;
+  }
+}
