@@ -1,8 +1,8 @@
 import express from "express";
 import { isAuthenticated } from "../middlewares/auth.js";
 import { upload } from "../middlewares/multer.js";
-import  { registerUser , verifyUser,loginUser,logoutUser,getUserDetails, deleteUser, getUserActivities,updateAccountDetails,verifyAccountChanges,updateUserAvatar,resendVerificationOTP}  from "../controllers/userController.js";
-import { listUserChats } from "../controllers/chatController.js";
+import  { registerUser , verifyUser,loginUser,logoutUser,getUserDetails, deleteUser,updateAccountDetails,verifyAccountChanges,updateUserAvatar,resendVerificationOTP,addBookmarks, getBookmarks}  from "../controllers/userController.js";
+import { getCommunities, listUserChats } from "../controllers/chatController.js";
 export const userRouter = express.Router();
 
 userRouter.post(
@@ -16,9 +16,11 @@ userRouter.get("/logout",logoutUser)
 userRouter.get("/getUserDetails",isAuthenticated,getUserDetails)
 userRouter.get('/chats',isAuthenticated,listUserChats)
 userRouter.delete('/delete',isAuthenticated,deleteUser)
-userRouter.get('/activity',isAuthenticated,getUserActivities)
 
 userRouter.put("/update", isAuthenticated,updateAccountDetails);
 userRouter.post("/verify-email", isAuthenticated,verifyAccountChanges);
 userRouter.patch("/avatar",isAuthenticated,upload.single("avatar"),updateUserAvatar);
 userRouter.post("/resend-verification", isAuthenticated, resendVerificationOTP);
+userRouter.post('/bookmark',isAuthenticated,addBookmarks)
+userRouter.get('/getbookmarks',isAuthenticated,getBookmarks)
+userRouter.get('/chat/getCommunities',isAuthenticated,getCommunities)

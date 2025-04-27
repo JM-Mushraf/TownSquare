@@ -646,66 +646,118 @@ export const updateUserAvatar = AsyncHandler(async (req, res) => {
   );
 });
 
-export const getUserActivities = AsyncHandler(async (req, res, next) => {
+export const addBookmarks = AsyncHandler(async (req, res, next) => {
   const userId = req.user?._id;
-  
+  const { postId } = req.body;
+
+  if (!userId) {
+    throw new ErrorHandler("Unauthorized: User ID not found", 401);
+  }
+
+  if (!postId) {
+    throw new ErrorHandler("Post ID is required", 400);
+  }
+
+  try {
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new ErrorHandler("User not found", 404);
+    }
+
+    // Check if post exists
+    const post = await Post.findById(postId);
+    if (!post) {
+      throw new ErrorHandler("Post not found", 404);
+    }
+
+    // Check if post is already bookmarked
+    if (user.bookmarks.includes(postId)) {
+      throw new ErrorHandler("Post is already bookmarked", 400);
+    }
+
+    // Add post to bookmarks
+    user.bookmarks.push(postId);
+    await user.save();
+
+    res.status(200).json(new ApiResponse(200, { bookmarks: user.bookmarks }, "Post bookmarked successfully"));
+
+  } catch (error) {
+    next(new ErrorHandler(error.message || "Failed to bookmark post", error.statusCode || 500));
+  }
+});
+
+
+
+export const getBookmarks = AsyncHandler(async (req, res, next) => {
+  const userId = req.user?._id;
+
   if (!userId) {
     throw new ErrorHandler("Unauthorized: User ID not found", 401);
   }
 
   try {
-    // Get user details
-    const user = await User.findById(userId).select("-password -verificationCode");
+    // Get user with bookmarks populated
+    const user = await User.findById(userId).populate({
+      path: 'bookmarks',
+      populate: {
+        path: 'createdBy',
+        select: 'username avatar email'
+      }
+    });
+
     if (!user) {
       throw new ErrorHandler("User not found", 404);
     }
 
-    // Get all posts created by the user, sorted by newest first
-    const posts = await Post.find({ createdBy: userId })
-      .sort({ createdAt: -1 })
-      .populate('createdBy', 'username avatar')
-      .lean(); // Convert to plain JavaScript objects
-
-    // Categorize posts by type
-    const categorizedPosts = {
-      all: posts,
-      regular: posts.filter(post => post.type === 'regular'),
-      poll: posts.filter(post => post.type === 'poll'),
-      announcement: posts.filter(post => post.type === 'announcement'),
-      marketplace: posts.filter(post => post.type === 'marketplace'),
-      event: posts.filter(post => post.type === 'event'),
-      survey: posts.filter(post => post.type === 'survey')
-    };
-
-    // Count comments for each post (optional)
-    if (req.query.includeCommentCount === 'true') {
-      for (const post of posts) {
-        post.commentCount = await Comment.countDocuments({ postId: post._id });
-      }
-    }
-
-    // Format the response
-    const response = {
-      user: {
-        _id: user._id,
-        username: user.username,
-        avatar: user.avatar
+    // Format the bookmarked posts
+    const formattedBookmarks = user.bookmarks.map(post => ({
+      _id: post._id,
+      title: post.title,
+      description: post.description,
+      type: post.type,
+      createdAt: post.createdAt,
+      upVotes: post.upVotes,
+      downVotes: post.downVotes,
+      createdBy: {
+        _id: post.createdBy._id,
+        username: post.createdBy.username,
+        avatar: post.createdBy.avatar
       },
-      posts: categorizedPosts,
-      counts: {
-        total: posts.length,
-        regular: categorizedPosts.regular.length,
-        poll: categorizedPosts.poll.length,
-        announcement: categorizedPosts.announcement.length,
-        marketplace: categorizedPosts.marketplace.length,
-        event: categorizedPosts.event.length,
-        survey: categorizedPosts.survey.length
-      }
-    };
+      // Include additional fields based on post type
+      ...(post.type === 'poll' && {
+        poll: {
+          question: post.poll?.question,
+          options: post.poll?.options,
+          deadline: post.poll?.deadline,
+          status: post.poll?.status
+        }
+      }),
+      ...(post.type === 'marketplace' && {
+        marketplace: {
+          itemType: post.marketplace?.itemType,
+          price: post.marketplace?.price,
+          location: post.marketplace?.location,
+          status: post.marketplace?.status
+        }
+      }),
+      // Add other post type specific fields as needed
+      attachments: post.attachments,
+      important: post.important
+    }));
 
-    res.status(200).json(new ApiResponse(200, response, "User posts fetched successfully"));
+    res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          bookmarks: formattedBookmarks,
+          count: formattedBookmarks.length
+        },
+        "Bookmarked posts fetched successfully"
+      )
+    );
 
   } catch (error) {
-    next(new ErrorHandler(error.message || "Failed to fetch user posts", error.statusCode || 500));
+    next(new ErrorHandler(error.message || "Failed to fetch bookmarks", error.statusCode || 500));
   }
 });

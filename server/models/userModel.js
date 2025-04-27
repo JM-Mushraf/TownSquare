@@ -68,7 +68,13 @@ const userSchema = new mongoose.Schema(
     emailVerified: {
       type: Boolean,
       default: false,
-    }
+    },
+    bookmarks:[
+      {
+        type:mongoose.Schema.ObjectId,
+        ref:'Post'
+      }
+    ]
   },
   { timestamps: true }
 );

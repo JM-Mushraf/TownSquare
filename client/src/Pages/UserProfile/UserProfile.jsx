@@ -47,6 +47,7 @@ import {
   Save,
   AlertTriangle,
   Send,
+  File,
 } from "lucide-react"
 import "./UserProfile.css"
 import "./EditProfile.css"
@@ -150,6 +151,10 @@ const UserProfileContent = () => {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
   const { isDarkMode } = useTheme()
   const { addToast } = useToast()
+
+  // Bookmarks state
+  const [bookmarkedPosts, setBookmarkedPosts] = useState([])
+  const [isFetchingBookmarks, setIsFetchingBookmarks] = useState(false)
 
   // Edit Profile State
   const [showEditProfile, setShowEditProfile] = useState(false)
@@ -342,6 +347,34 @@ const UserProfileContent = () => {
 
     setFormErrors(newErrors)
   }, [formData, touched])
+
+  // Fetch bookmarks when bookmarks tab is active
+  useEffect(() => {
+    const fetchBookmarks = async () => {
+      if (activeTab === "bookmarks" && token) {
+        setIsFetchingBookmarks(true)
+        try {
+          const response = await api.get("/user/getbookmarks")
+          const data = response.data.data
+
+          if (data && data.bookmarks) {
+            setBookmarkedPosts(data.bookmarks)
+          } else {
+            console.error("Unexpected response format:", data)
+            setBookmarkedPosts([])
+          }
+        } catch (error) {
+          console.error("Error fetching bookmarks:", error.response?.data?.message || error.message)
+          setBookmarkedPosts([])
+          setError("Failed to fetch bookmarks. Please try again.")
+        } finally {
+          setIsFetchingBookmarks(false)
+        }
+      }
+    }
+
+    fetchBookmarks()
+  }, [activeTab, token])
 
   // Memoize grouped messages
   const groupedMessages = useMemo(() => {
@@ -537,6 +570,24 @@ const UserProfileContent = () => {
         return <Bookmark size={16} />
       default:
         return <Activity size={16} />
+    }
+  }
+
+  // Render attachment for bookmarks
+  const renderAttachment = (attachment) => {
+    if (attachment.fileType.startsWith("image/")) {
+      return (
+        <div className="attachment-preview" key={attachment.publicId}>
+          <img src={attachment.url || "/placeholder.svg"} alt="attachment" className="attachment-image" />
+        </div>
+      )
+    } else {
+      return (
+        <div className="attachment-preview" key={attachment.publicId}>
+          <File size={16} />
+          <span>File</span>
+        </div>
+      )
     }
   }
 
@@ -1236,6 +1287,13 @@ const UserProfileContent = () => {
           )}
         </button>
         <button
+          className={`neo-profile-tab ${activeTab === "bookmarks" ? "active" : ""}`}
+          onClick={() => setActiveTab("bookmarks")}
+        >
+          <Bookmark />
+          <span className="neo-tab-text">Bookmarks</span>
+        </button>
+        <button
           className={`neo-profile-tab ${activeTab === "activity" ? "active" : ""}`}
           onClick={() => setActiveTab("activity")}
         >
@@ -1675,6 +1733,66 @@ const UserProfileContent = () => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === "bookmarks" && (
+          <div className="neo-bookmarks-section">
+            <div className="neo-bookmarks-header">
+              <h2>
+                <Bookmark />
+                <span>Bookmarked Posts</span>
+              </h2>
+            </div>
+
+            {isFetchingBookmarks ? (
+              <div className="neo-bookmarks-loading">
+                <div className="neo-loading-spinner"></div>
+                <span>Loading bookmarks...</span>
+              </div>
+            ) : bookmarkedPosts.length === 0 ? (
+              <div className="neo-empty-bookmarks">
+                <div className="neo-empty-icon">
+                  <Bookmark />
+                </div>
+                <h3>No bookmarks found</h3>
+                <p>When you bookmark posts, they will appear here for easy access.</p>
+              </div>
+            ) : (
+              <div className="neo-bookmarks-grid">
+                {bookmarkedPosts.map((bookmark) => (
+                  <div
+                    key={bookmark._id}
+                    className="neo-bookmark-card"
+                    onClick={() => (window.location.href = `http://localhost:5173/post/${bookmark._id}`)}
+                  >
+                    <h3 className="neo-bookmark-title">{bookmark.title}</h3>
+                    <p className="neo-bookmark-description">{bookmark.description}</p>
+                    {bookmark.attachments && bookmark.attachments.length > 0 && (
+                      <div className="neo-bookmark-attachments">{bookmark.attachments.map(renderAttachment)}</div>
+                    )}
+                    <div className="neo-bookmark-footer">
+                      <div className="neo-bookmark-meta">
+                        <div className="neo-bookmark-date">
+                          <Calendar size={14} />
+                          <span>{formatDate(bookmark.createdAt)}</span>
+                        </div>
+                        {bookmark.location && (
+                          <div className="neo-bookmark-location">
+                            <MapPin size={14} />
+                            <span>{bookmark.location}</span>
+                          </div>
+                        )}
+                      </div>
+                      <button className="neo-bookmark-view-button">
+                        <ExternalLink size={14} />
+                        <span>View Post</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

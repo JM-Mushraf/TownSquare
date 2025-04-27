@@ -80,3 +80,16 @@ export const listUserChats = AsyncHandler(async (req, res, next) => {
     chats,
   });
 });
+
+
+export const getCommunities=async(req,res)=>{
+  try {
+    const { names } = req.query;
+    const communityNames = Array.isArray(names) ? names : [names].filter(Boolean);
+    
+    const communities = await Chat.find({ name: { $in: communityNames } });
+    res.status(200).json({ success: true, communities });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+}

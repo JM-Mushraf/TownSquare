@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
-import './DiscussionsPage.css';
-import { useSelector } from 'react-redux';
-import { formatDate } from './utils/formatDate';
-import { renderIcon } from './utils/renderIcon';
-import { io } from 'socket.io-client';
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import "./DiscussionsPage.css";
+import { useSelector } from "react-redux";
+import { formatDate } from "./utils/formatDate";
+import { renderIcon } from "./utils/renderIcon";
+import { io } from "socket.io-client";
+import EmojiPicker from 'emoji-picker-react'
 
 function DiscussionsPage() {
   const [activeChannel, setActiveChannel] = useState(null);
@@ -17,8 +18,11 @@ function DiscussionsPage() {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const emojiPickerRef = useRef(null);
 
   const { userData } = useSelector((state) => state.user);
 
@@ -36,7 +40,7 @@ function DiscussionsPage() {
       console.log("Received group message:", newMessage);
       setMessages((prevMessages) => {
         // Check if message already exists to prevent duplicates
-        if (!prevMessages.some(msg => msg._id === newMessage._id)) {
+        if (!prevMessages.some((msg) => msg._id === newMessage._id)) {
           return [...prevMessages, newMessage];
         }
         return prevMessages;
@@ -55,19 +59,34 @@ function DiscussionsPage() {
     }
   }, [userData]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target)
+      ) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   // Handle file selection
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 5) {
-      alert('You can only upload up to 5 files at once');
+      alert("You can only upload up to 5 files at once");
       return;
     }
 
     setSelectedFiles(files);
-    
+
     // Create preview URLs for images
-    const urls = files.map(file => {
-      if (file.type.startsWith('image/')) {
+    const urls = files.map((file) => {
+      if (file.type.startsWith("image/")) {
         return URL.createObjectURL(file);
       }
       return null;
@@ -78,7 +97,7 @@ function DiscussionsPage() {
   // Clear preview URLs when component unmounts
   useEffect(() => {
     return () => {
-      previewUrls.forEach(url => {
+      previewUrls.forEach((url) => {
         if (url) URL.revokeObjectURL(url);
       });
     };
@@ -125,11 +144,14 @@ function DiscussionsPage() {
   const fetchMessages = async (chatId) => {
     try {
       setIsLoadingMessages(true);
-      const response = await axios.get(`http://localhost:3000/message/all/${chatId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await axios.get(
+        `http://localhost:3000/message/all/${chatId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       const sortedMessages = response.data.messages.sort(
         (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
       );
@@ -148,44 +170,44 @@ function DiscussionsPage() {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() && !selectedFiles.length && !activeChannel) return;
-
+  
     try {
       const formData = new FormData();
-      formData.append('chatId', activeChannel._id);
-      if (newMessage.trim()) {
-        formData.append('content', newMessage);
-      }
-      
+      formData.append("chatId", activeChannel._id);
+      // Always include content, even if empty
+      formData.append("content", newMessage.trim() ? newMessage : "");
+  
       // Append all selected files
-      selectedFiles.forEach(file => {
-        formData.append('attachments', file);
+      selectedFiles.forEach((file) => {
+        formData.append("attachments", file);
       });
-
+  
       const response = await axios.post(
         "http://localhost:3000/message/send",
         formData,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         }
       );
-
+  
       const newMessageWithSender = {
         ...response.data.newMessage,
         sender: userData,
       };
-
+  
       socket.current.emit("send-group-message", {
         chatId: activeChannel._id,
         message: newMessageWithSender,
       });
-
+  
       setMessages((prevMessages) => [...prevMessages, newMessageWithSender]);
       setNewMessage("");
       setSelectedFiles([]);
       setPreviewUrls([]);
+      setShowEmojiPicker(false);
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -211,15 +233,17 @@ function DiscussionsPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
+  const onEmojiClick = (emojiData) => {
+    setNewMessage((prev) => prev + emojiData.emoji);
+  };
   // Render file preview or icon based on file type
   const renderAttachment = (attachment) => {
-    if (attachment.fileType === 'image') {
+    if (attachment.fileType === "image") {
       return (
         <div className="attachment-image-container">
-          <img 
-            src={attachment.url} 
-            alt={attachment.fileName} 
+          <img
+            src={attachment.url}
+            alt={attachment.fileName}
             className="attachment-image"
           />
         </div>
@@ -228,13 +252,33 @@ function DiscussionsPage() {
       return (
         <div className="attachment-file">
           <div className="attachment-icon">
-            {attachment.fileType === 'application' ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {attachment.fileType === "application" ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                 <polyline points="14 2 14 8 20 8"></polyline>
               </svg>
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
                 <polyline points="13 2 13 9 20 9"></polyline>
               </svg>
@@ -285,19 +329,29 @@ function DiscussionsPage() {
             filteredChannels.map((channel) => (
               <div
                 key={channel._id}
-                className={`discussions-channel ${activeChannel?._id === channel._id ? "active" : ""}`}
+                className={`discussions-channel ${
+                  activeChannel?._id === channel._id ? "active" : ""
+                }`}
                 onClick={() => {
                   setActiveChannel(channel);
                   fetchMessages(channel._id);
                   setIsChannelsOpen(false);
                 }}
               >
-                <div className="discussions-channel-icon">{renderIcon(channel.icon)}</div>
+                <div className="discussions-channel-icon">
+                  {renderIcon(channel.icon)}
+                </div>
                 <div className="discussions-channel-info">
                   <div className="discussions-channel-name">{channel.name}</div>
-                  <div className="discussions-channel-description">{channel.description}</div>
+                  <div className="discussions-channel-description">
+                    {channel.description}
+                  </div>
                 </div>
-                {channel.unread > 0 && <div className="discussions-channel-badge">{channel.unread}</div>}
+                {channel.unread > 0 && (
+                  <div className="discussions-channel-badge">
+                    {channel.unread}
+                  </div>
+                )}
               </div>
             ))
           )}
@@ -328,7 +382,9 @@ function DiscussionsPage() {
               return (
                 <div
                   key={uniqueKey}
-                  className={`discussions-message ${isCurrentUser ? "discussions-message-outgoing" : ""}`}
+                  className={`discussions-message ${
+                    isCurrentUser ? "discussions-message-outgoing" : ""
+                  }`}
                 >
                   <img
                     className="discussions-message-avatar"
@@ -337,22 +393,31 @@ function DiscussionsPage() {
                   />
                   <div className="discussions-message-content">
                     <div className="discussions-message-bubble">
-                      <div className="discussions-message-author">{message.sender.username}</div>
+                      <div className="discussions-message-author">
+                        {message.sender.username}
+                      </div>
                       {message.content}
-                      {message.attachments && message.attachments.length > 0 && (
-                        <div className="message-attachments">
-                          {message.attachments.map((attachment, index) => (
-                            <div key={index} className="message-attachment">
-                              {renderAttachment(attachment)}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                      {message.attachments &&
+                        message.attachments.length > 0 && (
+                          <div className="message-attachments">
+                            {message.attachments.map((attachment, index) => (
+                              <div key={index} className="message-attachment">
+                                {renderAttachment(attachment)}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                     </div>
                     <div className="discussions-message-meta">
-                      <div className="discussions-message-time">{formatDate(message.createdAt)}</div>
+                      <div className="discussions-message-time">
+                        {formatDate(message.createdAt)}
+                      </div>
                       {isCurrentUser && (
-                        <div className={`discussions-message-status ${message.read ? "read" : ""}`}>
+                        <div
+                          className={`discussions-message-status ${
+                            message.read ? "read" : ""
+                          }`}
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="14"
@@ -385,8 +450,8 @@ function DiscussionsPage() {
                 {url ? (
                   <>
                     <img src={url} alt="Preview" className="image-preview" />
-                    <button 
-                      className="remove-file-btn" 
+                    <button
+                      className="remove-file-btn"
                       onClick={() => removeFile(index)}
                     >
                       ×
@@ -395,8 +460,8 @@ function DiscussionsPage() {
                 ) : (
                   <div className="file-preview-info">
                     <span>{selectedFiles[index].name}</span>
-                    <button 
-                      className="remove-file-btn" 
+                    <button
+                      className="remove-file-btn"
                       onClick={() => removeFile(index)}
                     >
                       ×
@@ -411,11 +476,40 @@ function DiscussionsPage() {
         <form className="discussions-input" onSubmit={handleSendMessage}>
           <div className="discussions-input-container">
             <div className="discussions-input-actions">
-              <button 
-                type="button" 
-                className="discussions-input-button" 
+              <button
+                type="button"
+                className="discussions-input-button"
                 style={{ backgroundColor: "var(--muted)" }}
                 onClick={() => fileInputRef.current.click()}
+              >
+                {/* Changed to plus icon */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  onChange={handleFileChange}
+                  multiple
+                  accept="image/*, application/pdf, .doc, .docx"
+                />
+              </button>
+              <button
+                type="button"
+                className="discussions-input-button"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -428,17 +522,11 @@ function DiscussionsPage() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                  <circle cx="12" cy="10" r="3"></circle>
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                  <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                  <line x1="15" y1="9" x2="15.01" y2="9"></line>
                 </svg>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  style={{ display: 'none' }}
-                  onChange={handleFileChange}
-                  multiple
-                  accept="image/*, application/pdf, .doc, .docx"
-                />
               </button>
             </div>
             <div className="discussions-input-field">
@@ -456,9 +544,9 @@ function DiscussionsPage() {
                 rows={1}
               />
             </div>
-            <button 
-              type="submit" 
-              className="discussions-input-button" 
+            <button
+              type="submit"
+              className="discussions-input-button"
               disabled={!newMessage.trim() && !selectedFiles.length}
             >
               <svg
@@ -478,6 +566,17 @@ function DiscussionsPage() {
             </button>
           </div>
         </form>
+
+
+        {showEmojiPicker && (
+          <div className="emoji-picker-container" ref={emojiPickerRef}>
+            <EmojiPicker 
+              onEmojiClick={onEmojiClick}
+              width={300}
+              height={350}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

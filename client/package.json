@@ -17,6 +17,7 @@
     "@radix-ui/react-tabs": "^1.1.3",
     "@reduxjs/toolkit": "^2.6.0",
     "axios": "^1.8.1",
+    "emoji-picker-react": "^4.12.2",
     "framer-motion": "^12.5.0",
     "lucide-react": "0.482.0",
     "moment-timezone": "^0.5.47",

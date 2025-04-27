@@ -711,7 +711,69 @@ a {
 .ts-quick-link:nth-child(2):hover .ts-quick-link-icon {
   box-shadow: 0 0 20px rgba(15, 244, 198, 0.5);
 }
-
+.neo-poll-post {
+  .neo-poll-options {
+    margin: 1rem 0;
+    
+    .neo-poll-option {
+      background: var(--poll-option-bg);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      transition: all 0.2s ease;
+      
+      &.selected {
+        background: var(--poll-option-selected-bg);
+        border-left: 4px solid var(--primary-color);
+      }
+      
+      &-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+      }
+      
+      &-bar {
+        height: 6px;
+        background: var(--poll-bar-bg);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      
+      &-progress {
+        height: 100%;
+        border-radius: 3px;
+      }
+      
+      .neo-poll-vote-button {
+        margin-top: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+    }
+  }
+  
+  .neo-poll-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    
+    .neo-poll-icon {
+      margin-right: 0.25rem;
+    }
+  }
+}
 .ts-quick-link:nth-child(3) .ts-quick-link-icon {
   background: linear-gradient(135deg, var(--secondary), var(--warning));
   box-shadow: 0 0 15px rgba(15, 244, 198, 0.3);
