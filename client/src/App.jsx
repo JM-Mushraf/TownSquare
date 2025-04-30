@@ -8,9 +8,9 @@ import "./App.css"
 import axios from "axios"
 import { Toaster } from "react-hot-toast"
 import { useSelector } from "react-redux"
-import SurveysPage from "./Pages/SurveysPage"
-import MarketplacePage from "./Pages/MarketplacePage"
-import PostPage from "./Pages/PostPage/PostPage"
+import SurveysPage from "./Pages/SurveyPage/SurveysPage"
+import MarketplacePage from "./pages/MarketplacePage"
+import PostPage from './Pages/PostPage/PostPage'
 axios.defaults.withCredentials = true
 
 // Lazy load all page components
@@ -24,8 +24,7 @@ const EmergencyPage = lazy(() => import("./Pages/EmergencyPage"))
 const AuthPage = lazy(() => import("./components/Login"))
 const CreatePost = lazy(() => import("./components/CreatePost"))
 
-
-const Verify = lazy(() => import("./Pages/Verification/Verify"))
+const Verify = lazy(() => import("./pages/Verification/Verify"))
 
 
 // Loading component
