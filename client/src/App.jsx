@@ -8,7 +8,7 @@ import "./App.css"
 import axios from "axios"
 import { Toaster } from "react-hot-toast"
 import { useSelector } from "react-redux"
-import SurveysPage from "./pages/SurveysPage"
+import SurveysPage from "./Pages/SurveyPage/SurveysPage"
 import MarketplacePage from "./pages/MarketplacePage"
 import PostPage from "./Pages/PostPage"
 axios.defaults.withCredentials = true
@@ -23,8 +23,6 @@ const EmergencyPage = lazy(() => import("./pages/EmergencyPage"))
 
 const AuthPage = lazy(() => import("./components/Login"))
 const CreatePost = lazy(() => import("./components/CreatePost"))
-const Login = lazy(() => import("./pages/Login/Login"))
-const Register = lazy(() => import("./pages/Register/Register"))
 const Verify = lazy(() => import("./pages/Verification/Verify"))
 
 
@@ -56,7 +54,6 @@ function App() {
             <Suspense fallback={<Loading />}>
               <Routes>
                 <Route path="/login" element={<AuthPage />} />
-                <Route path="/register" element={<Register />} />
                 <Route path="/verify" element={<Verify />} />
                 <Route path="/" element={<HomePage />} />
                 <Route path="/discussions" element={<DiscussionsPage />} />
