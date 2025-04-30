@@ -8,24 +8,24 @@ import "./App.css"
 import axios from "axios"
 import { Toaster } from "react-hot-toast"
 import { useSelector } from "react-redux"
-import SurveysPage from "./pages/SurveysPage"
-import MarketplacePage from "./pages/MarketplacePage"
-import PostPage from "./Pages/PostPage"
+import SurveysPage from "./Pages/SurveysPage"
+import MarketplacePage from "./Pages/MarketplacePage"
+import PostPage from "./Pages/PostPage/PostPage"
 axios.defaults.withCredentials = true
 
 // Lazy load all page components
-const HomePage = lazy(() => import("./pages/HomePage"))
+const HomePage = lazy(() => import("./Pages/HomePage/HomePage"))
 const DiscussionsPage = lazy(() => import("./Pages/DiscussionsPage"))
-const AnnouncementsPage = lazy(() => import("./pages/AnnouncementsPage"))
+const AnnouncementsPage = lazy(() => import("./Pages/AnnouncementsPage"))
 // const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"))
-const UserProfile = lazy(() => import("./pages/UserProfile/UserProfile"))
-const EmergencyPage = lazy(() => import("./pages/EmergencyPage"))
+const UserProfile = lazy(() => import("./Pages/UserProfile/UserProfile"))
+const EmergencyPage = lazy(() => import("./Pages/EmergencyPage"))
 
 const AuthPage = lazy(() => import("./components/Login"))
 const CreatePost = lazy(() => import("./components/CreatePost"))
-const Login = lazy(() => import("./pages/Login/Login"))
-const Register = lazy(() => import("./pages/Register/Register"))
-const Verify = lazy(() => import("./pages/Verification/Verify"))
+
+
+const Verify = lazy(() => import("./Pages/Verification/Verify"))
 
 
 // Loading component
@@ -56,7 +56,7 @@ function App() {
             <Suspense fallback={<Loading />}>
               <Routes>
                 <Route path="/login" element={<AuthPage />} />
-                <Route path="/register" element={<Register />} />
+                
                 <Route path="/verify" element={<Verify />} />
                 <Route path="/" element={<HomePage />} />
                 <Route path="/discussions" element={<DiscussionsPage />} />
