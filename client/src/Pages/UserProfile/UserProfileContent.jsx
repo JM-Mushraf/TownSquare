@@ -59,6 +59,68 @@ const debounce = (func, wait) => {
   }
 }
 
+// Image carousel component for bookmarks
+const BookmarkImageCarousel = ({ attachments }) => {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const imageAttachments = attachments.filter((att) => att.fileType?.startsWith("image/"))
+
+  if (imageAttachments.length === 0) return null
+
+  const nextSlide = (e) => {
+    e.stopPropagation()
+    setCurrentIndex((prevIndex) => (prevIndex === imageAttachments.length - 1 ? 0 : prevIndex + 1))
+  }
+
+  const prevSlide = (e) => {
+    e.stopPropagation()
+    setCurrentIndex((prevIndex) => (prevIndex === 0 ? imageAttachments.length - 1 : prevIndex - 1))
+  }
+
+  const goToSlide = (index, e) => {
+    e.stopPropagation()
+    setCurrentIndex(index)
+  }
+
+  // If there's only one image, render it without carousel controls
+  if (imageAttachments.length === 1) {
+    return (
+      <div className="neo-bookmark-featured-image">
+        <img src={imageAttachments[0].url || "/placeholder.svg"} alt="bookmark" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="neo-bookmark-carousel">
+      <div className="neo-carousel-container" style={{ transform: `translateX(-${currentIndex * 100}%)` }}>
+        {imageAttachments.map((image, index) => (
+          <div className="neo-carousel-slide" key={image.publicId || index}>
+            <img src={image.url || "/placeholder.svg"} alt={`slide-${index}`} className="neo-carousel-image" />
+          </div>
+        ))}
+      </div>
+
+      <button className="neo-carousel-arrow prev" onClick={prevSlide}>
+        <ArrowLeft size={16} />
+      </button>
+
+      <button className="neo-carousel-arrow next" onClick={nextSlide}>
+        <ArrowLeft size={16} style={{ transform: "rotate(180deg)" }} />
+      </button>
+
+      <div className="neo-carousel-nav">
+        {imageAttachments.map((_, index) => (
+          <button
+            key={index}
+            className={`neo-carousel-dot ${index === currentIndex ? "active" : ""}`}
+            onClick={(e) => goToSlide(index, e)}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // Message grouping utility
 const groupMessagesByPost = (messages) => {
   const uniquePostIds = [...new Set(messages.map((msg) => msg.postId))]
@@ -1672,9 +1734,11 @@ export const UserProfileContent = () => {
                   >
                     <h3 className="neo-bookmark-title">{bookmark.title}</h3>
                     <p className="neo-bookmark-description">{bookmark.description}</p>
+
                     {bookmark.attachments && bookmark.attachments.length > 0 && (
-                      <div className="neo-bookmark-attachments">{bookmark.attachments.map(renderAttachment)}</div>
+                      <BookmarkImageCarousel attachments={bookmark.attachments} />
                     )}
+
                     <div className="neo-bookmark-footer">
                       <div className="neo-bookmark-meta">
                         <div className="neo-bookmark-date">

@@ -10,29 +10,20 @@ import {
   FiChevronDown,
   FiChevronUp,
   FiAlertTriangle,
-  FiPlus,
   FiShare2,
-  FiBookmark,
   FiClock,
   FiSearch,
   FiFilter,
   FiCheckCircle,
   FiInfo,
-  FiMessageSquare,
-  FiUsers,
-  FiExternalLink,
-  FiThumbsUp,
-  FiEye,
-  FiHeart,
-  FiAward,
-  FiZap,
   FiGrid,
   FiList,
-  FiTag,
   FiX,
   FiRefreshCw,
+  FiZap,
 } from "react-icons/fi"
 import { motion, AnimatePresence } from "framer-motion"
+import ImageCarousel from "./SurveyPage/imageCarousel"
 
 function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState([])
@@ -42,13 +33,11 @@ function AnnouncementsPage() {
   const [filter, setFilter] = useState("all")
   const [viewMode, setViewMode] = useState("grid")
 
-  // Fetch announcements on component mount
   useEffect(() => {
     const getAnnouncements = async () => {
       setIsLoading(true)
       try {
         const data = await fetchAnnouncements()
-        // Add showDescription property to each announcement
         const processedData = data.map((announcement) => ({
           ...announcement,
           showDescription: false,
@@ -63,9 +52,7 @@ function AnnouncementsPage() {
     getAnnouncements()
   }, [])
 
-  // Function to toggle description visibility
   const toggleDescription = (id, event) => {
-    // Prevent event bubbling if clicking on buttons
     if (event.target.closest("button")) {
       event.stopPropagation()
       return
@@ -78,7 +65,6 @@ function AnnouncementsPage() {
     )
   }
 
-  // Filter announcements based on search query and filter
   const filteredAnnouncements = announcements.filter((announcement) => {
     const matchesSearch =
       searchQuery === "" ||
@@ -92,7 +78,6 @@ function AnnouncementsPage() {
     return matchesSearch
   })
 
-  // Format date for better display
   const formatDate = (dateString) => {
     const date = new Date(dateString)
     return date.toLocaleDateString("en-US", {
@@ -104,7 +89,6 @@ function AnnouncementsPage() {
     })
   }
 
-  // Calculate time ago for announcements
   const getTimeAgo = (dateString) => {
     const date = new Date(dateString)
     const now = new Date()
@@ -119,49 +103,49 @@ function AnnouncementsPage() {
   }
 
   return (
-    <div className="announcements-container">
+    <div className="gov-announcements-container">
       <motion.div
-        className="announcements-header"
+        className="gov-announcements-header"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="announcements-header-text">
-          <h1 className="announcements-title">
-            <FiZap className="title-icon" />
-            Government <span className="gradient-text">Announcements</span>
+        <div className="gov-announcements-header-text">
+          <h1 className="gov-announcements-title">
+            <FiZap className="gov-title-icon" />
+            Government <span className="gov-gradient-text">Announcements</span>
           </h1>
-          <div className="title-underline"></div>
-          <p className="announcements-subtitle">Stay informed with official updates from your local government</p>
+          <div className="gov-title-underline"></div>
+          <p className="gov-announcements-subtitle">Stay informed with official updates from your local government</p>
         </div>
         <motion.button
-          className="announcements-subscribe-button"
+          className="gov-announcements-subscribe-button"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <FiBell className="button-icon" />
+          <FiBell className="gov-button-icon" />
           <span>Subscribe</span>
         </motion.button>
       </motion.div>
 
       <motion.div
-        className="announcements-search-container"
+        className="gov-announcements-search-container"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
-        <div className="announcements-search-box">
-          <FiSearch className="search-icon" />
+        <div className="gov-announcements-search-box">
+          <FiSearch className="gov-search-icon" />
           <input
             type="text"
             placeholder="Search announcements..."
-            className="announcements-search-input"
+            className="gov-announcements-search-input"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           {searchQuery && (
             <motion.button
-              className="search-clear-button"
+              className="gov-search-clear-button"
               onClick={() => setSearchQuery("")}
               aria-label="Clear search"
               initial={{ scale: 0 }}
@@ -173,87 +157,87 @@ function AnnouncementsPage() {
           )}
         </div>
 
-        <div className="announcements-action-buttons">
+        <div className="gov-announcements-action-buttons">
           <motion.button
-            className={`view-button ${viewMode === "grid" ? "active" : ""}`}
+            className={`gov-view-button ${viewMode === "grid" ? "active" : ""}`}
             onClick={() => setViewMode("grid")}
             aria-label="Grid view"
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.9 }}
           >
-            <FiGrid className="view-icon" size={18} />
+            <FiGrid className="gov-view-icon" size={18} />
           </motion.button>
           <motion.button
-            className={`view-button ${viewMode === "list" ? "active" : ""}`}
+            className={`gov-view-button ${viewMode === "list" ? "active" : ""}`}
             onClick={() => setViewMode("list")}
             aria-label="List view"
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.9 }}
           >
-            <FiList className="view-icon" size={18} />
+            <FiList className="gov-view-icon" size={18} />
           </motion.button>
           <motion.button
-            className={`filter-button ${filterActive ? "active" : ""}`}
+            className={`gov-filter-button ${filterActive ? "active" : ""}`}
             onClick={() => setFilterActive(!filterActive)}
             aria-label="Filter"
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.9 }}
           >
-            <FiFilter className="filter-icon" size={18} />
+            <FiFilter className="gov-filter-icon" size={18} />
           </motion.button>
         </div>
 
         <AnimatePresence>
           {filterActive && (
             <motion.div
-              className="filter-dropdown"
+              className="gov-filter-dropdown"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="filter-header">
+              <div className="gov-filter-header">
                 <h4>Filter Announcements</h4>
                 <button
-                  className="close-filter-button"
+                  className="gov-close-filter-button"
                   onClick={() => setFilterActive(false)}
                   aria-label="Close filter"
                 >
                   <FiX size={18} />
                 </button>
               </div>
-              <div className="filter-content">
+              <div className="gov-filter-content">
                 <motion.button
-                  className={`filter-option ${filter === "all" ? "selected" : ""}`}
+                  className={`gov-filter-option ${filter === "all" ? "selected" : ""}`}
                   onClick={() => {
                     setFilter("all")
                     setFilterActive(false)
                   }}
                   whileHover={{ x: 5 }}
                 >
-                  <FiEye className="filter-option-icon" />
+                  <FiEye className="gov-filter-option-icon" />
                   All Announcements
                 </motion.button>
                 <motion.button
-                  className={`filter-option ${filter === "important" ? "selected" : ""}`}
+                  className={`gov-filter-option ${filter === "important" ? "selected" : ""}`}
                   onClick={() => {
                     setFilter("important")
                     setFilterActive(false)
                   }}
                   whileHover={{ x: 5 }}
                 >
-                  <FiAlertTriangle className="filter-option-icon" />
+                  <FiAlertTriangle className="gov-filter-option-icon" />
                   Important Only
-                </motion.button>
+CUL                </motion.button>
                 <motion.button
-                  className={`filter-option ${filter === "events" ? "selected" : ""}`}
+                  className={`gov-filter-option ${filter === "events" ? "selected" : ""}`}
                   onClick={() => {
                     setFilter("events")
                     setFilterActive(false)
                   }}
                   whileHover={{ x: 5 }}
                 >
-                  <FiCalendar className="filter-option-icon" />
+                  <FiCalendar className="gov-filter-option-icon" />
                   Events Only
                 </motion.button>
               </div>
@@ -264,28 +248,28 @@ function AnnouncementsPage() {
 
       {isLoading ? (
         <motion.div
-          className="announcements-loading"
+          className="gov-announcements-loading"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="announcements-loader"></div>
+          <div className="gov-announcements-loader"></div>
           <p>Loading announcements...</p>
         </motion.div>
       ) : filteredAnnouncements.length === 0 ? (
         <motion.div
-          className="announcements-empty"
+          className="gov-announcements-empty"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="empty-icon-container">
-            <FiInfo className="empty-icon" />
+          <div className="gov-empty-icon-container">
+            <FiInfo className="gov-empty-icon" />
           </div>
           <h3>No announcements found</h3>
           <p>Try adjusting your search or filter criteria</p>
           <motion.button
-            className="clear-search-button"
+            className="gov-clear-search-button"
             onClick={() => {
               setSearchQuery("")
               setFilter("all")
@@ -293,20 +277,20 @@ function AnnouncementsPage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <FiRefreshCw size={16} className="button-icon" />
+            <FiRefreshCw size={16} className="gov-button-icon" />
             Reset Filters
           </motion.button>
         </motion.div>
       ) : (
         <motion.div
-          className={`announcements-list ${viewMode === "grid" ? "grid-view" : "list-view"}`}
+          className={`gov-announcements-list ${viewMode === "grid" ? "grid-view" : "list-view"}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
           {filteredAnnouncements.map((announcement, index) => (
             <motion.div
-              className={`announcement-card ${announcement.showDescription ? "expanded" : ""}`}
+              className={`gov-announcement-card ${announcement.showDescription ? "expanded" : ""}`}
               key={announcement._id}
               onClick={(e) => toggleDescription(announcement._id, e)}
               initial={{ opacity: 0, y: 20 }}
@@ -314,121 +298,145 @@ function AnnouncementsPage() {
               transition={{ duration: 0.4, delay: index * 0.1 }}
               whileHover={{ y: -5 }}
             >
-              <div className="announcement-header">
-                <div className="announcement-author">
-                  <div className="announcement-avatar-container">
+              <div className="gov-announcement-header">
+                <div className="gov-announcement-author">
+                  <div className="gov-announcement-avatar-container">
                     <img
-                      className="announcement-avatar"
+                      className="gov-announcement-avatar"
                       src={announcement.createdBy.avatar || "/default-avatar.png"}
                       alt={announcement.createdBy.username}
                     />
                   </div>
-                  <div className="announcement-author-info">
-                    <div className="announcement-name">{announcement.createdBy.username}</div>
-                    <div className="announcement-time">
-                      <FiClock className="time-icon" size={14} />
+                  <div className="gov-announcement-author-info">
+                    <div className="gov-announcement-name">{announcement.createdBy.username}</div>
+                    <div className="gov-announcement-time">
+                      <FiClock className="gov-time-icon" size={14} />
                       {getTimeAgo(announcement.createdAt)}
                     </div>
                   </div>
                 </div>
 
-                <div className="announcement-badges">
+                <div className="gov-announcement-badges">
                   {announcement.important && (
-                    <motion.div className="announcement-badge important" whileHover={{ y: -2 }}>
-                      <FiAlertTriangle className="badge-icon" size={14} />
+                    <motion.div className="gov-announcement-badge important" whileHover={{ y: -2 }}>
+                      <FiAlertTriangle className="gov-badge-icon" size={14} />
                       <span>Important</span>
+                    </motion.div>
+                  )}
+                  {announcement.event && (
+                    <motion.div className="gov-announcement-badge event" whileHover={{ y: -2 }}>
+                      <FiCalendar className="gov-badge-icon" size={14} />
+                      <span>Event</span>
                     </motion.div>
                   )}
                 </div>
               </div>
 
-              <div className="announcement-content">
-                <h3 className="announcement-title">{announcement.title}</h3>
+              <div className="gov-announcement-content">
+                <h3 className="gov-announcement-title">{announcement.title}</h3>
 
                 <AnimatePresence>
                   {announcement.showDescription && (
                     <motion.div
-                      className="announcement-details"
+                      className="gov-announcement-details"
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <p className="announcement-text">{announcement.description}</p>
+                      <p className="gov-announcement-text">{announcement.description}</p>
 
                       {announcement.attachments && announcement.attachments.length > 0 && (
-                        <div className="announcement-attachments">
-                          {announcement.attachments.map((attachment, idx) => (
-                            <img 
-                              key={idx} 
-                              src={attachment.url} 
-                              alt={`Attachment ${idx + 1}`}
-                              className="announcement-attachment"
+                        <div className="gov-announcement-attachments">
+                          {announcement.attachments.length === 1 ? (
+                            <img
+                              src={announcement.attachments[0].url || "/placeholder.svg"}
+                              alt="Announcement attachment"
+                              className="gov-announcement-attachment"
                             />
-                          ))}
+                          ) : (
+                            <ImageCarousel images={announcement.attachments.map((attachment) => attachment.url)} />
+                          )}
                         </div>
                       )}
 
-
+                      {announcement.event && (
+                        <div className="gov-announcement-event">
+                          <div className="gov-announcement-event-header">
+                            <FiCalendar className="gov-event-icon" size={18} />
+                            <span>Event Details</span>
+                          </div>
+                          <div className="gov-announcement-event-info">
+                            <div className="gov-announcement-event-date">
+                              <FiCalendar className="gov-info-icon" size={16} />
+                              <span>{formatDate(announcement.event.date)}</span>
+                            </div>
+                            {announcement.event.location && (
+                              <div className="gov-announcement-event-location">
+                                <FiMapPin className="gov-info-icon" size={16} />
+                                <span>{announcement.event.location}</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="gov-announcement-footer">
+                            <button className="gov-announcement-secondary-button">
+                              <FiShare2 size={16} />
+                              <span>Share</span>
+                            </button>
+                            <button className="gov-announcement-primary-button">
+                              <FiCalendar size={16} />
+                              <span>Add to Calendar</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
 
-                <div className="announcement-toggle">
+                <div className="gov-announcement-toggle">
                   {announcement.showDescription ? (
-                    <FiChevronUp className="toggle-icon" size={16} />
+                    <FiChevronUp className="gov-toggle-icon" size={16} />
                   ) : (
-                    <FiChevronDown className="toggle-icon" size={16} />
+                    <FiChevronDown className="gov-toggle-icon" size={16} />
                   )}
-                  <span className="toggle-text">{announcement.showDescription ? "Show less" : "Show more"}</span>
+                  <span className="gov-toggle-text">{announcement.showDescription ? "Show less" : "Show more"}</span>
                 </div>
               </div>
-
-             
             </motion.div>
           ))}
         </motion.div>
       )}
 
       <motion.div
-        className="announcements-footer"
+        className="gov-announcements-footer"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
       >
-        <div className="announcements-stats">
-          <motion.div className="stat-item" whileHover={{ y: -5 }}>
-            <FiCheckCircle className="stat-icon" />
-            <div className="stat-content">
-              <span className="stat-value">{announcements.length}</span>
-              <span className="stat-label">Announcements</span>
+        <div className="gov-announcements-stats">
+          <motion.div className="gov-stat-item" whileHover={{ y: -5 }}>
+            <FiCheckCircle className="gov-stat-icon" />
+            <div className="gov-stat-content">
+              <span className="gov-stat-value">{announcements.length}</span>
+              <span className="gov-stat-label">Announcements</span>
             </div>
           </motion.div>
-          <motion.div className="stat-item" whileHover={{ y: -5 }}>
-            <FiAlertTriangle className="stat-icon important" />
-            <div className="stat-content">
-              <span className="stat-value">{announcements.filter((a) => a.important).length}</span>
-              <span className="stat-label">Important</span>
+          <motion.div className="gov-stat-item" whileHover={{ y: -5 }}>
+            <FiAlertTriangle className="gov-stat-icon important" />
+            <div className="gov-stat-content">
+              <span className="gov-stat-value">{announcements.filter((a) => a.important).length}</span>
+              <span className="gov-stat-label">Important</span>
+            </div>
+          </motion.div>
+          <motion.div className="gov-stat-item" whileHover={{ y: -5 }}>
+            <FiCalendar className="gov-stat-icon event" />
+            <div className="gov-stat-content">
+              <span className="gov-stat-value">{announcements.filter((a) => a.event).length}</span>
+              <span className="gov-stat-label">Events</span>
             </div>
           </motion.div>
         </div>
-
-        <div className="announcements-links">
-          <motion.a href="#" className="footer-link" whileHover={{ x: 3, color: "var(--primary)" }}>
-            <FiExternalLink className="link-icon" size={14} />
-            <span>Government Portal</span>
-          </motion.a>
-          <motion.a href="#" className="footer-link" whileHover={{ x: 3, color: "var(--primary)" }}>
-            <FiMessageSquare className="link-icon" size={14} />
-            <span>Contact Us</span>
-          </motion.a>
-          <motion.a href="#" className="footer-link" whileHover={{ x: 3, color: "var(--primary)" }}>
-            <FiInfo className="link-icon" size={14} />
-            <span>About</span>
-          </motion.a>
-        </div>
-
-        <p className="announcements-copyright">© {new Date().getFullYear()} Local Government. All rights reserved.</p>
       </motion.div>
     </div>
   )

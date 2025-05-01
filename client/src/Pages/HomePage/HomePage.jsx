@@ -1,5 +1,4 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import axios from "axios"
 import { useTheme } from "../../components/ThemeProvider"
@@ -466,25 +465,6 @@ function HomePage() {
                   </svg>
                 </div>
                 <span>Issues</span>
-              </div>
-              <div className="ts-quick-link" onClick={() => navigate("/explore")} id="quick-link-explore">
-                <div className="ts-quick-link-icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
-                  </svg>
-                </div>
-                <span>Explore</span>
               </div>
             </div>
 
