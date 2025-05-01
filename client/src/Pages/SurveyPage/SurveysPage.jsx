@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useEffect } from "react"
 import { useSelector } from "react-redux"
 import { ToastContainer, toast } from "react-toastify"
@@ -237,11 +239,11 @@ function SurveysPage() {
   if (error) {
     return (
       <div className="surveys-error">
-        <AlertTriangle className="error-icon" />
+        <AlertTriangle className="surveys-error-icon" />
         <h3 className="surveys-error-title">Error Loading Surveys</h3>
         <p className="surveys-error-message">{error}</p>
         <button className="surveys-error-button" onClick={() => window.location.reload()}>
-          <RefreshCw className="button-icon" />
+          <RefreshCw className="surveys-button-icon" />
           Try Again
         </button>
       </div>
@@ -254,13 +256,13 @@ function SurveysPage() {
     <div className="surveys-container">
       <div className="surveys-header">
         <h1 className="surveys-title">
-          Surveys & <span className="gradient-text">Polls</span>
+          Surveys & <span className="surveys-gradient-text">Polls</span>
         </h1>
         <p className="surveys-subtitle">Share your opinion on community matters</p>
 
         <div className="surveys-search-container">
           <div className="surveys-search-box">
-            <Search className="search-icon" />
+            <Search className="surveys-search-icon" />
             <input
               type="text"
               placeholder="Search surveys and polls..."
@@ -269,23 +271,27 @@ function SurveysPage() {
               onChange={handleSearchChange}
             />
             {searchQuery && (
-              <button className="search-clear-button" onClick={() => setSearchQuery("")} aria-label="Clear search">
+              <button
+                className="surveys-search-clear-button"
+                onClick={() => setSearchQuery("")}
+                aria-label="Clear search"
+              >
                 ×
               </button>
             )}
           </div>
           <button
-            className={`filter-button ${isFilterOpen ? "active" : ""}`}
+            className={`surveys-filter-button ${isFilterOpen ? "active" : ""}`}
             onClick={toggleFilter}
             aria-label="Filter options"
           >
-            <Filter className="filter-icon" />
+            <Filter className="surveys-filter-icon" />
           </button>
         </div>
 
         {isFilterOpen && (
-          <div className="filter-dropdown">
-            <div className="filter-option">
+          <div className="surveys-filter-dropdown">
+            <div className="surveys-filter-option">
               <input
                 type="checkbox"
                 id="filter-polls"
@@ -294,7 +300,7 @@ function SurveysPage() {
               />
               <label htmlFor="filter-polls">Polls only</label>
             </div>
-            <div className="filter-option">
+            <div className="surveys-filter-option">
               <input
                 type="checkbox"
                 id="filter-surveys"
@@ -303,7 +309,7 @@ function SurveysPage() {
               />
               <label htmlFor="filter-surveys">Surveys only</label>
             </div>
-            <div className="filter-option">
+            <div className="surveys-filter-option">
               <input
                 type="checkbox"
                 id="filter-participated"
@@ -317,7 +323,7 @@ function SurveysPage() {
               </label>
             </div>
             <button
-              className="filter-apply-button"
+              className="surveys-filter-apply-button"
               onClick={() => {
                 setIsFilterOpen(false)
                 toast.success("Filters applied successfully!")
@@ -335,26 +341,26 @@ function SurveysPage() {
             className={`surveys-tab ${activeTab === "active" ? "active" : ""}`}
             onClick={() => handleTabChange("active")}
           >
-            <CheckCircle className="tab-icon" />
+            <CheckCircle className="surveys-tab-icon" />
             Active
           </button>
           <button
             className={`surveys-tab ${activeTab === "upcoming" ? "active" : ""}`}
             onClick={() => handleTabChange("upcoming")}
           >
-            <Clock className="tab-icon" />
+            <Clock className="surveys-tab-icon" />
             Upcoming
           </button>
           <button
             className={`surveys-tab ${activeTab === "past" ? "active" : ""}`}
             onClick={() => handleTabChange("past")}
           >
-            <History className="tab-icon" />
+            <History className="surveys-tab-icon" />
             Past
           </button>
         </div>
 
-        <div className={`surveys-tab-content ${tabTransitioning ? "tab-transitioning" : ""}`}>
+        <div className={`surveys-tab-content ${tabTransitioning ? "surveys-tab-transitioning" : ""}`}>
           {filteredPosts.length > 0 ? (
             <div className="surveys-grid">
               {filteredPosts.map((post) => (
@@ -363,14 +369,14 @@ function SurveysPage() {
             </div>
           ) : (
             <div className="surveys-empty">
-              <div className="empty-icon-container">
-                <ClipboardList className="empty-icon" />
+              <div className="surveys-empty-icon-container">
+                <ClipboardList className="surveys-empty-icon" />
               </div>
               <p>
                 No {activeTab} surveys or polls {searchQuery ? "matching your search" : "at the moment"}.
               </p>
               {searchQuery && (
-                <button className="clear-search-button" onClick={() => setSearchQuery("")}>
+                <button className="surveys-clear-search-button" onClick={() => setSearchQuery("")}>
                   Clear Search
                 </button>
               )}
@@ -381,36 +387,36 @@ function SurveysPage() {
 
       <div className="surveys-footer">
         <div className="surveys-stats">
-          <div className="stat-item">
-            <TrendingUp className="stat-icon" />
-            <div className="stat-content">
-              <span className="stat-value">{posts.length}</span>
-              <span className="stat-label">Total Surveys & Polls</span>
+          <div className="surveys-stat-item">
+            <TrendingUp className="surveys-stat-icon" />
+            <div className="surveys-stat-content">
+              <span className="surveys-stat-value">{posts.length}</span>
+              <span className="surveys-stat-label">Total Surveys & Polls</span>
             </div>
           </div>
-          <div className="stat-item">
-            <Award className="stat-icon" />
-            <div className="stat-content">
-              <span className="stat-value">
+          <div className="surveys-stat-item">
+            <Award className="surveys-stat-icon" />
+            <div className="surveys-stat-content">
+              <span className="surveys-stat-value">
                 {posts.filter((post) => post.poll?.status === "active" || post.survey?.status === "active").length}
               </span>
-              <span className="stat-label">Active Now</span>
+              <span className="surveys-stat-label">Active Now</span>
             </div>
           </div>
-          <div className="stat-item">
-            <ThumbsUp className="stat-icon" />
-            <div className="stat-content">
-              <span className="stat-value">98%</span>
-              <span className="stat-label">Participation Rate</span>
+          <div className="surveys-stat-item">
+            <ThumbsUp className="surveys-stat-icon" />
+            <div className="surveys-stat-content">
+              <span className="surveys-stat-value">98%</span>
+              <span className="surveys-stat-label">Participation Rate</span>
             </div>
           </div>
         </div>
 
         <div className="surveys-help">
-          <HelpCircle className="help-icon" />
+          <HelpCircle className="surveys-help-icon" />
           <p>
             Need help creating your own survey?{" "}
-            <a href="#" className="help-link">
+            <a href="#" className="surveys-help-link">
               Check our guide
             </a>
           </p>

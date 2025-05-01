@@ -2,29 +2,118 @@
 
 /* Base theme variables */
 :root {
+  /* Base colors - Futuristic dark theme */
+  --background: #030014;
+  --foreground: #e2e8ff;
+  
+  /* Glassmorphism */
+  --glass-background: rgba(15, 23, 42, 0.3);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.05);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+
+  /* Card and UI elements */
+  --card: rgba(23, 25, 35, 0.6);
+  --card-foreground: #e2e8ff;
+  --card-hover: rgba(38, 43, 70, 0.8);
+  --card-glow: 0 0 15px rgba(101, 44, 255, 0.3);
+
+  /* Primary brand color - Neon purple */
+  --primary: #652cff;
+  --primary-foreground: #ffffff;
+  --primary-glow: 0 0 20px rgba(101, 44, 255, 0.6);
+
+  /* Secondary color - Cyan */
+  --secondary: #0ff4c6;
+  --secondary-foreground: #050505;
+  --secondary-glow: 0 0 20px rgba(15, 244, 198, 0.6);
+
+  /* Accent color - Neon pink */
+  --accent: #ff2cf3;
+  --accent-foreground: #ffffff;
+  --accent-glow: 0 0 20px rgba(255, 44, 243, 0.6);
+
+  /* Muted elements */
+  --muted: rgba(30, 41, 59, 0.6);
+  --muted-foreground: #94a3b8;
+
+  /* Destructive elements */
+  --destructive: #ff3d5e;
+  --destructive-foreground: #ffffff;
+  --destructive-glow: 0 0 20px rgba(255, 61, 94, 0.6);
+
+  /* Success elements */
+  --success: #0ff4c6;
+  --success-foreground: #050505;
+  --success-glow: 0 0 20px rgba(15, 244, 198, 0.6);
+
+  /* Warning elements */
+  --warning: #ffb01f;
+  --warning-foreground: #050505;
+  --warning-glow: 0 0 20px rgba(255, 176, 31, 0.6);
+
+  /* UI elements */
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #652cff;
+
   /* Light theme variables */
-  --sidebar-background-light: #ffffff;
-  --sidebar-foreground-light: #0a0c16;
-  --sidebar-border-light: #e2e8f0;
-  --muted-light: #f1f5fa;
-  --muted-foreground-light: #64748b;
-  --background-light: #f8fafd;
-  --border-light: #e2e8f0;
+  --sidebar-background-light: #F5F5F5; /* Soft off-white for modern look */
+  --sidebar-foreground-light: #1F2A44; /* Dark slate for text */
+  --sidebar-border-light: #E5E7EB; /* Light gray border */
+  --muted-light: rgba(100, 116, 139, 0.6); /* Muted gray */
+  --muted-foreground-light: #6B7280; /* Mid-gray for secondary text */
+  --background-light: #FFFFFF; /* Pure white for main content */
+  --border-light: #D1D5DB; /* Slightly darker gray for borders */
 
   /* Dark theme variables */
-  --sidebar-background-dark: #0f1629;
-  --sidebar-foreground-dark: #f8fafd;
-  --sidebar-border-dark: #1e293b;
-  --muted-dark: #1e293b;
-  --muted-foreground-dark: #94a3b8;
-  --background-dark: #0a0c16;
-  --border-dark: #1e293b;
+  --sidebar-background-dark: #030014; /* Matches base --background */
+  --sidebar-foreground-dark: #e2e8ff; /* Matches base --foreground */
+  --sidebar-border-dark: rgba(255, 255, 255, 0.1); /* Matches base --border */
+  --muted-dark: rgba(30, 41, 59, 0.6); /* Matches base --muted */
+  --muted-foreground-dark: #94a3b8; /* Matches base --muted-foreground */
+  --background-dark: #030014; /* Matches base --background */
+  --border-dark: rgba(255, 255, 255, 0.1); /* Matches base --border */
 
-  /* Common variables */
-  --primary: #2563eb;
-  --destructive: #ef4444;
+  /* Radius */
+  --radius: 0.75rem;
+  --radius-sm: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
 
-  /* Default to light theme */
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #652cff, #0ff4c6);
+  --gradient-secondary: linear-gradient(135deg, #0ff4c6, #ff2cf3);
+  --gradient-accent: linear-gradient(135deg, #ff2cf3, #ffb01f);
+  --gradient-dark: linear-gradient(135deg, #030014, #1a103f);
+
+  /* Holographic effect */
+  --holographic: linear-gradient(
+    135deg,
+    rgba(255, 44, 243, 0.5),
+    rgba(101, 44, 255, 0.5),
+    rgba(15, 244, 198, 0.5),
+    rgba(255, 176, 31, 0.5)
+  );
+
+  /* Other variables */
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.5);
+
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --font-family: "Space Grotesk", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+}
+
+/* Default light theme */
+.sidebar {
   --sidebar-background: var(--sidebar-background-light);
   --sidebar-foreground: var(--sidebar-foreground-light);
   --sidebar-border: var(--sidebar-border-light);
@@ -35,7 +124,7 @@
 }
 
 /* Apply dark theme variables when data-theme="dark" is set */
-[data-theme="dark"] {
+.sidebar[data-theme="dark"] {
   --sidebar-background: var(--sidebar-background-dark);
   --sidebar-foreground: var(--sidebar-foreground-dark);
   --sidebar-border: var(--sidebar-border-dark);
@@ -43,20 +132,6 @@
   --muted-foreground: var(--muted-foreground-dark);
   --background: var(--background-dark);
   --border: var(--border-dark);
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
-    "Helvetica Neue", sans-serif;
-  background-color: var(--background);
-  color: var(--foreground);
-  line-height: 1.5;
 }
 
 a {
@@ -330,7 +405,7 @@ button {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-[data-theme="dark"] .sidebar-nav-item:hover {
+.sidebar[data-theme="dark"] .sidebar-nav-item:hover {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
@@ -352,7 +427,7 @@ button {
   flex-shrink: 0;
 }
 
-[data-theme="dark"] .sidebar-nav-icon {
+.sidebar[data-theme="dark"] .sidebar-nav-icon {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
@@ -461,7 +536,7 @@ button {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-[data-theme="dark"] .sidebar-user:hover {
+.sidebar[data-theme="dark"] .sidebar-user:hover {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
@@ -537,7 +612,7 @@ button {
     border-radius: 50%;
     background-color: var(--background);
     border: 1px solid var(--border);
-    color: var(--foreground);
+    color: var(--sidebar-foreground);
     position: fixed;
     left: 1rem;
     top: 1rem;
@@ -591,6 +666,6 @@ button {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-[data-theme="dark"] .sidebar-footer button.sidebar-nav-item:hover {
+.sidebar[data-theme="dark"] .sidebar-footer button.sidebar-nav-item:hover {
   background-color: rgba(255, 255, 255, 0.05);
 }

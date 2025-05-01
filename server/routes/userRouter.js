@@ -1,7 +1,7 @@
 import express from "express";
 import { isAuthenticated } from "../middlewares/auth.js";
 import { upload } from "../middlewares/multer.js";
-import  { registerUser , verifyUser,loginUser,logoutUser,getUserDetails, deleteUser,updateAccountDetails,verifyAccountChanges,updateUserAvatar,resendVerificationOTP,addBookmarks, getBookmarks}  from "../controllers/userController.js";
+import  { registerUser , verifyUser,loginUser,logoutUser,getUserDetails, deleteUser,updateAccountDetails,verifyAccountChanges,updateUserAvatar,resendVerificationOTP,addBookmarks,removeBookmark, getBookmarks}  from "../controllers/userController.js";
 import { getCommunities, listUserChats } from "../controllers/chatController.js";
 export const userRouter = express.Router();
 
@@ -22,5 +22,6 @@ userRouter.post("/verify-email", isAuthenticated,verifyAccountChanges);
 userRouter.patch("/avatar",isAuthenticated,upload.single("avatar"),updateUserAvatar);
 userRouter.post("/resend-verification", isAuthenticated, resendVerificationOTP);
 userRouter.post('/bookmark',isAuthenticated,addBookmarks)
+userRouter.delete('/bookmark-del', isAuthenticated, removeBookmark);
 userRouter.get('/getbookmarks',isAuthenticated,getBookmarks)
 userRouter.get('/chat/getCommunities',isAuthenticated,getCommunities)

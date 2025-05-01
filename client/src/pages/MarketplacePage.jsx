@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import {
@@ -313,6 +311,23 @@ export default function Marketplace() {
   });
   const [sortOption, setSortOption] = useState("newest");
 
+  // Set initial theme based on system preference
+  useEffect(() => {
+    const setTheme = () => {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.classList.remove("light-theme", "dark-theme");
+      document.documentElement.classList.add(prefersDark ? "dark-theme" : "light-theme");
+    };
+
+    setTheme(); // Set theme on load
+
+    // Listen for system theme changes
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    mediaQuery.addEventListener("change", setTheme);
+
+    return () => mediaQuery.removeEventListener("change", setTheme);
+  }, []);
+
   // Fetch marketplace posts from the backend
   useEffect(() => {
     const fetchMarketplacePosts = async () => {
@@ -336,29 +351,29 @@ export default function Marketplace() {
   }, [token]); // Add token as a dependency
 
   // Handle sending a message to the seller
-const handleContact = async (postId, message) => {
-  try {
-    const response = await fetch(`http://localhost:3000/post/marketplacePosts/${postId}/message`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include", // Include cookies for authentication
-      body: JSON.stringify({
-        message, // Only send the message
-      }),
-    });
+  const handleContact = async (postId, message) => {
+    try {
+      const response = await fetch(`http://localhost:3000/post/marketplacePosts/${postId}/message`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Include cookies for authentication
+        body: JSON.stringify({
+          message, // Only send the message
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error("Failed to send message");
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
+
+      const data = await response.json();
+      alert(data.message || "Message sent successfully!");
+    } catch (error) {
+      alert("Error sending message: " + error.message);
     }
-
-    const data = await response.json();
-    alert(data.message || "Message sent successfully!");
-  } catch (error) {
-    alert("Error sending message: " + error.message);
-  }
-};
+  };
 
   // Handle saving an item
   const handleSave = (item) => {
@@ -655,11 +670,6 @@ const handleContact = async (postId, message) => {
             </div>
           </div>
         )}
-
-        <button className="list-item-button">
-          <Plus className="button-icon" />
-          List an Item
-        </button>
       </div>
 
       <div className="marketplace-tabs">

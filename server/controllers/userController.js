@@ -686,9 +686,53 @@ export const addBookmarks = AsyncHandler(async (req, res, next) => {
     next(new ErrorHandler(error.message || "Failed to bookmark post", error.statusCode || 500));
   }
 });
+export const removeBookmark = AsyncHandler(async (req, res, next) => {
+  const userId = req.user?._id;
+  const { postId } = req.body;
 
+  if (!userId) {
+    throw new ErrorHandler("Unauthorized: User ID not found", 401);
+  }
 
+  if (!postId) {
+    throw new ErrorHandler("Post ID is required", 400);
+  }
 
+  try {
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new ErrorHandler("User not found", 404);
+    }
+
+    // Check if post exists (optional - depends on your requirements)
+    const post = await Post.findById(postId);
+    if (!post) {
+      throw new ErrorHandler("Post not found", 404);
+    }
+
+    // Check if post is actually bookmarked
+    const bookmarkIndex = user.bookmarks.indexOf(postId);
+    if (bookmarkIndex === -1) {
+      throw new ErrorHandler("Post is not in bookmarks", 400);
+    }
+
+    // Remove post from bookmarks
+    user.bookmarks.splice(bookmarkIndex, 1);
+    await user.save();
+
+    res.status(200).json(
+      new ApiResponse(
+        200, 
+        { bookmarks: user.bookmarks }, 
+        "Post removed from bookmarks successfully"
+      )
+    );
+
+  } catch (error) {
+    next(new ErrorHandler(error.message || "Failed to remove bookmark", error.statusCode || 500));
+  }
+});
 export const getBookmarks = AsyncHandler(async (req, res, next) => {
   const userId = req.user?._id;
 

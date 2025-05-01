@@ -1,67 +1,124 @@
-/* Modern Variables */
 :root {
-  /* Base colors */
-  --background: #f8fafd;
-  --foreground: #0a0c16;
-
-  /* Card and UI elements */
-  --card: #ffffff;
-  --card-foreground: #0a0c16;
-  --card-hover: #f1f5fa;
-
-  /* Primary brand color - Vibrant purple */
-  --primary: #7c3aed;
-  --primary-foreground: #f8fafd;
-
-  /* Secondary color - Indigo */
-  --secondary: #4f46e5;
-  --secondary-foreground: #f8fafd;
-
-  /* Accent color - Teal */
-  --accent: #14b8a6;
-  --accent-foreground: #f8fafd;
-
-  /* Muted elements */
-  --muted: #f1f5fa;
-  --muted-foreground: #64748b;
-
-  /* Destructive elements */
-  --destructive: #ef4444;
-  --destructive-foreground: #f8fafd;
-
-  /* Success elements */
-  --success: #22c55e;
-  --success-foreground: #f8fafd;
-
-  /* Warning elements */
-  --warning: #f59e0b;
-  --warning-foreground: #0a0c16;
-
-  /* UI elements */
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #7c3aed;
-
-  /* Radius */
+  --background: #030014;
+  --foreground: #e2e8ff;
+  --glass-background: rgba(15, 23, 42, 0.3);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.05);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --card: rgba(23, 25, 35, 0.6);
+  --card-foreground: #e2e8ff;
+  --card-hover: rgba(38, 43, 70, 0.8);
+  --card-glow: 0 0 15px rgba(101, 44, 255, 0.3);
+  --primary: #652cff;
+  --primary-foreground: #ffffff;
+  --primary-glow: 0 0 20px rgba(101, 44, 255, 0.6);
+  --secondary: #0ff4c6;
+  --secondary-foreground: #050505;
+  --secondary-glow: 0 0 20px rgba(15, 244, 198, 0.6);
+  --accent: #ff2cf3;
+  --accent-foreground: #ffffff;
+  --accent-glow: 0 0 20px rgba(255, 44, 243, 0.6);
+  --muted: rgba(30, 41, 59, 0.6);
+  --muted-foreground: #94a3b8;
+  --destructive: #ff3d5e;
+  --destructive-foreground: #ffffff;
+  --destructive-glow: 0 0 20px rgba(255, 61, 94, 0.6);
+  --success: #0ff4c6;
+  --success-foreground: #050505;
+  --success-glow: 0 0 20px rgba(15, 244, 198, 0.6);
+  --warning: #ffb01f;
+  --warning-foreground: #050505;
+  --warning-glow: 0 0 20px rgba(255, 176, 31, 0.6);
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #652cff;
   --radius: 0.75rem;
-
-  /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #7c3aed, #4f46e5);
-  --gradient-secondary: linear-gradient(135deg, #4f46e5, #c026d3);
-  --gradient-accent: linear-gradient(135deg, #14b8a6, #10b981);
-
-  /* Other variables */
-  --border-radius: 0.75rem;
-  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.3s ease;
-  --transition-slow: 0.5s ease;
-  --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --radius-sm: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+  --gradient-primary: linear-gradient(135deg, #652cff, #0ff4c6);
+  --gradient-secondary: linear-gradient(135deg, #0ff4c6, #ff2cf3);
+  --gradient-accent: linear-gradient(135deg, #ff2cf3, #ffb01f);
+  --gradient-dark: linear-gradient(135deg, #030014, #1a103f);
+  --holographic: linear-gradient(
+    135deg,
+    rgba(255, 44, 243, 0.5),
+    rgba(101, 44, 255, 0.5),
+    rgba(15, 244, 198, 0.5),
+    rgba(255, 176, 31, 0.5)
+  );
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.5);
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --font-family: "Space Grotesk", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  --button-foreground: #e2e8ff; /* Button icon/text color for dark mode */
 }
 
-/* Animations */
+:root.light {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --glass-background: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(15, 23, 42, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+  --glass-shadow: 0 8px 32px rgba(15, 23, 42, 0.1);
+  --card: rgba(255, 255, 255, 0.8);
+  --card-foreground: #0f172a;
+  --card-hover: rgba(255, 255, 255, 0.95);
+  --card-glow: 0 0 15px rgba(99, 102, 241, 0.2);
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+  --primary-glow: 0 0 20px rgba(79, 70, 229, 0.3);
+  --secondary: #0d9488;
+  --secondary-foreground: #ffffff;
+  --secondary-glow: 0 0 20px rgba(13, 148, 136, 0.3);
+  --accent: #d946ef;
+  --accent-foreground: #ffffff;
+  --accent-glow: 0 0 20px rgba(217, 70, 239, 0.3);
+  --muted: rgba(241, 245, 249, 0.8);
+  --muted-foreground: #64748b;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --destructive-glow: 0 0 20px rgba(239, 68, 68, 0.3);
+  --success: #10b981;
+  --success-foreground: #ffffff;
+  --success-glow: 0 0 20px rgba(16, 185, 129, 0.3);
+  --warning: #f59e0b;
+  --warning-foreground: #ffffff;
+  --warning-glow: 0 0 20px rgba(245, 158, 11, 0.3);
+  --border: rgba(226, 232, 240, 0.8);
+  --input: rgba(226, 232, 240, 0.8);
+  --ring: #4f46e5;
+  --gradient-primary: linear-gradient(135deg, #4f46e5, #0d9488);
+  --gradient-secondary: linear-gradient(135deg, #0d9488, #d946ef);
+  --gradient-accent: linear-gradient(135deg, #d946ef, #f59e0b);
+  --gradient-light: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  --holographic: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.3),
+    rgba(13, 148, 136, 0.3),
+    rgba(217, 70, 239, 0.3),
+    rgba(245, 158, 11, 0.3)
+  );
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.25);
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --font-family: "Space Grotesk", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  --button-foreground: #0f172a; /* Button icon/text color for light mode */
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -116,125 +173,144 @@
   }
 }
 
-/* Global styles */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--primary-glow);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--primary-glow);
+  }
 }
 
 body {
   font-family: var(--font-family);
+  background-color: var(--background);
   color: var(--foreground);
-  /* background-color: var(--background); */
-  line-height: 1.5;
-}
-
-.announcement-attachments {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.announcement-attachment {
-  max-width: 100%;
-  max-height: 300px;
-  border-radius: 8px;
-  object-fit: contain;
-  background: #f5f5f5;
+  margin: 0;
+  padding: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 button {
   cursor: pointer;
-  font-family: inherit;
+  font-family: var(--font-family);
   border: none;
   background: none;
 }
 
-/* Main container */
-.announcements-container {
+.gov-announcements-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
+  background-color: var(--background);
+  color: var(--foreground);
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
 }
 
-/* Header styles */
-.announcements-header {
+.gov-announcements-header {
   margin-bottom: 3rem;
-  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 1.5rem;
+  position: relative;
 }
 
-.announcements-header-text {
+.gov-announcements-header-text {
   flex: 1;
   text-align: left;
 }
 
-.announcements-title {
+.gov-announcements-title {
   font-size: 2.5rem;
   font-weight: 800;
   line-height: 1.2;
   margin-bottom: 0.5rem;
   color: var(--foreground);
-  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
   letter-spacing: -0.5px;
 }
 
-.title-icon {
+.gov-title-icon {
   color: var(--primary);
 }
 
-.title-underline {
+.gov-title-underline {
   width: 50%;
   height: 4px;
   background-image: var(--gradient-primary);
   border-radius: 4px;
   margin-top: 10px;
   margin-bottom: 15px;
+  position: relative;
+  animation: expandWidth 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  box-shadow: 0 0 15px var(--primary-glow);
 }
 
-.gradient-text {
+.gov-gradient-text {
   background-image: var(--gradient-primary);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   position: relative;
+  text-shadow: 0 0 10px var(--primary-glow);
 }
 
-.announcements-subtitle {
+.gov-announcements-subtitle {
   color: var(--muted-foreground);
   font-size: 1.2rem;
   font-weight: 500;
+  animation: fadeIn 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.announcements-subscribe-button {
+.gov-announcements-subscribe-button {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   background-image: var(--gradient-primary);
   color: var(--primary-foreground);
-  border: none;
   padding: 0.75rem 1.5rem;
   border-radius: var(--radius);
   font-weight: 600;
   transition: all var(--transition-normal);
   box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
 }
 
-.button-icon {
+.gov-announcements-subscribe-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: var(--gradient-secondary);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.gov-announcements-subscribe-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 20px var(--primary-glow);
+}
+
+.gov-announcements-subscribe-button:hover::before {
+  opacity: 1;
+}
+
+.gov-button-icon {
   stroke-width: 2;
 }
 
-/* Search and filter styles */
-.announcements-search-container {
+.gov-announcements-search-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -249,12 +325,12 @@ button {
 }
 
 @media (min-width: 768px) {
-  .announcements-search-container {
+  .gov-announcements-search-container {
     flex-direction: row;
   }
 }
 
-.announcements-search-box {
+.gov-announcements-search-box {
   display: flex;
   align-items: center;
   background-color: var(--card);
@@ -264,33 +340,32 @@ button {
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border);
   transition: all var(--transition-normal);
+  backdrop-filter: blur(10px);
 }
 
-.announcements-search-box:focus-within {
-  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+.gov-announcements-search-box:focus-within {
+  box-shadow: 0 0 0 2px var(--primary);
   border-color: var(--primary);
 }
 
-.search-icon {
+.gov-search-icon {
   color: var(--muted-foreground);
   width: 1.2rem;
   height: 1.2rem;
   margin-right: 0.75rem;
 }
 
-.announcements-search-input {
+.gov-announcements-search-input {
   border: none;
   outline: none;
   width: 100%;
   font-size: 1rem;
   background: transparent;
+  color: var(--foreground);
 }
 
-.search-clear-button {
-  background: none;
-  border: none;
+.gov-search-clear-button {
   color: var(--muted-foreground);
-  cursor: pointer;
   padding: 0 0.25rem;
   display: flex;
   align-items: center;
@@ -298,20 +373,21 @@ button {
   transition: all var(--transition-fast);
 }
 
-.search-clear-button:hover {
+.gov-search-clear-button:hover {
   color: var(--destructive);
   transform: scale(1.1);
 }
 
-.announcements-action-buttons {
+.gov-announcements-action-buttons {
   display: flex;
   gap: 0.5rem;
 }
 
-.filter-button,
-.view-button {
+.gov-filter-button,
+.gov-view-button {
   background-color: var(--card);
   border: 1px solid var(--border);
+  color: var(--button-foreground); /* Replaced color: white */
   border-radius: 50%;
   width: 2.5rem;
   height: 2.5rem;
@@ -320,23 +396,25 @@ button {
   justify-content: center;
   transition: all var(--transition-normal);
   box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(10px);
 }
 
-.filter-button:hover,
-.view-button:hover,
-.filter-button.active,
-.view-button.active {
+.gov-filter-button:hover,
+.gov-view-button:hover,
+.gov-filter-button.active,
+.gov-view-button.active {
   background-color: var(--primary);
-  color: var(--primary-foreground);
+  color: var(--primary-foreground); /* White for hover/active */
+  box-shadow: 0 0 15px var(--primary-glow);
 }
 
-.filter-icon,
-.view-icon {
+.gov-filter-icon,
+.gov-view-icon {
   width: 1.2rem;
   height: 1.2rem;
 }
 
-.filter-dropdown {
+.gov-filter-dropdown {
   position: absolute;
   top: 100%;
   right: 0;
@@ -348,9 +426,10 @@ button {
   z-index: 100;
   width: 300px;
   border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
 }
 
-.filter-header {
+.gov-filter-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -359,28 +438,25 @@ button {
   border-bottom: 1px solid var(--border);
 }
 
-.close-filter-button {
-  background: none;
-  border: none;
+.gov-close-filter-button {
   color: var(--muted-foreground);
-  cursor: pointer;
   transition: color var(--transition-fast);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.close-filter-button:hover {
+.gov-close-filter-button:hover {
   color: var(--destructive);
 }
 
-.filter-content {
+.gov-filter-content {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.filter-option {
+.gov-filter-option {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -392,270 +468,100 @@ button {
   transition: all var(--transition-fast);
   text-align: left;
   width: 100%;
+  color: var(--foreground);
 }
 
-.filter-option:hover {
+.gov-filter-option:hover {
   background-color: var(--muted);
 }
 
-.filter-option.selected {
+.gov-filter-option.selected {
   background-color: var(--primary);
   color: var(--primary-foreground);
   border-color: var(--primary);
 }
 
-.filter-option-icon {
+.gov-filter-option-icon {
   width: 1rem;
   height: 1rem;
 }
-/* Add these styles to your AnnouncementsPage.css file */
 
-.announcements-list.grid-view {
+.gov-announcements-list.grid-view {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
-  align-items: start; /* This is crucial - aligns items at the top */
+  align-items: start;
 }
 
-.announcements-list.list-view {
+.gov-announcements-list.list-view {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.announcement-card {
-  position: relative; /* Needed for proper z-index stacking */
-  transition: box-shadow 0.3s ease;
-  z-index: 1;
-}
-
-.announcement-card.expanded {
-  z-index: 2; /* Bring expanded card to front */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-}
-
-/* Ensure the card content doesn't affect layout when expanded */
-.announcement-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.announcement-details {
+.gov-announcement-card {
+  position: relative;
+  background-color: var(--card);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-}
-
-/* Add these to prevent layout shifts */
-.announcement-card {
-  min-height: 150px; /* Set a minimum height */
-}
-
-.announcement-text {
-  margin-top: 10px;
-  white-space: pre-wrap;
-}
-
-/* For the list view specifically */
-.announcements-list.list-view .announcement-card {
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  z-index: 1;
   width: 100%;
 }
 
-/* Animation adjustments */
-.motion.div[class*="announcement"] {
-  will-change: transform, opacity;
-}
-/* Loading State */
-.announcements-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem;
-  color: var(--muted-foreground);
-  background-color: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border);
-}
-
-.announcements-loader {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(124, 58, 237, 0.3);
-  border-radius: 50%;
-  border-top-color: var(--primary);
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-/* Empty State */
-.announcements-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem;
-  color: var(--muted-foreground);
-  background-color: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border);
-  text-align: center;
-}
-
-.empty-icon-container {
-  width: 5rem;
-  height: 5rem;
-  border-radius: 50%;
-  background-color: rgba(124, 58, 237, 0.05);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: pulse 3s infinite;
-  margin-bottom: 1.5rem;
-}
-
-.empty-icon {
-  color: var(--primary);
-  width: 2.5rem;
-  height: 2.5rem;
-  opacity: 0.7;
-}
-
-.announcements-empty h3 {
-  margin: 0 0 0.5rem 0;
-  color: var(--foreground);
-}
-
-.announcements-empty p {
-  margin: 0 0 1.5rem 0;
-}
-
-.clear-search-button {
-  padding: 0.5rem 1rem;
-  background-color: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-size: 0.9rem;
-  transition: all var(--transition-fast);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.clear-search-button:hover {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  border-color: var(--primary);
-}
-
-/* Announcements List */
-.announcements-list {
-  display: grid;
-  gap: 2rem;
-}
-
-.announcements-list.grid-view {
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 768px) {
-  .announcements-list.grid-view {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1200px) {
-  .announcements-list.grid-view {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.announcements-list.list-view {
-  grid-template-columns: 1fr;
-}
-
-.announcements-list.list-view .announcement-card {
-  display: grid;
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 768px) {
-  .announcements-list.list-view .announcement-card {
-    grid-template-columns: 1fr 2fr;
-    grid-template-areas:
-      "header content"
-      "engagement engagement";
-  }
-
-  .announcements-list.list-view .announcement-header {
-    grid-area: header;
-    border-right: 1px solid var(--border);
-    border-bottom: none;
-    height: 100%;
-  }
-
-  .announcements-list.list-view .announcement-content {
-    grid-area: content;
-  }
-
-  .announcements-list.list-view .announcement-engagement {
-    grid-area: engagement;
-  }
-}
-
-/* Announcement Card */
-.announcement-card {
-  background-color: var(--card);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-md);
-  overflow: hidden;
-  transition: all var(--transition-normal);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  position: relative;
-}
-
-.announcement-card::before {
+.gov-announcement-card::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  padding: 2px;
   background: var(--gradient-primary);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
   opacity: 0;
   transition: opacity var(--transition-normal);
 }
 
-.announcement-card:hover::before {
+.gov-announcement-card:hover::before {
   opacity: 1;
 }
 
-.announcement-card.expanded {
+.gov-announcement-card.expanded {
+  z-index: 2;
   box-shadow: var(--shadow-lg);
 }
 
-.announcement-card.expanded::before {
-  opacity: 1;
+.gov-announcement-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
 }
 
-/* Announcement Header */
-.announcement-header {
+.gov-announcement-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem;
+  flex-direction: column;
+  padding: 1rem;
   border-bottom: 1px solid var(--border);
-  background-color: rgba(241, 245, 249, 0.3);
+  background-color: var(--muted);
+  gap: 0.5rem;
+  height: 90px;
+  position: relative;
+  box-sizing: border-box;
 }
 
-.announcement-author {
+.gov-announcement-author {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.announcement-avatar-container {
+.gov-announcement-avatar-container {
   position: relative;
   width: 48px;
   height: 48px;
@@ -664,95 +570,103 @@ button {
   box-shadow: var(--shadow-sm);
 }
 
-.announcement-avatar-container::after {
+.gov-announcement-avatar-container::after {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  border: 2px solid rgba(124, 58, 237, 0.3);
+  border: 2px solid var(--primary);
   border-radius: 50%;
   opacity: 0;
   transition: opacity var(--transition-fast);
 }
 
-.announcement-card:hover .announcement-avatar-container::after {
-  opacity: 1;
+.gov-announcement-card:hover .gov-announcement-avatar-container::after {
+  opacity: 0.5;
 }
 
-.announcement-avatar {
+.gov-announcement-avatar {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform var(--transition-fast);
 }
 
-.announcement-card:hover .announcement-avatar {
+.gov-announcement-card:hover .gov-announcement-avatar {
   transform: scale(1.05);
 }
 
-.announcement-author-info {
+.gov-announcement-author-info {
   display: flex;
   flex-direction: column;
 }
 
-.announcement-name {
+.gov-announcement-name {
   font-weight: 600;
   color: var(--foreground);
+  font-size: 0.9rem;
 }
 
-.announcement-time {
-  font-size: 0.875rem;
+.gov-announcement-time {
+  font-size: 0.8rem;
   color: var(--muted-foreground);
   display: flex;
   align-items: center;
   gap: 0.25rem;
 }
 
-.time-icon {
+.gov-time-icon {
   stroke-width: 2;
 }
 
-.announcement-badges {
+.gov-announcement-badges {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  justify-content: flex-end;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
 }
 
-.announcement-badge {
+.gov-announcement-badge {
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
+  padding: 0.25rem 0.5rem;
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   transition: all var(--transition-fast);
 }
 
-.announcement-badge.important {
+.gov-announcement-badge.important {
   background-color: rgba(239, 68, 68, 0.1);
   color: var(--destructive);
   animation: pulse 2s infinite;
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-.announcement-badge.event {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: var(--success);
+.gov-announcement-badge.event {
+  background-color: rgba(13, 148, 136, 0.1);
+  color: var(--secondary);
+  border: 1px solid rgba(13, 148, 136, 0.3);
 }
 
-.badge-icon {
+.gov-badge-icon {
   stroke-width: 2;
+  width: 12px;
+  height: 12px;
 }
 
-/* Announcement Content */
-.announcement-content {
+.gov-announcement-content {
   padding: 1.5rem;
   position: relative;
 }
 
-.announcement-title {
+.gov-announcement-title {
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0 0 1rem 0;
@@ -760,21 +674,21 @@ button {
   transition: color var(--transition-fast);
 }
 
-.announcement-card:hover .announcement-title {
+.gov-announcement-card:hover .gov-announcement-title {
   color: var(--primary);
 }
 
-.announcement-details {
+.gov-announcement-details {
   overflow: hidden;
 }
 
-.announcement-text {
+.gov-announcement-text {
   margin: 0 0 1.5rem 0;
   line-height: 1.6;
   color: var(--card-foreground);
 }
 
-.announcement-toggle {
+.gov-announcement-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -784,22 +698,34 @@ button {
   gap: 0.25rem;
 }
 
-.toggle-icon {
+.gov-toggle-icon {
   stroke-width: 2;
   transition: transform var(--transition-fast);
 }
 
-.announcement-card.expanded .toggle-icon {
+.gov-announcement-card.expanded .gov-toggle-icon {
   transform: rotate(180deg);
 }
 
-.toggle-text {
+.gov-toggle-text {
   font-size: 0.875rem;
   font-weight: 500;
 }
 
-/* Event Styles */
-.announcement-event {
+.gov-announcement-attachments {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.gov-announcement-attachment {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: var(--muted);
+}
+
+.gov-announcement-event {
   background-color: var(--muted);
   border-radius: var(--radius);
   padding: 1.25rem;
@@ -809,33 +735,33 @@ button {
   overflow: hidden;
 }
 
-.announcement-event::before {
+.gov-announcement-event::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(45deg, rgba(34, 197, 94, 0.05) 0%, transparent 70%);
+  background: linear-gradient(45deg, rgba(13, 148, 136, 0.05) 0%, transparent 70%);
   z-index: 0;
 }
 
-.announcement-event-header {
+.gov-announcement-event-header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: var(--success);
+  color: var(--secondary);
   position: relative;
   z-index: 1;
 }
 
-.event-icon {
+.gov-event-icon {
   stroke-width: 2;
 }
 
-.announcement-event-info {
+.gov-announcement-event-info {
   display: grid;
   gap: 0.75rem;
   margin-bottom: 1.25rem;
@@ -843,100 +769,24 @@ button {
   z-index: 1;
 }
 
-.announcement-event-date,
-.announcement-event-location {
+.gov-announcement-event-date,
+.gov-announcement-event-location {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   color: var(--card-foreground);
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.1);
   padding: 0.5rem 0.75rem;
-  border-radius: var(--radius);
+  border-radius: var(--trail);
   transition: all var(--transition-fast);
 }
 
-.info-icon {
+.gov-info-icon {
   stroke-width: 2;
-  color: var(--success);
+  color: var(--secondary);
 }
 
-.announcement-event-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
-  position: relative;
-  z-index: 1;
-}
-
-.event-meta-item {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-size: 0.875rem;
-  color: var(--muted-foreground);
-  background-color: rgba(255, 255, 255, 0.3);
-  padding: 0.375rem 0.75rem;
-  border-radius: 20px;
-}
-
-.meta-icon {
-  stroke-width: 2;
-  color: var(--success);
-}
-
-/* Actions */
-.announcement-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-
-.announcement-action-button {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  background: none;
-  border: none;
-  color: var(--muted-foreground);
-  font-size: 0.875rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  flex: 1;
-  justify-content: center;
-}
-
-.action-icon {
-  stroke-width: 2;
-}
-
-/* Engagement Section */
-.announcement-engagement {
-  display: flex;
-  padding: 0.75rem 1.5rem;
-  border-top: 1px solid var(--border);
-  background-color: rgba(243, 244, 246, 0.3);
-}
-
-.engagement-item {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  color: var(--muted-foreground);
-  font-size: 0.875rem;
-  margin-right: 1.5rem;
-}
-
-.engagement-icon {
-  stroke-width: 2;
-}
-
-/* Footer and Buttons */
-.announcement-footer {
+.gov-announcement-footer {
   display: flex;
   gap: 0.75rem;
   margin-top: 1.25rem;
@@ -945,33 +795,124 @@ button {
   z-index: 1;
 }
 
-.announcement-secondary-button,
-.announcement-primary-button {
+.gov-announcement-secondary-button,
+.gov-announcement-primary-button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
   border-radius: var(--radius);
   font-weight: 500;
-  cursor: pointer;
   transition: all var(--transition-fast);
 }
 
-.announcement-secondary-button {
-  background-color: white;
+.gov-announcement-secondary-button {
+  background-color: var(--card);
   color: var(--foreground);
   border: 1px solid var(--border);
 }
 
-.announcement-primary-button {
-  background-color: var(--success);
-  color: white;
-  border: none;
+.gov-announcement-secondary-button:hover {
+  background-color: var(--muted);
+  transform: translateY(-2px);
+}
+
+.gov-announcement-primary-button {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
   box-shadow: var(--shadow-sm);
 }
 
-/* Footer */
-.announcements-footer {
+.gov-announcement-primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px var(--secondary-glow);
+}
+
+.gov-announcements-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--muted-foreground);
+  background-color: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+}
+
+.gov-announcements-loader {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(79, 70, 229, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--primary);
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.gov-announcements-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--muted-foreground);
+  background-color: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+.gov-empty-icon-container {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background-color: rgba(79, 70, 229, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 3s infinite;
+  margin-bottom: 1.5rem;
+}
+
+.gov-empty-icon {
+  color: var(--primary);
+  width: 2.5rem;
+  height: 2.5rem;
+  opacity: 0.7;
+}
+
+.gov-announcements-empty h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--foreground);
+}
+
+.gov-announcements-empty p {
+  margin: 0 0 1.5rem 0;
+}
+
+.gov-clear-search-button {
+  padding: 0.5rem 1rem;
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--foreground);
+}
+
+.gov-clear-search-button:hover {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+.gov-announcements-footer {
   margin-top: 3rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border);
@@ -979,7 +920,7 @@ button {
   font-size: 0.875rem;
 }
 
-.announcements-stats {
+.gov-announcements-stats {
   display: flex;
   gap: 1.5rem;
   margin-bottom: 1.5rem;
@@ -987,7 +928,7 @@ button {
   justify-content: center;
 }
 
-.stat-item {
+.gov-stat-item {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -997,226 +938,108 @@ button {
   box-shadow: var(--shadow-sm);
   min-width: 200px;
   transition: all var(--transition-normal);
+  border: 1px solid var(--border);
 }
 
-.stat-icon {
+.gov-stat-item:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+.gov-stat-icon {
   color: var(--primary);
   stroke-width: 2;
   padding: 0.75rem;
-  background-color: rgba(124, 58, 237, 0.1);
+  background-color: rgba(79, 70, 229, 0.1);
   border-radius: 50%;
 }
 
-.stat-icon.important {
+.gov-stat-icon.important {
   color: var(--destructive);
   background-color: rgba(239, 68, 68, 0.1);
 }
 
-.stat-icon.event {
-  color: var(--success);
-  background-color: rgba(34, 197, 94, 0.1);
+.gov-stat-icon.event {
+  color: var(--secondary);
+  background-color: rgba(13, 148, 136, 0.1);
 }
 
-.stat-content {
+.gov-stat-content {
   display: flex;
   flex-direction: column;
 }
 
-.stat-value {
+.gov-stat-value {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--foreground);
 }
 
-.stat-label {
+.gov-stat-label {
   font-size: 0.9rem;
   color: var(--muted-foreground);
 }
 
-.announcements-links {
-  display: flex;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.footer-link {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  color: var(--muted-foreground);
-  text-decoration: none;
-  transition: all var(--transition-fast);
-}
-
-.link-icon {
-  stroke-width: 2;
-}
-
-.announcements-copyright {
-  margin: 0;
-  text-align: center;
-  padding-top: 1rem;
-}
-
-/* Responsive Styles */
 @media (max-width: 768px) {
-  .announcements-header {
+  .gov-announcements-header {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .announcements-title {
+  .gov-announcements-title {
     font-size: 2rem;
   }
 
-  .announcements-search-container {
+  .gov-announcements-search-container {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .announcement-header {
+  .gov-announcement-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.75rem;
+    gap: 0.5rem;
   }
 
-  .announcement-badges {
-    align-self: flex-start;
-  }
-
-  .announcement-footer {
+  .gov-announcement-footer {
     flex-direction: column;
   }
 
-  .announcement-secondary-button,
-  .announcement-primary-button {
+  .gov-announcement-secondary-button,
+  .gov-announcement-primary-button {
     width: 100%;
     justify-content: center;
-  }
-
-  .announcement-actions {
-    justify-content: space-between;
-  }
-
-  .announcement-action-button {
-    flex: 1;
-    justify-content: center;
-  }
-
-  .announcements-links {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .announcements-container {
+  .gov-announcements-container {
     padding: 1rem;
   }
 
-  .announcements-title {
+  .gov-announcements-title {
     font-size: 1.5rem;
   }
 
-  .announcements-subtitle {
+  .gov-announcements-subtitle {
     font-size: 1rem;
   }
 
-  .announcement-avatar-container {
+  .gov-announcement-avatar-container {
     width: 40px;
     height: 40px;
   }
 
-  .announcement-title {
+  .gov-announcement-title {
     font-size: 1.125rem;
   }
 
-  .announcement-badge {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.7rem;
+  .gov-announcement-badge {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.65rem;
   }
 
-  .announcement-event {
+  .gov-announcement-event {
     padding: 1rem;
   }
-
-  .announcement-engagement {
-    padding: 0.5rem 1rem;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .engagement-item {
-    margin-right: 1rem;
-  }
 }
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f172a;
-    --foreground: #f8fafc;
-    --card: #1e293b;
-    --card-foreground: #e2e8f0;
-    --muted: #1e293b;
-    --muted-foreground: #94a3b8;
-    --border: #334155;
-    --border-light: #1e293b;
-  }
-
-  .announcement-header {
-    background-color: rgba(30, 41, 59, 0.3);
-  }
-
-  .announcement-event {
-    background-color: rgba(30, 41, 59, 0.5);
-  }
-
-  .announcement-event-date,
-  .announcement-event-location {
-    background-color: rgba(30, 41, 59, 0.7);
-  }
-
-  .event-meta-item {
-    background-color: rgba(30, 41, 59, 0.5);
-  }
-
-  .announcement-secondary-button {
-    background-color: #334155;
-    border-color: #475569;
-  }
-
-  .announcements-search-input {
-    background-color: transparent;
-    color: var(--foreground);
-  }
-
-  .filter-button,
-  .view-button {
-    background-color: #1e293b;
-    border-color: #334155;
-    color: var(--foreground);
-  }
-
-  .filter-dropdown {
-    background-color: #1e293b;
-    border-color: #334155;
-  }
-
-  .filter-option {
-    background-color: #0f172a;
-    border-color: #334155;
-  }
-
-  .announcement-engagement {
-    background-color: rgba(30, 41, 59, 0.3);
-  }
-
-  .empty-icon-container {
-    background-color: rgba(124, 58, 237, 0.1);
-  }
-}
-

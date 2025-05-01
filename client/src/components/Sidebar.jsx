@@ -116,7 +116,8 @@ function Sidebar() {
       <div className={`sidebar-backdrop ${isMobileOpen ? "active" : ""}`} onClick={() => setIsMobileOpen(false)}></div>
 
       <div
-        className={`sidebar ${isCollapsed ? "sidebar-collapsed" : ""} ${isMobileOpen ? "open" : ""} ${theme === "dark" ? "dark" : ""}`}
+        className={`sidebar ${isCollapsed ? "sidebar-collapsed" : ""} ${isMobileOpen ? "open" : ""}`}
+        data-theme={theme}
       >
         {/* Sidebar header */}
         <div className="sidebar-header">
@@ -189,7 +190,7 @@ function Sidebar() {
             style={{ cursor: "pointer" }} // Add pointer cursor to indicate it's clickable
           >
             {isAuthorized ? (
-              <img className="sidebar-user-avatar" src={userData?.avatar || "/placeholder.svg"}></img>
+              <img className="sidebar-user-avatar" src={userData?.avatar || "/placeholder.svg"} alt="User avatar" />
             ) : null}
             {!isCollapsed && (
               <div className="sidebar-user-info">

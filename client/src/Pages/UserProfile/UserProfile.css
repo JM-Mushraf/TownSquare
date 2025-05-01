@@ -144,19 +144,7 @@
   --neo-gradient-accent: linear-gradient(135deg, #d946ef, #f59e0b);
 }
 
-/* Base Styles */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
 
-body {
-  font-family: "Space Grotesk", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: var(--neo-bg-dark);
-  color: var(--neo-text-primary);
-  line-height: 1.5;
-}
 
 button {
   cursor: pointer;
@@ -2272,4 +2260,698 @@ button {
 
 .neo-messages-thread::-webkit-scrollbar-thumb:hover {
   background-color: rgba(101, 44, 255, 0.5);
+}
+/* Futuristic 2085 Theme Variables */
+:root {
+  /* Primary Colors */
+  --future-primary: #4f46e5;
+  --future-secondary: #10b981;
+  --future-accent: #d946ef;
+  --future-warning: #f59e0b;
+  --future-danger: #ef4444;
+
+  /* Neon Colors */
+  --future-neon-blue: #00c2ff;
+  --future-neon-purple: #a960ff;
+  --future-neon-pink: #ff00e5;
+  --future-neon-cyan: #00fff0;
+
+  /* Gradients */
+  --future-gradient-blue: linear-gradient(135deg, #00c2ff, #6d00ff);
+  --future-gradient-purple: linear-gradient(135deg, #a960ff, #ff00e5);
+  --future-gradient-cyan: linear-gradient(135deg, #00fff0, #00c2ff);
+
+  /* Glassmorphism */
+  --future-glass-bg: rgba(15, 23, 42, 0.3);
+  --future-glass-border: rgba(255, 255, 255, 0.1);
+  --future-glass-highlight: rgba(255, 255, 255, 0.05);
+
+  /* Shadows and Glows */
+  --future-shadow-sm: 0 2px 10px rgba(0, 194, 255, 0.2);
+  --future-shadow-md: 0 4px 20px rgba(0, 194, 255, 0.3);
+  --future-shadow-lg: 0 10px 30px rgba(0, 194, 255, 0.4);
+  --future-glow-blue: 0 0 15px rgba(0, 194, 255, 0.6);
+  --future-glow-purple: 0 0 15px rgba(169, 96, 255, 0.6);
+  --future-glow-pink: 0 0 15px rgba(255, 0, 229, 0.6);
+
+  /* Animations */
+  --future-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --future-transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --future-transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --future-transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Futuristic Bookmarks Section */
+.neo-bookmarks-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  position: relative;
+  padding: 1rem;
+}
+
+.neo-bookmarks-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--future-gradient-blue);
+  box-shadow: var(--future-glow-blue);
+  z-index: 0;
+}
+
+.neo-bookmarks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.neo-bookmarks-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.75rem;
+  font-weight: 600;
+  background: var(--future-gradient-blue);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 10px rgba(0, 194, 255, 0.3);
+  position: relative;
+}
+
+.neo-bookmarks-header h2::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--future-gradient-blue);
+  box-shadow: var(--future-glow-blue);
+}
+
+.neo-bookmarks-header h2 svg {
+  width: 24px;
+  height: 24px;
+  color: var(--future-neon-blue);
+  filter: drop-shadow(0 0 5px var(--future-neon-blue));
+  animation: pulse 2s infinite alternate;
+}
+
+/* Futuristic Grid Layout */
+.neo-bookmarks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  perspective: 1000px;
+}
+
+/* Futuristic Bookmark Card */
+.neo-bookmark-card {
+  position: relative;
+  background: var(--future-glass-bg);
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: var(--future-shadow-md);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--future-glass-border);
+  transition: all var(--future-transition-normal);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: translateZ(0);
+  overflow: hidden;
+}
+
+.neo-bookmark-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 15px;
+  padding: 2px;
+  background: var(--future-gradient-blue);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity var(--future-transition-normal);
+}
+
+.neo-bookmark-card:hover {
+  transform: translateY(-10px) translateZ(20px);
+  box-shadow: var(--future-shadow-lg), 0 0 20px rgba(0, 194, 255, 0.4);
+}
+
+.neo-bookmark-card:hover::before {
+  opacity: 1;
+  animation: borderGlow 2s infinite alternate;
+}
+
+/* Bookmark Card Title */
+.neo-bookmark-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  background: var(--future-gradient-blue);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  position: relative;
+  z-index: 2;
+  transform: translateZ(10px);
+  text-shadow: 0 0 10px rgba(0, 194, 255, 0.3);
+}
+
+/* Bookmark Card Description */
+.neo-bookmark-description {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  position: relative;
+  z-index: 2;
+  transform: translateZ(5px);
+  opacity: 0.8;
+  transition: opacity var(--future-transition-normal);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.neo-bookmark-card:hover .neo-bookmark-description {
+  opacity: 1;
+}
+
+/* Futuristic Carousel */
+.neo-bookmark-carousel {
+  width: 100%;
+  position: relative;
+  margin-bottom: 1.5rem;
+  border-radius: 12px;
+  overflow: hidden;
+  height: 180px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--future-glass-border);
+  transform: translateZ(15px);
+  box-shadow: var(--future-shadow-md);
+}
+
+.neo-carousel-container {
+  display: flex;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  height: 100%;
+  width: 100%;
+}
+
+.neo-carousel-slide {
+  min-width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.neo-carousel-slide::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 194, 255, 0.1), rgba(169, 96, 255, 0.1));
+  z-index: 1;
+  opacity: 0;
+  transition: opacity var(--future-transition-normal);
+}
+
+.neo-carousel-slide:hover::before {
+  opacity: 1;
+}
+
+.neo-carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+  filter: brightness(0.9) contrast(1.1);
+}
+
+.neo-carousel-slide:hover .neo-carousel-image {
+  transform: scale(1.05);
+}
+
+/* Carousel Navigation */
+.neo-carousel-nav {
+  position: absolute;
+  bottom: 15px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  z-index: 3;
+}
+
+.neo-carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all var(--future-transition-normal);
+  cursor: pointer;
+  border: none;
+  position: relative;
+}
+
+.neo-carousel-dot::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  background: var(--future-gradient-blue);
+  opacity: 0;
+  transition: opacity var(--future-transition-normal);
+  z-index: -1;
+}
+
+.neo-carousel-dot.active {
+  background: var(--future-neon-blue);
+  transform: scale(1.3);
+  box-shadow: 0 0 10px var(--future-neon-blue);
+}
+
+.neo-carousel-dot.active::before {
+  opacity: 1;
+  animation: pulse 2s infinite alternate;
+}
+
+/* Carousel Arrows */
+.neo-carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 3;
+  border: 1px solid var(--future-glass-border);
+  transition: all var(--future-transition-normal);
+  color: white;
+  opacity: 0;
+}
+
+.neo-bookmark-carousel:hover .neo-carousel-arrow {
+  opacity: 1;
+}
+
+.neo-carousel-arrow:hover {
+  background: var(--future-neon-blue);
+  color: black;
+  box-shadow: 0 0 15px var(--future-neon-blue);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.neo-carousel-arrow.prev {
+  left: 10px;
+}
+
+.neo-carousel-arrow.next {
+  right: 10px;
+}
+
+/* Featured Image */
+.neo-bookmark-featured-image {
+  width: 100%;
+  height: 180px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  position: relative;
+  border: 1px solid var(--future-glass-border);
+  background: rgba(0, 0, 0, 0.3);
+  transform: translateZ(15px);
+  box-shadow: var(--future-shadow-md);
+}
+
+.neo-bookmark-featured-image::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0, 194, 255, 0.1), rgba(169, 96, 255, 0.1));
+  z-index: 1;
+  opacity: 0;
+  transition: opacity var(--future-transition-normal);
+}
+
+.neo-bookmark-featured-image:hover::before {
+  opacity: 1;
+}
+
+.neo-bookmark-featured-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+  filter: brightness(0.9) contrast(1.1);
+}
+
+.neo-bookmark-featured-image:hover img {
+  transform: scale(1.05);
+}
+
+/* Bookmark Footer */
+.neo-bookmark-footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--future-glass-border);
+  position: relative;
+  z-index: 2;
+  transform: translateZ(5px);
+}
+
+.neo-bookmark-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.neo-bookmark-date,
+.neo-bookmark-location {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--future-glass-border);
+}
+
+.neo-bookmark-date svg,
+.neo-bookmark-location svg {
+  width: 12px;
+  height: 12px;
+  color: var(--future-neon-blue);
+}
+
+/* View Button */
+.neo-bookmark-view-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  background: rgba(0, 194, 255, 0.1);
+  color: var(--future-neon-blue);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all var(--future-transition-bounce);
+  border: 1px solid rgba(0, 194, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.neo-bookmark-view-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--future-gradient-blue);
+  opacity: 0;
+  transition: opacity var(--future-transition-normal);
+  z-index: -1;
+}
+
+.neo-bookmark-view-button:hover {
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 0 10px var(--future-neon-blue);
+  border-color: var(--future-neon-blue);
+}
+
+.neo-bookmark-view-button:hover::before {
+  opacity: 1;
+}
+
+.neo-bookmark-view-button svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Loading State */
+.neo-bookmarks-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: var(--future-glass-bg);
+  border-radius: 15px;
+  box-shadow: var(--future-shadow-md);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--future-glass-border);
+}
+
+.neo-bookmarks-loading .neo-loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 3px solid rgba(0, 194, 255, 0.1);
+  border-top: 3px solid var(--future-neon-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 0 15px var(--future-neon-blue);
+}
+
+.neo-bookmarks-loading span {
+  font-size: 1.1rem;
+  color: var(--future-neon-blue);
+  text-shadow: 0 0 10px var(--future-neon-blue);
+  animation: pulse 2s infinite alternate;
+  letter-spacing: 1px;
+}
+
+/* Empty State */
+.neo-empty-bookmarks {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: var(--future-glass-bg);
+  border-radius: 15px;
+  box-shadow: var(--future-shadow-md);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--future-glass-border);
+  text-align: center;
+}
+
+.neo-empty-icon {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  margin-bottom: 1.5rem;
+  color: var(--future-neon-blue);
+  box-shadow: 0 0 20px var(--future-neon-blue);
+  animation: pulse 3s infinite alternate;
+  border: 1px solid var(--future-glass-border);
+  position: relative;
+}
+
+.neo-empty-icon::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  background: var(--future-gradient-blue);
+  z-index: -1;
+  opacity: 0.3;
+  filter: blur(10px);
+}
+
+.neo-empty-icon svg {
+  width: 40px;
+  height: 40px;
+  filter: drop-shadow(0 0 5px var(--future-neon-blue));
+}
+
+.neo-empty-bookmarks h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  background: var(--future-gradient-blue);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 10px rgba(0, 194, 255, 0.3);
+}
+
+.neo-empty-bookmarks p {
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 400px;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+/* Animations */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes borderGlow {
+  0%,
+  100% {
+    opacity: 0.5;
+    box-shadow: 0 0 10px var(--future-neon-blue);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 20px var(--future-neon-purple);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .neo-bookmarks-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .neo-bookmark-carousel,
+  .neo-bookmark-featured-image {
+    height: 160px;
+  }
+
+  .neo-bookmark-footer {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .neo-bookmark-view-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* 3D Hover Effect */
+.neo-bookmark-card {
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.neo-bookmarks-grid:hover .neo-bookmark-card:not(:hover) {
+  transform: scale(0.95) translateZ(0);
+  filter: brightness(0.7);
+}
+
+/* Bookmark Icon Pulse */
+.neo-bookmark-card::after {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 24px;
+  height: 24px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300c2ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: 3;
+  filter: drop-shadow(0 0 5px var(--future-neon-blue));
+  opacity: 0.7;
+  transition: all var(--future-transition-normal);
+}
+
+.neo-bookmark-card:hover::after {
+  opacity: 1;
+  transform: scale(1.2);
+  filter: drop-shadow(0 0 8px var(--future-neon-blue));
+  animation: pulse 2s infinite alternate;
+}
+
+/* Flip Animation */
+.neo-bookmark-card.flipped {
+  transform-style: preserve-3d;
+  transform: rotateY(180deg);
+}
+
+/* Parallax Effect */
+.neo-bookmark-title {
+  transition: transform 0.3s ease;
+}
+
+.neo-bookmark-card:hover .neo-bookmark-title {
+  transform: translateZ(20px);
+}
+
+.neo-bookmark-description {
+  transition: transform 0.3s ease;
+}
+
+.neo-bookmark-card:hover .neo-bookmark-description {
+  transform: translateZ(15px);
+}
+
+.neo-bookmark-footer {
+  transition: transform 0.3s ease;
+}
+
+.neo-bookmark-card:hover .neo-bookmark-footer {
+  transform: translateZ(10px);
 }
