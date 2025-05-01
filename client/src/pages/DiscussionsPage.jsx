@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { formatDate } from "./utils/formatDate";
 import { renderIcon } from "./utils/renderIcon";
 import { io } from "socket.io-client";
-import EmojiPicker from 'emoji-picker-react'
+import EmojiPicker from "emoji-picker-react";
 
 function DiscussionsPage() {
   const [activeChannel, setActiveChannel] = useState(null);
@@ -19,7 +19,8 @@ function DiscussionsPage() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
+  const [showMembersPopup, setShowMembersPopup] = useState(false);
+  const [currentGroupMembers, setCurrentGroupMembers] = useState([]);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const emojiPickerRef = useRef(null);
@@ -28,7 +29,12 @@ function DiscussionsPage() {
 
   // Initialize Socket.IO client
   const socket = useRef(null);
-
+  const handleShowMembers = (channel) => {
+    if (channel && channel.members) {
+      setCurrentGroupMembers(channel.members);
+      setShowMembersPopup(true);
+    }
+  };
   useEffect(() => {
     // Connect to the Socket.IO server
     socket.current = io("http://localhost:3000", {
@@ -125,7 +131,9 @@ function DiscussionsPage() {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-        setChannels(data.chats);
+        await setChannels(data.chats);
+        console.log(channels[0]);
+
         if (data.chats.length > 0) {
           setActiveChannel(data.chats[0]);
           fetchMessages(data.chats[0]._id);
@@ -170,18 +178,18 @@ function DiscussionsPage() {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() && !selectedFiles.length && !activeChannel) return;
-  
+
     try {
       const formData = new FormData();
       formData.append("chatId", activeChannel._id);
       // Always include content, even if empty
       formData.append("content", newMessage.trim() ? newMessage : "");
-  
+
       // Append all selected files
       selectedFiles.forEach((file) => {
         formData.append("attachments", file);
       });
-  
+
       const response = await axios.post(
         "http://localhost:3000/message/send",
         formData,
@@ -192,17 +200,17 @@ function DiscussionsPage() {
           },
         }
       );
-  
+
       const newMessageWithSender = {
         ...response.data.newMessage,
         sender: userData,
       };
-  
+
       socket.current.emit("send-group-message", {
         chatId: activeChannel._id,
         message: newMessageWithSender,
       });
-  
+
       setMessages((prevMessages) => [...prevMessages, newMessageWithSender]);
       setNewMessage("");
       setSelectedFiles([]);
@@ -320,6 +328,32 @@ function DiscussionsPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+
+          {activeChannel && (
+            <button
+              className="view-members-button"
+              onClick={() => handleShowMembers(activeChannel)}
+              title="View group members"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              Members
+            </button>
+          )}
         </div>
 
         <div className="discussions-channels-list">
@@ -567,17 +601,45 @@ function DiscussionsPage() {
           </div>
         </form>
 
-
         {showEmojiPicker && (
           <div className="emoji-picker-container" ref={emojiPickerRef}>
-            <EmojiPicker 
-              onEmojiClick={onEmojiClick}
-              width={300}
-              height={350}
-            />
+            <EmojiPicker onEmojiClick={onEmojiClick} width={300} height={350} />
           </div>
         )}
       </div>
+      {showMembersPopup && (
+        <div
+          className="members-popup-overlay"
+          onClick={() => setShowMembersPopup(false)}
+        >
+          <div className="members-popup" onClick={(e) => e.stopPropagation()}>
+            <div className="members-popup-header">
+              <h3>Group Members</h3>
+              <button
+                className="close-popup"
+                onClick={() => setShowMembersPopup(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="members-list">
+              {currentGroupMembers.map((member) => (
+                <div key={member._id} className="member-item">
+                  <img
+                    src={member.avatar}
+                    alt={member.username}
+                    className="member-avatar"
+                  />
+                  <div className="member-info">
+                    <span className="member-username">{member.username}</span>
+                    <span className="member-email">{member.email}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

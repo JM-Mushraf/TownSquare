@@ -53,6 +53,115 @@
   justify-content: center;
   cursor: pointer;
 }
+
+/* Members button */
+.view-members-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: auto;
+  transition: background 0.2s;
+}
+
+.view-members-button:hover {
+  background: var(--primary-dark);
+}
+
+.view-members-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Members popup */
+.members-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.members-popup {
+  background: rgb(54, 46, 46);
+  border-radius: 8px;
+  width: 350px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.members-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #982121;
+}
+
+.members-popup-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.close-popup {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+}
+
+.members-list {
+  padding: 8px 0;
+  overflow-y: auto;
+  max-height: calc(80vh - 60px);
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  transition: background 0.2s;
+}
+
+.member-item:hover {
+  background: #6e4949;
+}
+
+.member-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 12px;
+}
+
+.member-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.member-username {
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.member-email {
+  font-size: 12px;
+  color: #666;
+}
 .discussions-channels {
   width: 280px;
   border-right: 1px solid var(--border);
@@ -77,6 +186,9 @@
   transform: translateY(-50%);
   color: var(--muted-foreground);
 }
+
+
+
 
 .discussions-search-input {
   width: 100%;
@@ -523,3 +635,5 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+

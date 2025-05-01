@@ -1239,13 +1239,7 @@ export const UserProfileContent = () => {
           <Bookmark />
           <span className="neo-tab-text">Bookmarks</span>
         </button>
-        <button
-          className={`neo-profile-tab ${activeTab === "activity" ? "active" : ""}`}
-          onClick={() => setActiveTab("activity")}
-        >
-          <Activity />
-          <span className="neo-tab-text">Activity</span>
-        </button>
+
         <button
           className={`neo-profile-tab ${activeTab === "settings" ? "active" : ""}`}
           onClick={() => setActiveTab("settings")}
@@ -1620,43 +1614,7 @@ export const UserProfileContent = () => {
                 </div>
               </div>
 
-              <div className="neo-overview-card neo-reputation-card">
-                <h3 className="neo-card-title">
-                  <Award />
-                  <span>Reputation</span>
-                </h3>
-                <div className="neo-reputation-score">
-                  <div className="neo-reputation-value">{stats.reputation}</div>
-                  <div className="neo-reputation-label">Neural Reputation</div>
-                </div>
-                <div className="neo-reputation-progress">
-                  <div className="neo-progress-bar">
-                    <div
-                      className="neo-progress-fill"
-                      style={{ width: `${Math.min(stats.reputation / 10, 100)}%` }}
-                    ></div>
-                  </div>
-                  <div className="neo-progress-labels">
-                    <span>Novice</span>
-                    <span>Expert</span>
-                  </div>
-                </div>
-              </div>
 
-              <div className="neo-overview-card neo-badges-card">
-                <h3 className="neo-card-title">
-                  <Shield />
-                  <span>Neural Badges</span>
-                </h3>
-                <div className="neo-badges-list">
-                  {stats.badges.map((badge, index) => (
-                    <div key={index} className="neo-badge-item">
-                      <div className="neo-badge-icon">{badge.icon}</div>
-                      <div className="neo-badge-name">{badge.name}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
               <div className="neo-overview-card neo-communities-card">
                 <h3 className="neo-card-title">

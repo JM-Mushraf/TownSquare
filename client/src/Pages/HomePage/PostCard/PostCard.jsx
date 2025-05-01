@@ -601,17 +601,7 @@ export const PostCard = ({ post, navigate }) => {
                         </div>
                       )}
   
-                      {isPollActive && !hasVoted && (
-                        <button
-                          className="neo-poll-vote-button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handlePollVote(option._id)
-                          }}
-                        >
-                          Vote
-                        </button>
-                      )}
+                      
                     </div>
                   )
                 })}

@@ -1,7 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './EmergencyPage.css';
 
 function EmergencyPage() {
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/emergency/get-all-emergency-services');
+        if (!response.ok) {
+          throw new Error('Failed to fetch emergency services');
+        }
+        const data = await response.json();
+        if (data.success) {
+          setServices(data.data);
+        } else {
+          throw new Error('Failed to load emergency services');
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  if (loading) {
+    return <div className="emergency-container">Loading emergency services...</div>;
+  }
+
+  if (error) {
+    return <div className="emergency-container">Error: {error}</div>;
+  }
+
   return (
     <div className="emergency-container">
       <div className="emergency-header">
@@ -76,25 +111,15 @@ function EmergencyPage() {
           </div>
           <div className="emergency-card-content">
             <div className="emergency-contacts">
-              <div className="emergency-contact">
-                <h4 className="emergency-contact-title">Police Department</h4>
-                <p className="emergency-contact-info">Emergency: 911</p>
-                <p className="emergency-contact-info">Non-emergency: (555) 123-4567</p>
-              </div>
-              <div className="emergency-contact">
-                <h4 className="emergency-contact-title">Fire Department</h4>
-                <p className="emergency-contact-info">Emergency: 911</p>
-                <p className="emergency-contact-info">Non-emergency: (555) 123-8910</p>
-              </div>
-              <div className="emergency-contact">
-                <h4 className="emergency-contact-title">Medical Center</h4>
-                <p className="emergency-contact-info">Emergency: 911</p>
-                <p className="emergency-contact-info">Hospital: (555) 123-1112</p>
-              </div>
-              <div className="emergency-contact">
-                <h4 className="emergency-contact-title">Poison Control</h4>
-                <p className="emergency-contact-info">(800) 222-1222</p>
-              </div>
+              {services.map((service) => (
+                <div key={service._id} className="emergency-contact">
+                  <h4 className="emergency-contact-title">
+                    {service.title.charAt(0).toUpperCase() + service.title.slice(1)}
+                  </h4>
+                  <p className="emergency-contact-info">Contact: {service.contact}</p>
+                  <p className="emergency-contact-info">Location: {service.location}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -122,25 +147,15 @@ function EmergencyPage() {
           </div>
           <div className="emergency-card-content">
             <div className="emergency-locations">
-              <div className="emergency-location">
-                <h4 className="emergency-location-title">Main Police Station</h4>
-                <p className="emergency-location-info">123 Main Street</p>
-                <p className="emergency-location-info">Open 24/7</p>
-              </div>
-              <div className="emergency-location">
-                <h4 className="emergency-location-title">Central Fire Station</h4>
-                <p className="emergency-location-info">456 Oak Avenue</p>
-                <p className="emergency-location-info">Open 24/7</p>
-              </div>
-              <div className="emergency-location">
-                <h4 className="emergency-location-title">TownSquare Medical Center</h4>
-                <p className="emergency-location-info">789 Elm Boulevard</p>
-                <p className="emergency-location-info">Open 24/7</p>
-              </div>
-              <div className="emergency-location">
-                <h4 className="emergency-location-title">Emergency Shelter</h4>
-                <p className="emergency-location-info">101 Pine Street (Community Center)</p>
-              </div>
+              {services.map((service) => (
+                <div key={service._id} className="emergency-location">
+                  <h4 className="emergency-location-title">
+                    {service.title.charAt(0).toUpperCase() + service.title.slice(1)}
+                  </h4>
+                  <p className="emergency-location-info">{service.location}</p>
+                  <p className="emergency-location-info">Contact: {service.contact}</p>
+                </div>
+              ))}
             </div>
           </div>
           <div className="emergency-card-footer">
