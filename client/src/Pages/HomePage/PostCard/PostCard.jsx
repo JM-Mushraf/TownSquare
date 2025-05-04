@@ -663,7 +663,7 @@ export const PostCard = ({ post, navigate }) => {
         {renderPostHeader()}
         <h4 className="neo-post-title">{post.title}</h4>
 
-        {renderAttachments()}
+        {renderAttachments()} 
 
         <div className="neo-marketplace-details">
           {post.marketplace && (

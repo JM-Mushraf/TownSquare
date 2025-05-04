@@ -53,10 +53,11 @@ function HomePage() {
         })
 
         if (response.data) {
-          setPosts(response.data.posts || [])
+          await setPosts(response.data.posts || [])
 
-          setTrendingPosts(response.data.trending || [])
-
+          await setTrendingPosts(response.data.trending || [])
+          await console.log(posts);
+          
           setUpcomingEvents(response.data.upcomingEvents || [])
           setCounty(response.data.county || "")
 
@@ -473,23 +474,7 @@ function HomePage() {
               <main className="ts-main-feed">
                 <div className="ts-section-header">
                   <h2 className="ts-section-title">Community Feed</h2>
-                  <button className="ts-view-all-button" onClick={() => navigate("/feed")} id="view-all-feed">
-                    View All
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="ts-button-icon-small"
-                    >
-                      <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                  </button>
+                  
                 </div>
 
                 {filteredPosts.length === 0 ? (
