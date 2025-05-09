@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { useTheme } from "./ThemeProvider"
-import ThemeToggle from "./ThemeToggle"
-import "./Sidebar.css"
 import { useDispatch, useSelector } from "react-redux"
 import { logout } from "../Slices/AuthSlice"
+import ThemeToggle from "./ThemeToggle"
+import "./Sidebar.css"
 
 // Icons
 import {
@@ -27,15 +26,33 @@ function Sidebar() {
   const navigate = useNavigate()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
-  const { theme } = useTheme()
+  const [theme, setTheme] = useState("light")
   const dispatch = useDispatch()
 
   // Access user data and authorization status from Redux store
   const isAuthorized = useSelector((state) => state.user.isAuthorized)
-  const userData = useSelector((state) => state.user.userData) // Access userData
+  const userData = useSelector((state) => state.user.userData)
 
   // Animation on mount
   const [mounted, setMounted] = useState(false)
+
+  // Load and apply saved theme
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") || "light"
+    setTheme(savedTheme)
+    document.documentElement.setAttribute("data-theme", savedTheme)
+    document.documentElement.classList.add(savedTheme)
+  }, [])
+
+  // Toggle theme
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light"
+    setTheme(newTheme)
+    document.documentElement.setAttribute("data-theme", newTheme)
+    document.documentElement.classList.remove("light", "dark")
+    document.documentElement.classList.add(newTheme)
+    localStorage.setItem("theme", newTheme)
+  }
 
   useEffect(() => {
     setTimeout(() => setMounted(true), 0)
@@ -64,8 +81,8 @@ function Sidebar() {
   const toggleMobileSidebar = () => setIsMobileOpen(!isMobileOpen)
 
   const handleLogout = () => {
-    dispatch(logout()) // Dispatch the logout action
-    navigate("/login") // Redirect to login page after logout
+    dispatch(logout())
+    navigate("/login")
   }
 
   const sidebarItems = [
@@ -81,7 +98,6 @@ function Sidebar() {
       section: "Engagement",
       items: [
         { icon: <Vote />, label: "Surveys & Polls", href: "/surveys", badge: null },
-        // { icon: <Trophy />, label: "Leaderboard", href: "/leaderboard", badge: null },
         { icon: <ShoppingBag />, label: "Marketplace", href: "/marketplace", badge: null },
       ],
     },
@@ -181,20 +197,19 @@ function Sidebar() {
         <div className="sidebar-footer">
           {!isCollapsed && (
             <div className="theme-toggle-container">
-              <ThemeToggle />
+              <ThemeToggle theme={theme} setTheme={toggleTheme} />
             </div>
           )}
           <div
             className="sidebar-user"
             onClick={() => navigate("/profile")}
-            style={{ cursor: "pointer" }} // Add pointer cursor to indicate it's clickable
+            style={{ cursor: "pointer" }}
           >
             {isAuthorized ? (
               <img className="sidebar-user-avatar" src={userData?.avatar || "/placeholder.svg"} alt="User avatar" />
             ) : null}
             {!isCollapsed && (
               <div className="sidebar-user-info">
-                {/* Conditionally render username if logged in */}
                 {isAuthorized && userData ? (
                   <>
                     <div className="sidebar-user-name">{userData.username}</div>

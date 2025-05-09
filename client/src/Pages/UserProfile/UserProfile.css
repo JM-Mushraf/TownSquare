@@ -3144,3 +3144,615 @@ button {
 .neo-bookmark-card:hover .neo-bookmark-footer {
   transform: translateZ(10px);
 }
+/* Settings Section Styles */
+.neo-settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.neo-settings-header {
+  margin-bottom: 1rem;
+}
+
+.neo-settings-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.75rem;
+  font-weight: 600;
+  background: var(--neo-gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 0.5rem;
+}
+
+.neo-settings-header h2 svg {
+  width: 28px;
+  height: 28px;
+  color: var(--neo-primary);
+  filter: drop-shadow(0 0 5px var(--neo-primary));
+}
+
+.neo-settings-subtitle {
+  color: var(--neo-text-secondary);
+  font-size: 1rem;
+  max-width: 600px;
+  line-height: 1.5;
+}
+
+.neo-settings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Settings Panel */
+.neo-settings-panel {
+  background: var(--neo-glass-bg);
+  border-radius: var(--neo-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--neo-shadow-md);
+  border: 1px solid var(--neo-glass-border);
+  transition: all var(--neo-transition-normal);
+  position: relative;
+}
+
+.neo-settings-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--neo-radius-lg);
+  padding: 2px;
+  background: var(--neo-holographic);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity var(--neo-transition-normal);
+}
+
+.neo-settings-panel:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--neo-shadow-lg);
+}
+
+.neo-settings-panel:hover::before {
+  opacity: 0.5;
+}
+
+.neo-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  background: rgba(var(--neo-primary-rgb), 0.1);
+  border-bottom: 1px solid var(--neo-glass-border);
+  position: relative;
+}
+
+.neo-panel-header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--neo-primary-rgb), 0.5), transparent);
+  animation: shimmer 2s infinite;
+}
+
+.neo-panel-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--neo-primary);
+  filter: drop-shadow(0 0 3px var(--neo-primary));
+}
+
+.neo-panel-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  background: var(--neo-gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.neo-panel-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Form Elements */
+.neo-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.neo-form-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--neo-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.neo-settings-input,
+.neo-settings-textarea,
+.neo-settings-select {
+  padding: 0.75rem 1rem;
+  background: var(--neo-bg-input);
+  border: 1px solid var(--neo-glass-border);
+  border-radius: var(--neo-radius-md);
+  color: var(--neo-text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: all var(--neo-transition-normal);
+  width: 100%;
+}
+
+.neo-settings-textarea {
+  min-height: 100px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.neo-settings-input:focus,
+.neo-settings-textarea:focus,
+.neo-settings-select:focus {
+  outline: none;
+  border-color: var(--neo-primary);
+  box-shadow: var(--neo-glow-primary);
+}
+
+.neo-input-hint {
+  font-size: 0.75rem;
+  color: var(--neo-text-secondary);
+  margin-top: 0.25rem;
+}
+
+.neo-input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.neo-input-badge {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(var(--neo-secondary-rgb), 0.1);
+  color: var(--neo-secondary);
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--neo-radius-full);
+  border: 1px solid rgba(var(--neo-secondary-rgb), 0.3);
+}
+
+.neo-input-with-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.neo-input-with-button .neo-settings-input {
+  flex: 1;
+}
+
+.neo-input-action-button {
+  padding: 0.75rem 1rem;
+  background: var(--neo-glass-highlight);
+  color: var(--neo-text-primary);
+  border-radius: var(--neo-radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all var(--neo-transition-bounce);
+  border: 1px solid var(--neo-glass-border);
+  white-space: nowrap;
+}
+
+.neo-input-action-button:hover {
+  background: var(--neo-primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--neo-glow-primary);
+}
+
+/* Theme Selector */
+.neo-theme-selector {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.neo-theme-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--neo-glass-highlight);
+  border: 1px solid var(--neo-glass-border);
+  border-radius: var(--neo-radius-md);
+  transition: all var(--neo-transition-bounce);
+  color: var(--neo-text-primary);
+}
+
+.neo-theme-option svg {
+  color: var(--neo-text-secondary);
+  transition: all var(--neo-transition-normal);
+}
+
+.neo-theme-option:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--neo-shadow-md);
+}
+
+.neo-theme-option:hover svg {
+  color: var(--neo-primary);
+  transform: scale(1.2);
+}
+
+.neo-theme-option.active {
+  background: rgba(var(--neo-primary-rgb), 0.1);
+  border-color: var(--neo-primary);
+  box-shadow: var(--neo-glow-primary);
+}
+
+.neo-theme-option.active svg {
+  color: var(--neo-primary);
+}
+
+/* Toggle Switch */
+.neo-toggle-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.neo-toggle-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.neo-toggle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.neo-toggle-label {
+  font-weight: 500;
+  color: var(--neo-text-primary);
+}
+
+.neo-toggle-description {
+  font-size: 0.75rem;
+  color: var(--neo-text-secondary);
+}
+
+.neo-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.neo-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.neo-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--neo-glass-highlight);
+  border: 1px solid var(--neo-glass-border);
+  transition: all var(--neo-transition-normal);
+  border-radius: 34px;
+}
+
+.neo-toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 2px;
+  background: var(--neo-text-secondary);
+  transition: all var(--neo-transition-normal);
+  border-radius: 50%;
+}
+
+input:checked + .neo-toggle-slider {
+  background: rgba(var(--neo-primary-rgb), 0.2);
+  border-color: var(--neo-primary);
+}
+
+input:checked + .neo-toggle-slider:before {
+  transform: translateX(26px);
+  background: var(--neo-primary);
+}
+
+input:focus + .neo-toggle-slider {
+  box-shadow: var(--neo-glow-primary);
+}
+
+/* Radio Options */
+.neo-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.neo-radio-option {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--neo-glass-highlight);
+  border: 1px solid var(--neo-glass-border);
+  border-radius: var(--neo-radius-md);
+  transition: all var(--neo-transition-normal);
+  cursor: pointer;
+  position: relative;
+}
+
+.neo-radio-option:hover {
+  transform: translateX(5px);
+  background: rgba(var(--neo-primary-rgb), 0.05);
+}
+
+.neo-radio-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.neo-radio-option input[type="radio"]:checked + .neo-radio-content {
+  color: var(--neo-primary);
+}
+
+.neo-radio-option input[type="radio"]:checked ~ .neo-radio-arrow {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--neo-primary);
+}
+
+.neo-radio-option input[type="radio"]:checked + .neo-radio-content .neo-radio-label svg {
+  color: var(--neo-primary);
+}
+
+.neo-radio-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.neo-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: var(--neo-text-primary);
+}
+
+.neo-radio-label svg {
+  color: var(--neo-text-secondary);
+  transition: all var(--neo-transition-normal);
+}
+
+.neo-radio-description {
+  font-size: 0.75rem;
+  color: var(--neo-text-secondary);
+}
+
+.neo-radio-arrow {
+  color: var(--neo-text-secondary);
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all var(--neo-transition-normal);
+}
+
+/* Action Buttons */
+.neo-settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.neo-settings-cancel-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--neo-glass-highlight);
+  color: var(--neo-text-primary);
+  border-radius: var(--neo-radius-md);
+  font-weight: 500;
+  transition: all var(--neo-transition-bounce);
+  border: 1px solid var(--neo-glass-border);
+}
+
+.neo-settings-cancel-button:hover {
+  background: rgba(var(--neo-danger-rgb), 0.1);
+  color: var(--neo-danger);
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(var(--neo-danger-rgb), 0.3);
+}
+
+.neo-settings-save-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--neo-gradient-primary);
+  color: white;
+  border-radius: var(--neo-radius-md);
+  font-weight: 500;
+  transition: all var(--neo-transition-bounce);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.neo-settings-save-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--neo-primary), var(--neo-secondary));
+  opacity: 0;
+  transition: opacity var(--neo-transition-normal);
+  z-index: -1;
+}
+
+.neo-settings-save-button:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--neo-glow-primary);
+}
+
+.neo-settings-save-button:hover::before {
+  opacity: 1;
+}
+
+.neo-settings-save-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.neo-button-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .neo-theme-selector {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .neo-toggle-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .neo-toggle-switch {
+    align-self: flex-start;
+  }
+
+  .neo-settings-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .neo-settings-cancel-button,
+  .neo-settings-save-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Dark mode specific adjustments */
+.dark .neo-settings-panel {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.dark .neo-panel-header {
+  background: rgba(101, 44, 255, 0.15);
+}
+
+.dark .neo-settings-input,
+.dark .neo-settings-textarea,
+.dark .neo-settings-select {
+  background: rgba(15, 23, 42, 0.5);
+  color: var(--neo-text-primary);
+}
+
+.dark .neo-theme-option {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.dark .neo-theme-option.active {
+  background: rgba(101, 44, 255, 0.2);
+}
+
+.dark .neo-radio-option {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.dark .neo-toggle-slider {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+/* Add CSS variables for RGB values to use in rgba() */
+:root {
+  --neo-primary-rgb: 79, 70, 229;
+  --neo-secondary-rgb: 16, 185, 129;
+  --neo-danger-rgb: 239, 68, 68;
+}
+
+.dark {
+  --neo-primary-rgb: 101, 44, 255;
+  --neo-secondary-rgb: 15, 244, 198;
+  --neo-danger-rgb: 255, 61, 94;
+}

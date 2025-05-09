@@ -1,18 +1,168 @@
-/* CreatePost.css - Modern design with theme support */
+:root {
+  --background: #030014;
+  --foreground: #e2e8ff;
+  --glass-background: rgba(15, 23, 42, 0.3);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.05);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --card: rgba(23, 25, 35, 0.6);
+  --card-foreground: #e2e8ff;
+  --card-hover: rgba(38, 43, 70, 0.8);
+  --card-glow: 0 0 15px rgba(101, 44, 255, 0.3);
+  --primary: #652cff;
+  --primary-foreground: #ffffff;
+  --primary-glow: 0 0 20px rgba(101, 44, 255, 0.6);
+  --secondary: #0ff4c6;
+  --secondary-foreground: #050505;
+  --secondary-glow: 0 0 20px rgba(15, 244, 198, 0.6);
+  --accent: #ff2cf3;
+  --accent-foreground: #ffffff;
+  --accent-glow: 0 0 20px rgba(255, 44, 243, 0.6);
+  --muted: rgba(30, 41, 59, 0.6);
+  --muted-foreground: #94a3b8;
+  --destructive: #ff3d5e;
+  --destructive-foreground: #ffffff;
+  --destructive-glow: 0 0 20px rgba(255, 61, 94, 0.6);
+  --success: #0ff4c6;
+  --success-foreground: #050505;
+  --success-glow: 0 0 20px rgba(15, 244, 198, 0.6);
+  --warning: #ffb01f;
+  --warning-foreground: #050505;
+  --warning-glow: 0 0 20px rgba(255, 176, 31, 0.6);
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #652cff;
+  --radius: 0.75rem;
+  --radius-sm: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+  --gradient-primary: linear-gradient(135deg, #652cff, #0ff4c6);
+  --gradient-secondary: linear-gradient(135deg, #0ff4c6, #ff2cf3);
+  --gradient-accent: linear-gradient(135deg, #ff2cf3, #ffb01f);
+  --gradient-dark: linear-gradient(135deg, #030014, #1a103f);
+  --holographic: linear-gradient(
+    135deg,
+    rgba(255, 44, 243, 0.5),
+    rgba(101, 44, 255, 0.5),
+    rgba(15, 244, 198, 0.5),
+    rgba(255, 176, 31, 0.5)
+  );
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.5);
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --font-family: "Space Grotesk", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  --button-foreground: #e2e8ff;
+}
+
+:root.light {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --glass-background: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(15, 23, 42, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+  --glass-shadow: 0 8px 32px rgba(15, 23, 42, 0.1);
+  --card: rgba(255, 255, 255, 0.8);
+  --card-foreground: #0f172a;
+  --card-hover: rgba(255, 255, 255, 0.95);
+  --card-glow: 0 0 15px rgba(99, 102, 241, 0.2);
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+  --primary-glow: 0 0 20px rgba(79, 70, 229, 0.3);
+  --secondary: #0d9488;
+  --secondary-foreground: #ffffff;
+  --secondary-glow: 0 0 20px rgba(13, 148, 136, 0.3);
+  --accent: #d946ef;
+  --accent-foreground: #ffffff;
+  --accent-glow: 0 0 20px rgba(217, 70, 239, 0.3);
+  --muted: rgba(241, 245, 249, 0.8);
+  --muted-foreground: #64748b;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --destructive-glow: 0 0 20px rgba(239, 68, 68, 0.3);
+  --success: #10b981;
+  --success-foreground: #ffffff;
+  --success-glow: 0 0 20px rgba(16, 185, 129, 0.3);
+  --warning: #f59e0b;
+  --warning-foreground: #ffffff;
+  --warning-glow: 0 0 20px rgba(245, 158, 11, 0.3);
+  --border: rgba(226, 232, 240, 0.8);
+  --input: rgba(226, 232, 240, 0.8);
+  --ring: #4f46e5;
+  --gradient-primary: linear-gradient(135deg, #4f46e5, #0d9488);
+  --gradient-secondary: linear-gradient(135deg, #0d9488, #d946ef);
+  --gradient-accent: linear-gradient(135deg, #d946ef, #f59e0b);
+  --gradient-light: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  --holographic: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.3),
+    rgba(13, 148, 136, 0.3),
+    rgba(217, 70, 239, 0.3),
+    rgba(245, 158, 11, 0.3)
+  );
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.25);
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --font-family: "Space Grotesk", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  --button-foreground: #0f172a;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--primary-glow);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--primary-glow);
+  }
+}
 
 .create-post-container {
   display: flex;
   min-height: 100vh;
-}
-
-.create-post-container.light {
-  background-color: var(--background, #f9fafb);
-  color: var(--foreground, #1f2937);
-}
-
-.create-post-container.dark {
-  background-color: var(--background, #111827);
-  color: var(--foreground, #f9fafb);
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-family);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .create-post-main {
@@ -31,20 +181,19 @@
 .create-post-page-title {
   font-size: 2.5rem;
   font-weight: 700;
-  background: var(
-    --gradient-primary,
-    linear-gradient(135deg, #4361ee, #7048e8)
-  );
+  background: var(--gradient-primary);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   margin: 0 0 0.5rem 0;
+  animation: fadeIn 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .create-post-page-subtitle {
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   margin: 0;
   font-size: 1.1rem;
+  animation: fadeIn 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Post type tabs */
@@ -61,13 +210,14 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  background: none;
-  color: var(--muted-foreground, #6b7280);
+  transition: all var(--transition-normal);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  backdrop-filter: blur(10px);
 }
 
 .create-post-type-tab svg {
@@ -76,31 +226,24 @@
 }
 
 .create-post-type-tab:hover {
-  background-color: var(--muted, #f3f4f6);
-  color: var(--foreground, #1f2937);
+  background-color: var(--muted);
+  box-shadow: var(--shadow-sm);
 }
 
 .create-post-type-tab.active {
-  background-color: var(--primary, #4361ee);
-  color: var(--primary-foreground, white);
-}
-
-.dark .create-post-type-tab:hover {
-  background-color: var(--muted, #374151);
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 0 15px var(--primary-glow);
 }
 
 /* Card styling */
 .create-post-card {
-  border-radius: 1rem;
-  background-color: var(--card, white);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg);
+  background-color: var(--card);
+  box-shadow: var(--shadow-md);
   padding: 2rem;
-  border: 1px solid var(--border, rgba(0, 0, 0, 0.05));
-}
-
-.dark .create-post-card {
-  background-color: var(--card, #1f2937);
-  border-color: var(--border, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
 }
 
 /* Form styling */
@@ -114,35 +257,30 @@
   gap: 0.5rem;
   margin-bottom: 0.75rem;
   font-weight: 500;
-  color: var(--foreground, #1f2937);
+  color: var(--foreground);
   font-size: 1rem;
 }
 
 .create-post-input-icon {
-  color: var(--primary, #4361ee);
+  color: var(--primary);
 }
 
 .create-post-form-control {
   width: 100%;
   padding: 0.875rem 1rem;
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   font-size: 1rem;
-  transition: all 0.2s ease;
-  background-color: var(--card, white);
-  color: var(--foreground, #1f2937);
-}
-
-.dark .create-post-form-control {
-  background-color: var(--card, #1f2937);
-  border-color: var(--border, #374151);
-  color: var(--foreground, #f9fafb);
+  transition: all var(--transition-normal);
+  background-color: var(--card);
+  color: var(--foreground);
+  backdrop-filter: blur(10px);
 }
 
 .create-post-form-control:focus {
   outline: none;
-  border-color: var(--primary, #4361ee);
-  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
 textarea.create-post-form-control {
@@ -165,7 +303,7 @@ textarea.create-post-form-control {
 .create-post-remove-option-btn {
   background: none;
   border: none;
-  color: var(--destructive, #ef4444);
+  color: var(--destructive);
   font-size: 1.25rem;
   cursor: pointer;
   padding: 0.25rem;
@@ -174,11 +312,11 @@ textarea.create-post-form-control {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
 }
 
 .create-post-remove-option-btn:hover {
-  background-color: var(--destructive-foreground, rgba(239, 68, 68, 0.1));
+  background-color: rgba(255, 61, 94, 0.1);
 }
 
 .create-post-add-option-btn {
@@ -186,20 +324,21 @@ textarea.create-post-form-control {
   align-items: center;
   gap: 0.5rem;
   background: none;
-  border: 1px dashed var(--border, #d1d5db);
-  color: var(--primary, #4361ee);
+  border: 1px dashed var(--border);
+  color: var(--primary);
   padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius);
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   width: 100%;
   justify-content: center;
   margin-top: 0.5rem;
 }
 
 .create-post-add-option-btn:hover {
-  background-color: var(--primary-foreground, rgba(67, 97, 238, 0.05));
+  background-color: var(--muted);
+  box-shadow: var(--shadow-sm);
 }
 
 .create-post-btn-icon {
@@ -221,26 +360,20 @@ textarea.create-post-form-control {
 .create-post-survey-question-input select {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   font-size: 1rem;
-  transition: all 0.2s ease;
-  background-color: var(--card, white);
-  color: var(--foreground, #1f2937);
-}
-
-.dark .create-post-survey-question-input input,
-.dark .create-post-survey-question-input select {
-  background-color: var(--card, #1f2937);
-  border-color: var(--border, #374151);
-  color: var(--foreground, #f9fafb);
+  transition: all var(--transition-normal);
+  background-color: var(--card);
+  color: var(--foreground);
+  backdrop-filter: blur(10px);
 }
 
 .create-post-survey-question-input input:focus,
 .create-post-survey-question-input select:focus {
   outline: none;
-  border-color: var(--primary, #4361ee);
-  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
 .create-post-survey-options-container {
@@ -254,7 +387,7 @@ textarea.create-post-form-control {
 .create-post-remove-question-btn {
   background: none;
   border: none;
-  color: var(--destructive, #ef4444);
+  color: var(--destructive);
   font-size: 1.25rem;
   cursor: pointer;
   padding: 0.25rem;
@@ -263,11 +396,11 @@ textarea.create-post-form-control {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
 }
 
 .create-post-remove-question-btn:hover {
-  background-color: var(--destructive-foreground, rgba(239, 68, 68, 0.1));
+  background-color: rgba(255, 61, 94, 0.1);
 }
 
 .create-post-add-question-btn {
@@ -275,20 +408,21 @@ textarea.create-post-form-control {
   align-items: center;
   gap: 0.5rem;
   background: none;
-  border: 1px dashed var(--border, #d1d5db);
-  color: var(--primary, #4361ee);
+  border: 1px dashed var(--border);
+  color: var(--primary);
   padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius);
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   width: 100%;
   justify-content: center;
   margin-top: 0.5rem;
 }
 
 .create-post-add-question-btn:hover {
-  background-color: var(--primary-foreground, rgba(67, 97, 238, 0.05));
+  background-color: var(--muted);
+  box-shadow: var(--shadow-sm);
 }
 
 /* File upload styling */
@@ -304,25 +438,19 @@ textarea.create-post-form-control {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: var(--muted, #f3f4f6);
-  color: var(--foreground, #4b5563);
+  background-color: var(--muted);
+  color: var(--foreground);
   padding: 0.75rem 1.25rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius);
   cursor: pointer;
   font-size: 0.875rem;
-  transition: all 0.2s ease;
-}
-
-.dark .create-post-file-upload-label {
-  background-color: var(--muted, #374151);
+  transition: all var(--transition-normal);
+  border: 1px solid var(--border);
 }
 
 .create-post-file-upload-label:hover {
-  background-color: var(--muted-foreground, #e5e7eb);
-}
-
-.dark .create-post-file-upload-label:hover {
-  background-color: var(--muted-foreground, #4b5563);
+  background-color: var(--card-hover);
+  box-shadow: var(--shadow-sm);
 }
 
 .create-post-upload-icon {
@@ -343,7 +471,7 @@ textarea.create-post-form-control {
 
 .create-post-file-help-text {
   font-size: 0.875rem;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
 }
 
 .create-post-file-list {
@@ -356,24 +484,21 @@ textarea.create-post-form-control {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background-color: var(--muted, #f3f4f6);
+  background-color: var(--muted);
   padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-}
-
-.dark .create-post-file-item {
-  background-color: var(--muted, #374151);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
 }
 
 .create-post-file-type-icon {
-  color: var(--primary, #4361ee);
+  color: var(--primary);
   width: 1.25rem;
   height: 1.25rem;
 }
 
 .create-post-file-name {
   font-size: 0.875rem;
-  color: var(--foreground, #4b5563);
+  color: var(--foreground);
   flex: 1;
   white-space: nowrap;
   overflow: hidden;
@@ -383,7 +508,7 @@ textarea.create-post-form-control {
 .create-post-remove-file-btn {
   background: none;
   border: none;
-  color: var(--destructive, #ef4444);
+  color: var(--destructive);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -391,11 +516,11 @@ textarea.create-post-form-control {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 50%;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
 }
 
 .create-post-remove-file-btn:hover {
-  background-color: var(--destructive-foreground, rgba(239, 68, 68, 0.1));
+  background-color: rgba(255, 61, 94, 0.1);
 }
 
 /* Form actions */
@@ -410,26 +535,30 @@ textarea.create-post-form-control {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: var(--primary, #4361ee);
-  color: var(--primary-foreground, white);
+  background-color: var(--primary);
+  color: var(--primary-foreground);
   border: none;
   padding: 0.875rem 1.5rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius);
   font-weight: 500;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .create-post-primary-button:hover {
-  background-color: var(--primary-hover, #3a56d4);
+  background-color: var(--primary);
+  box-shadow: 0 0 15px var(--primary-glow);
+  transform: translateY(-2px);
 }
 
 .create-post-primary-button:disabled {
-  background-color: var(--primary-disabled, #a5b4fc);
+  background-color: var(--muted);
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .create-post-primary-button.submitting {
@@ -443,70 +572,48 @@ textarea.create-post-form-control {
   height: 1rem;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  border-top-color: white;
+  border-top-color: var(--primary-foreground);
   animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .create-post-cancel-button {
-  background-color: var(--card, white);
-  color: var(--foreground, #4b5563);
-  border: 1px solid var(--border, #d1d5db);
+  background-color: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
   padding: 0.875rem 1.5rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius);
   font-weight: 500;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.dark .create-post-cancel-button {
-  background-color: var(--card, #1f2937);
-  border-color: var(--border, #374151);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
 }
 
 .create-post-cancel-button:hover {
-  background-color: var(--muted, #f3f4f6);
-}
-
-.dark .create-post-cancel-button:hover {
-  background-color: var(--muted, #374151);
+  background-color: var(--muted);
+  transform: translateY(-2px);
 }
 
 /* Error and success messages */
 .create-post-error-message,
 .create-post-success-message {
   padding: 1rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius);
   margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  border: 1px solid var(--border);
 }
 
 .create-post-error-message {
-  background-color: var(--destructive-foreground, #fee2e2);
-  color: var(--destructive, #b91c1c);
-}
-
-.dark .create-post-error-message {
-  background-color: rgba(239, 68, 68, 0.2);
-  color: #fca5a5;
+  background-color: rgba(255, 61, 94, 0.1);
+  color: var(--destructive);
 }
 
 .create-post-success-message {
-  background-color: var(--success-foreground, #d1fae5);
-  color: var(--success, #065f46);
-}
-
-.dark .create-post-success-message {
-  background-color: rgba(16, 185, 129, 0.2);
-  color: #6ee7b7;
+  background-color: rgba(15, 244, 198, 0.1);
+  color: var(--success);
 }
 
 .create-post-message-icon {
@@ -523,24 +630,19 @@ textarea.create-post-form-control {
 .react-datepicker__input-container input {
   width: 100%;
   padding: 0.875rem 1rem;
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   font-size: 1rem;
-  transition: all 0.2s ease;
-  background-color: var(--card, white);
-  color: var(--foreground, #1f2937);
-}
-
-.dark .react-datepicker__input-container input {
-  background-color: var(--card, #1f2937);
-  border-color: var(--border, #374151);
-  color: var(--foreground, #f9fafb);
+  transition: all var(--transition-normal);
+  background-color: var(--card);
+  color: var(--foreground);
+  backdrop-filter: blur(10px);
 }
 
 .react-datepicker__input-container input:focus {
   outline: none;
-  border-color: var(--primary, #4361ee);
-  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
 /* Responsive adjustments */

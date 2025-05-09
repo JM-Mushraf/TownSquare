@@ -18,8 +18,9 @@ import {
   Search,
   ClipboardList,
 } from "lucide-react"
-import SurveyCard from "./surveyCard"
+import SurveyCard from "./SurveyCard"
 import "./SurveysPage.css"
+import { useTheme } from "../../components/ThemeProvider"
 
 function SurveysPage() {
   const [activeTab, setActiveTab] = useState("active")
@@ -35,6 +36,7 @@ function SurveysPage() {
     participatedOnly: false,
   })
 
+  const { theme } = useTheme()
   const { token } = useSelector((state) => state.user)
 
   useEffect(() => {
@@ -205,7 +207,7 @@ function SurveysPage() {
 
       if (!response.ok) throw new Error("Failed to fetch results")
       const data = await response.json()
-      return data.results // Return the results to be used in the SurveyCard
+      return data.results
     } catch (error) {
       toast.error(error.message || "An error occurred while fetching results.")
       return null
@@ -253,7 +255,7 @@ function SurveysPage() {
   const filteredPosts = getFilteredPosts()
 
   return (
-    <div className="surveys-container">
+    <div className={`surveys-container ${theme}`}>
       <div className="surveys-header">
         <h1 className="surveys-title">
           Surveys & <span className="surveys-gradient-text">Polls</span>

@@ -2,9 +2,3 @@
   display: flex;
   min-height: 100vh;
 }
-
-.main-content {
-  flex: 1;
-  overflow: auto;
-  background-color: var(--background);
-}
