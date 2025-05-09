@@ -5,12 +5,13 @@ import { useTheme } from "../../components/ThemeProvider"
 import ThemeToggle from "../../components/ThemeToggle"
 import { useSelector } from "react-redux"
 import "./HomePage.css"
-import { toast } from "react-toastify"
+
 import "react-toastify/dist/ReactToastify.css"
 import { getTimeAgo,formatDate } from "./Helpers"
 import { HeroCarousel } from "./HeroCarousel"
 import { ImageCarousel } from "./ImageCarousel"
 import { PostCard } from "./PostCard/PostCard"
+import {toast} from 'react-hot-toast'
 // Helper function to format time ago
 
 // Image Carousel Component
@@ -46,7 +47,7 @@ function HomePage() {
         setLoading(true)
 
         // Fetch posts and other data
-        const response = await axios.get("http://localhost:3000/post/getFeed", {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/getFeed`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -79,7 +80,7 @@ function HomePage() {
             })
 
             const communityResponse = await axios.get(
-              `http://localhost:3000/user/chat/getCommunities?${queryParams.toString()}`,
+              `${import.meta.env.VITE_BACKEND_BASEURL}/user/chat/getCommunities?${queryParams.toString()}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
@@ -96,6 +97,11 @@ function HomePage() {
       } catch (error) {
         console.error("Error fetching data:", error)
         // Set default values on error
+        let code=error?.response?.status
+        if(code==401){
+          toast.error("Please login again to access this resource!")
+          navigate('/login')
+        }
         setPosts([])
         setTrendingPosts([])
         setUpcomingEvents([])
