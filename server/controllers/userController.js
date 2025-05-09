@@ -805,3 +805,36 @@ export const getBookmarks = AsyncHandler(async (req, res, next) => {
     next(new ErrorHandler(error.message || "Failed to fetch bookmarks", error.statusCode || 500));
   }
 });
+
+
+export const getUserActivityStats = AsyncHandler(async (req, res, next) => {
+  const userId = req.user?._id;
+  if (!userId) {
+    throw new ApiError(401, "Unauthorized: User ID not found");
+  }
+
+  // Get user details (excluding sensitive information)
+  const user = await User.findById(userId).select("-password -verificationCode");
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // Get post count for the user
+  const postCount = await Post.countDocuments({ createdBy: userId });
+
+  // Get comment count for the user
+  const commentCount = await Comment.countDocuments({ userId: userId });
+
+  // Create response object
+  const response = {
+    userDetails: user,
+    activityStats: {
+      postCount,
+      commentCount
+    }
+  };
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, response, "User activity stats fetched successfully"));
+});

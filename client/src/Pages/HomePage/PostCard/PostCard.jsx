@@ -56,7 +56,9 @@ export const PostCard = ({ post, navigate }) => {
     }
 
     try {
-      const endpoint = isBookmarked ? "http://localhost:3000/user/bookmark-del" : "http://localhost:3000/user/bookmark"
+      const endpoint = isBookmarked
+        ? `${import.meta.env.VITE_BACKEND_BASEURL}/user/bookmark-del`
+        : `${import.meta.env.VITE_BACKEND_BASEURL}/user/bookmark`;
 
       const response = await axios({
         method: isBookmarked ? "DELETE" : "POST",
@@ -86,18 +88,17 @@ export const PostCard = ({ post, navigate }) => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: post?.title || "Post",
-          url: `http://localhost:5173/post/${id}`,
-        })
-        toast.success("Shared successfully")
+          title: post?.title || "Check out this post",
+          url: `${import.meta.env.VITE_FRONTEND_BASEURL}/post/${id}`,
+        });
       } catch (err) {
         console.error("Share failed:", err)
       }
     } else {
       try {
-        const postUrl = `http://localhost:5173/post/${id}`
-        await navigator.clipboard.writeText(postUrl)
-        toast.success("Link copied to clipboard")
+        const postUrl = `${import.meta.env.VITE_FRONTEND_BASEURL}/post/${id}`;
+        await navigator.clipboard.writeText(postUrl);
+        toast.success("Link copied to clipboard!");
       } catch (err) {
         console.error("Copy failed: ", err)
         toast.error("Copy failed")
@@ -131,8 +132,8 @@ export const PostCard = ({ post, navigate }) => {
     try {
       const endpoint =
         userVote === "upvote"
-          ? `http://localhost:3000/post/remove/${post._id}`
-          : `http://localhost:3000/post/up/${post._id}`
+          ? `${import.meta.env.VITE_BACKEND_BASEURL}/post/remove/${post._id}`
+          : `${import.meta.env.VITE_BACKEND_BASEURL}/post/up/${post._id}`;
 
       const response = await axios.post(
         endpoint,
@@ -187,8 +188,8 @@ export const PostCard = ({ post, navigate }) => {
     try {
       const endpoint =
         userVote === "downvote"
-          ? `http://localhost:3000/post/remove/${post._id}`
-          : `http://localhost:3000/post/down/${post._id}`
+          ? `${import.meta.env.VITE_BACKEND_BASEURL}/post/remove/${post._id}`
+          : `${import.meta.env.VITE_BACKEND_BASEURL}/post/down/${post._id}`;
 
       const response = await axios.post(
         endpoint,
@@ -233,7 +234,7 @@ export const PostCard = ({ post, navigate }) => {
     if (!showComments) {
       setIsLoadingComments(true)
       try {
-        const response = await axios.get(`http://localhost:3000/post/${post._id}/comments`, {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${post._id}/comments`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -276,7 +277,7 @@ export const PostCard = ({ post, navigate }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/post/comment",
+        `${import.meta.env.VITE_BACKEND_BASEURL}/post/comment`,
         {
           postId: post._id,
           message: commentText,
@@ -292,8 +293,8 @@ export const PostCard = ({ post, navigate }) => {
         setCommentText("")
         setSyncAnimation(true)
         toast.success("Comment posted successfully")
-
-        const commentsResponse = await axios.get(`http://localhost:3000/post/${post._id}/comments`, {
+        setCommentText("");
+        const commentsResponse = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${post._id}/comments`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -807,7 +808,7 @@ export const PostCard = ({ post, navigate }) => {
         {renderPostHeader()}
         <h4 className="post-title">{post.title}</h4>
 
-        {renderAttachments()}
+        {renderAttachments()} 
 
         <div className="marketplace-details">
           {post.marketplace && (
@@ -1234,8 +1235,47 @@ export const PostCard = ({ post, navigate }) => {
           </div>
         )}
       </div>
-    )
-  }
+    );
+  };
+
+  const handlePollVote = async (optionId) => {
+    if (!token) {
+      alert("Please log in to vote");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_BASEURL}/post/vote`,
+        {
+          postId: post._id,
+          optionId: optionId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        const postResponse = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${post._id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (postResponse.data.success) {
+          window.location.reload();
+        }
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error voting on poll:", error);
+      alert(error.response?.data?.message || "Error voting on poll");
+    }
+  };
 
   return (
     <div

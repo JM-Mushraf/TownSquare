@@ -99,7 +99,7 @@ server.listen(PORT, () => {
 });
 process.on("uncaughtException", (err) => {
   console.log("!!! ERROR !!! ", err);
-  console.log("SHUTTING DOWN THE SERVER!!!");
+  console.log("SHUTTING DOWN THE SERVER!!!"); 
   process.exit(1);
 });
 

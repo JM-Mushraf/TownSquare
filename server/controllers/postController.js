@@ -241,63 +241,63 @@ export const getCountyPosts = async (req, res) => {
           downVotes: 1,
           important: 1,
           comments: { $size: "$comments" },
-
+      
           // Creator info
           "creator._id": 1,
           "creator.username": 1,
           "creator.email": 1,
           "creator.avatar": 1,
-
+      
           // Poll data
           poll: {
             $cond: [
               { $eq: ["$type", "poll"] },
               {
-                question: 1,
+                question: "$poll.question",
                 options: { $ifNull: ["$poll.options", []] },  // Ensure options are an array
-                deadline: 1,
-                status: 1,
+                deadline: "$poll.deadline",
+                status: "$poll.status",
               },
               "$$REMOVE",
             ],
           },
-
+      
           // Survey data
           survey: {
             $cond: [
               { $eq: ["$type", "survey"] },
               {
-                questions: 1,
-                deadline: 1,
-                status: 1,
+                questions: "$survey.questions",
+                deadline: "$survey.deadline",
+                status: "$survey.status",
               },
               "$$REMOVE",
             ],
           },
-
+      
           // Marketplace data
           marketplace: {
             $cond: [
               { $eq: ["$type", "marketplace"] },
               {
-                itemType: 1,
-                price: 1,
-                location: 1,
-                status: 1,
-                tags: 1,
+                itemType: "$marketplace.itemType",
+                price: "$marketplace.price",
+                location: "$marketplace.location",
+                status: "$marketplace.status",
+                tags: "$marketplace.tags",
               },
               "$$REMOVE",
             ],
           },
-
+      
           // Announcement data
           event: {
             $cond: [
               { $eq: ["$type", "announcement"] },
               {
-                date: 1,
-                location: 1,
-                time: 1,
+                date: "$event.date",
+                location: "$event.location",
+                time: "$event.time",
                 rsvps: { $size: "$rsvps" },
               },
               "$$REMOVE",

@@ -816,7 +816,135 @@ button {
   align-items: center;
   gap: 0.25rem;
 }
+.neo-delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
 
+.neo-delete-modal {
+  background-color: var(--neo-background);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.neo-delete-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  color: var(--neo-danger);
+}
+
+.neo-delete-modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.neo-delete-modal-content {
+  margin-bottom: 24px;
+  color: var(--neo-text-secondary);
+}
+
+.neo-delete-modal-content p {
+  margin: 8px 0;
+}
+
+.neo-delete-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.neo-button-danger {
+  background-color: var(--neo-danger);
+  color: white;
+}
+
+.neo-button-danger:hover {
+  background-color: var(--neo-danger-dark);
+}
+
+.neo-profile-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.neo-profile-delete-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: transparent;
+  border: 1px solid var(--neo-danger);
+  color: var(--neo-danger);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.neo-profile-delete-button:hover {
+  background-color: var(--neo-danger);
+  color: white;
+}
+
+
+
+.neo-danger-zone {
+  border: 1px solid var(--neo-danger);
+  background-color: rgba(var(--neo-danger-rgb), 0.05);
+}
+
+.neo-danger-zone .neo-settings-card-title {
+  color: var(--neo-danger);
+}
+
+.neo-settings-danger-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: rgba(var(--neo-danger-rgb), 0.05);
+}
+
+.neo-danger-content h4 {
+  margin: 0 0 4px 0;
+  color: var(--neo-danger);
+}
+
+.neo-danger-content p {
+  margin: 0;
+  color: var(--neo-text-secondary);
+  font-size: 14px;
+}
+
+.neo-danger-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: var(--neo-danger);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.neo-danger-button:hover {
+  background-color: var(--neo-danger-dark);
+}
 .neo-bookmark-view-button {
   display: flex;
   align-items: center;
@@ -836,6 +964,20 @@ button {
   background: var(--primary-light-hover);
 }
 
+.neo-button-danger{
+  padding: 10px;
+    border-radius: 10px;
+}
+.neo-delete-modal{
+  background: #ffffff;
+}
+
+.neo-button-danger:hover{
+  background-color: rgb(171, 171, 171);
+  color: black;
+  border: black;
+  transition: 0.2s;
+}
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .neo-bookmarks-grid {
