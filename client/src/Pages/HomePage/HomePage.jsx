@@ -7,22 +7,11 @@ import { useSelector } from "react-redux"
 import "./HomePage.css"
 
 import "react-toastify/dist/ReactToastify.css"
-import { getTimeAgo,formatDate } from "./Helpers"
+import { getTimeAgo, formatDate } from "./Helpers"
 import { HeroCarousel } from "./HeroCarousel"
-import { ImageCarousel } from "./ImageCarousel"
 import { PostCard } from "./PostCard/PostCard"
-import {toast} from 'react-hot-toast'
-// Helper function to format time ago
+import { toast } from "react-hot-toast"
 
-// Image Carousel Component
-
-
-// Hero Carousel Component
-
-// Post Card Component - Renders different layouts based on post type
-
-
-// Main HomePage Component
 function HomePage() {
   const [activeTab, setActiveTab] = useState("all")
   const [posts, setPosts] = useState([])
@@ -55,10 +44,9 @@ function HomePage() {
 
         if (response.data) {
           await setPosts(response.data.posts || [])
-
           await setTrendingPosts(response.data.trending || [])
-          await console.log(posts);
-          
+          await console.log(posts)
+
           setUpcomingEvents(response.data.upcomingEvents || [])
           setCounty(response.data.county || "")
 
@@ -97,10 +85,10 @@ function HomePage() {
       } catch (error) {
         console.error("Error fetching data:", error)
         // Set default values on error
-        let code=error?.response?.status
-        if(code==401){
+        const code = error?.response?.status
+        if (code == 401) {
           toast.error("Please login again to access this resource!")
-          navigate('/login')
+          navigate("/login")
         }
         setPosts([])
         setTrendingPosts([])
@@ -114,6 +102,7 @@ function HomePage() {
 
     fetchData()
   }, [token, userData])
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 50) {
@@ -480,7 +469,6 @@ function HomePage() {
               <main className="ts-main-feed">
                 <div className="ts-section-header">
                   <h2 className="ts-section-title">Community Feed</h2>
-                  
                 </div>
 
                 {filteredPosts.length === 0 ? (
@@ -727,9 +715,6 @@ function HomePage() {
                   </div>
                 </div>
 
-                {/* Newsletter Subscription */}
-
-                {/* Community Stats */}
                 {/* Community Stats */}
                 <div className="ts-stats-card">
                   <div className="ts-stats-header">
@@ -847,8 +832,6 @@ function HomePage() {
           </>
         )}
       </div>
-
-      {/* Footer */}
     </div>
   )
 }

@@ -585,8 +585,6 @@ export const submitVote = async (req, res) => {
 
       if (surveyQuestion.type === "multiple-choice") {
         // Log survey options and selected option ID
-        console.log("Survey Options:", surveyQuestion.options);
-        console.log("Selected Option ID:", option);
 
         // Check if options is an array of strings or objects
         if (typeof surveyQuestion.options[0] === "string") {

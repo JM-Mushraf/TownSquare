@@ -27,7 +27,6 @@ export const sendMail = async (ReciverMail) => {
              <p>Need help? Contact our support team.</p>
              <p><b>TownSquare Team</b></p>`,
     });
-    console.log("Verification code sent successfully:", verificationCode);
     return verificationCode;
   } catch (error) {
     console.error("Error sending email:", error);

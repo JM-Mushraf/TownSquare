@@ -19,6 +19,8 @@ import {
   ChevronRight,
   LogIn,
   LogOut,
+  Menu,
+  X,
 } from "./Icons"
 
 function Sidebar() {
@@ -64,8 +66,41 @@ function Sidebar() {
       }
     }
 
+    // Close sidebar on mobile when route changes
+    const handleRouteChange = () => {
+      if (isMobileOpen) {
+        setIsMobileOpen(false)
+      }
+    }
+
+    // Close sidebar on resize if screen becomes larger
+    const handleResize = () => {
+      if (window.innerWidth > 768 && isMobileOpen) {
+        setIsMobileOpen(false)
+      }
+    }
+
     document.addEventListener("click", handleClickOutside)
-    return () => document.removeEventListener("click", handleClickOutside)
+    window.addEventListener("resize", handleResize)
+
+    // Clean up event listeners
+    return () => {
+      document.removeEventListener("click", handleClickOutside)
+      window.removeEventListener("resize", handleResize)
+    }
+  }, [isMobileOpen, location.pathname])
+
+  // Prevent body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
+    }
+
+    return () => {
+      document.body.style.overflow = ""
+    }
   }, [isMobileOpen])
 
   // Redirect to login page if not logged in
@@ -110,26 +145,16 @@ function Sidebar() {
   return (
     <>
       {/* Mobile toggle button */}
-      <button className="sidebar-mobile-toggle" onClick={toggleMobileSidebar}>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
+      <button className="sidebar-mobile-toggle" onClick={toggleMobileSidebar} aria-label="Toggle sidebar menu">
+        <Menu className="sidebar-toggle-icon" />
       </button>
 
       {/* Mobile backdrop */}
-      <div className={`sidebar-backdrop ${isMobileOpen ? "active" : ""}`} onClick={() => setIsMobileOpen(false)}></div>
+      <div
+        className={`sidebar-backdrop ${isMobileOpen ? "active" : ""}`}
+        onClick={() => setIsMobileOpen(false)}
+        aria-hidden="true"
+      ></div>
 
       <div
         className={`sidebar ${isCollapsed ? "sidebar-collapsed" : ""} ${isMobileOpen ? "open" : ""}`}
@@ -160,10 +185,19 @@ function Sidebar() {
               Town<span className="logo-highlight">Square</span>
             </span>
           </Link>
+
+          {/* Mobile close button */}
+          <button className="sidebar-mobile-close" onClick={() => setIsMobileOpen(false)} aria-label="Close sidebar">
+            <X />
+          </button>
         </div>
 
         {/* Laptop/Desktop Toggle Button */}
-        <button className="sidebar-toggle" onClick={toggleSidebar}>
+        <button
+          className="sidebar-toggle"
+          onClick={toggleSidebar}
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
           {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
         </button>
 
@@ -176,9 +210,14 @@ function Sidebar() {
                 {section.items.map((item, itemIndex) => {
                   const isActive = location.pathname === item.href
                   return (
-                    <Link key={itemIndex} to={item.href} className={`sidebar-nav-item ${isActive ? "active" : ""}`}>
+                    <Link
+                      key={itemIndex}
+                      to={item.href}
+                      className={`sidebar-nav-item ${isActive ? "active" : ""}`}
+                      aria-current={isActive ? "page" : undefined}
+                    >
                       <div className="sidebar-nav-icon">{item.icon}</div>
-                      {!isCollapsed && (
+                      {(!isCollapsed || isMobileOpen) && (
                         <>
                           <span className="sidebar-nav-text">{item.label}</span>
                           {item.badge && <span className="sidebar-nav-badge">{item.badge}</span>}
@@ -195,7 +234,7 @@ function Sidebar() {
 
         {/* Sidebar footer */}
         <div className="sidebar-footer">
-          {!isCollapsed && (
+          {(!isCollapsed || isMobileOpen) && (
             <div className="theme-toggle-container">
               <ThemeToggle theme={theme} setTheme={toggleTheme} />
             </div>
@@ -204,11 +243,18 @@ function Sidebar() {
             className="sidebar-user"
             onClick={() => navigate("/profile")}
             style={{ cursor: "pointer" }}
+            role="button"
+            tabIndex={0}
+            aria-label="User profile"
           >
             {isAuthorized ? (
-              <img className="sidebar-user-avatar" src={userData?.avatar || "/placeholder.svg"} alt="User avatar" />
+              <img
+                className="sidebar-user-avatar"
+                src={userData?.avatar || "/placeholder.svg"}
+                alt={userData?.username || "User avatar"}
+              />
             ) : null}
-            {!isCollapsed && (
+            {(!isCollapsed || isMobileOpen) && (
               <div className="sidebar-user-info">
                 {isAuthorized && userData ? (
                   <>
@@ -220,18 +266,18 @@ function Sidebar() {
             )}
           </div>
           {isAuthorized ? (
-            <button className="sidebar-nav-item" onClick={handleLogout}>
+            <button className="sidebar-nav-item sidebar-logout" onClick={handleLogout} aria-label="Logout">
               <div className="sidebar-nav-icon">
                 <LogOut />
               </div>
-              {!isCollapsed && <span className="sidebar-nav-text">Logout</span>}
+              {(!isCollapsed || isMobileOpen) && <span className="sidebar-nav-text">Logout</span>}
             </button>
           ) : (
-            <Link to="/login" className="sidebar-nav-item">
+            <Link to="/login" className="sidebar-nav-item sidebar-login" aria-label="Login">
               <div className="sidebar-nav-icon">
                 <LogIn />
               </div>
-              {!isCollapsed && <span className="sidebar-nav-text">Login</span>}
+              {(!isCollapsed || isMobileOpen) && <span className="sidebar-nav-text">Login</span>}
             </Link>
           )}
         </div>

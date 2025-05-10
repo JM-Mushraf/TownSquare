@@ -9,9 +9,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'cnmsjkenfkljnsjklgnsdljkfjsdkcnmsa
 export const isAuthenticated = async (req, res, next) => {
   try {
     const { token } = req.cookies;
-    
-    // console.log("AUTH .JS ",token);
-
     if (!token) {
       return next(
         new ErrorHandler("You need to Login to Access this Resource", 401)
