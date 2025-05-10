@@ -20,7 +20,7 @@ import {
   Share2,
   MoreHorizontal,
 } from "lucide-react"
-import ImageCarousel from "./imageCarousel"
+import ImageCarousel from "./ImageCarousel"
 
 const SurveyCard = ({ post, onVote, onViewResults }) => {
   const [selectedOption, setSelectedOption] = useState(null)
@@ -197,7 +197,6 @@ const SurveyCard = ({ post, onVote, onViewResults }) => {
               <>
                 <h4 className="results-title">Poll Results</h4>
                 {results.poll.options.map((option, index) => {
-                  // Calculate color based on index for variety
                   const colorClasses = ["blue", "purple", "green", "orange", "red"]
                   const colorClass = colorClasses[index % colorClasses.length]
 
@@ -240,7 +239,6 @@ const SurveyCard = ({ post, onVote, onViewResults }) => {
                     {question.type === "multiple-choice" ? (
                       <>
                         {question.options.map((option, oIndex) => {
-                          // Calculate color based on index for variety
                           const colorClasses = ["blue", "purple", "green", "orange", "red"]
                           const colorClass = colorClasses[oIndex % colorClasses.length]
 
@@ -311,7 +309,6 @@ const SurveyCard = ({ post, onVote, onViewResults }) => {
             ) : null}
           </div>
         ) : status === "upcoming" ? (
-          // Keep the upcoming section as is
           <div className="survey-card-upcoming">
             <Clock className="upcoming-icon" />
             <div className="upcoming-content">
@@ -384,7 +381,7 @@ const SurveyCard = ({ post, onVote, onViewResults }) => {
                     className={`survey-card-star ${star <= rating ? "filled" : ""}`}
                     onClick={() => handleRatingChange(star)}
                   >
-                    {star <= rating ? <Star className="star-icon filled" /> : <Star className="star-icon" />}
+                    <Star className={`star-icon ${star <= rating ? "filled" : ""}`} />
                   </span>
                 ))}
                 <div className="rating-label">

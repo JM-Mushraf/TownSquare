@@ -1,31 +1,58 @@
-import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { getTimeAgo, formatDate } from "../Helpers";
-import { ImageCarousel } from "../ImageCarousel";
-import axios from "axios";
+"use client"
+
+import { useState, useEffect, useRef } from "react"
+import { useSelector } from "react-redux"
+import { getTimeAgo, formatDate } from "../Helpers"
+import { ImageCarousel } from "../ImageCarousel"
+import axios from "axios"
+import { toast } from "react-toastify"
+import "./PostCard.css"
 
 export const PostCard = ({ post, navigate }) => {
-  const { token, userData } = useSelector((state) => state.user);
-  const user = userData;
-  const [isHovered, setIsHovered] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(user?.bookmarks?.includes(post._id) || false);
-  const [comments, setComments] = useState([]);
-  const [showComments, setShowComments] = useState(false);
-  const [commentText, setCommentText] = useState("");
-  const [isLoadingComments, setIsLoadingComments] = useState(false);
-  const [userVote, setUserVote] = useState(null);
-  const [upVotes, setUpVotes] = useState(post.upVotes || 0);
-  const [downVotes, setDownVotes] = useState(post.downVotes || 0);
-  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const { token, userData } = useSelector((state) => state.user)
+  const user = userData
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [isBookmarked, setIsBookmarked] = useState(user?.bookmarks?.includes(post._id) || false)
+  const [comments, setComments] = useState([])
+  const [showComments, setShowComments] = useState(false)
+  const [commentText, setCommentText] = useState("")
+  const [isLoadingComments, setIsLoadingComments] = useState(false)
+  const [userVote, setUserVote] = useState(null)
+  const [upVotes, setUpVotes] = useState(post.upVotes || 0)
+  const [downVotes, setDownVotes] = useState(post.downVotes || 0)
+  const [placeholderIndex, setPlaceholderIndex] = useState(0)
+  const [selectedPollOption, setSelectedPollOption] = useState(null)
+  const [syncAnimation, setSyncAnimation] = useState(false)
+  const [visualState, setVisualState] = useState(0)
+  const [showContactForm, setShowContactForm] = useState(false)
+  const [contactMessage, setContactMessage] = useState("")
+  const cardRef = useRef(null)
+
+  // Visual state effect - changes visual state randomly
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisualState(Math.floor(Math.random() * 4))
+    }, 8000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Sync animation effect
+  useEffect(() => {
+    if (syncAnimation) {
+      const timeout = setTimeout(() => {
+        setSyncAnimation(false)
+      }, 3000)
+      return () => clearTimeout(timeout)
+    }
+  }, [syncAnimation])
 
   // Function to toggle bookmark
   const toggleBookmark = async (e) => {
-    e.stopPropagation();
+    e.stopPropagation()
 
     if (!token) {
-      alert("Please log in to bookmark posts");
-      return;
+      toast.error("Authentication required to save")
+      return
     }
 
     try {
@@ -41,26 +68,22 @@ export const PostCard = ({ post, navigate }) => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-      });
+      })
 
       if (response.data.success) {
-        setIsBookmarked(!isBookmarked);
-        
+        setIsBookmarked(!isBookmarked)
+        setSyncAnimation(true)
+        toast.success(isBookmarked ? "Bookmark removed" : "Bookmark added")
       }
     } catch (error) {
-      console.error("Error toggling bookmark:", error.response?.data?.message || error.message);
+      toast.error("Error: " + (error.response?.data?.message || error.message))
     }
-  };
+  }
 
-  const placeholders = [
-    "Transmit your thought...",
-    "Share your neural imprint...",
-    "Broadcast your perspective...",
-    "Quantum-link your ideas...",
-  ];
+  const placeholders = ["Share your thoughts...", "Add a comment...", "Join the discussion...", "Post your message..."]
 
   const handleShareClick = (id) => async (e) => {
-    e.stopPropagation();
+    e.stopPropagation()
 
     if (navigator.share) {
       try {
@@ -69,7 +92,7 @@ export const PostCard = ({ post, navigate }) => {
           url: `${import.meta.env.VITE_FRONTEND_BASEURL}/post/${id}`,
         });
       } catch (err) {
-        console.error("Error sharing:", err);
+        console.error("Share failed:", err)
       }
     } else {
       try {
@@ -77,33 +100,33 @@ export const PostCard = ({ post, navigate }) => {
         await navigator.clipboard.writeText(postUrl);
         toast.success("Link copied to clipboard!");
       } catch (err) {
-        console.error("Failed to copy: ", err);
-        toast.error("Failed to copy link");
+        console.error("Copy failed: ", err)
+        toast.error("Copy failed")
       }
     }
-  };
+  }
 
   useEffect(() => {
-    const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}");
+    const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}")
     if (votedPosts[post._id]) {
-      setUserVote(votedPosts[post._id]);
+      setUserVote(votedPosts[post._id])
     }
-  }, [post._id]);
+  }, [post._id])
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setPlaceholderIndex((prevIndex) => (prevIndex + 1) % placeholders.length);
-    }, 3000);
+      setPlaceholderIndex((prevIndex) => (prevIndex + 1) % placeholders.length)
+    }, 3000)
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => clearInterval(interval)
+  }, [])
 
   const handleUpvote = async (e) => {
-    e.stopPropagation();
+    e.stopPropagation()
 
     if (!token) {
-      alert("Please log in to vote");
-      return;
+      toast.error("Authentication required to vote")
+      return
     }
 
     try {
@@ -119,46 +142,47 @@ export const PostCard = ({ post, navigate }) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
-      );
+        },
+      )
 
       if (response.data.success) {
-        setUpVotes(response.data.upVotes);
-        setDownVotes(response.data.downVotes);
+        setUpVotes(response.data.upVotes)
+        setDownVotes(response.data.downVotes)
 
-        const newVote = userVote === "upvote" ? null : "upvote";
-        setUserVote(newVote);
+        const newVote = userVote === "upvote" ? null : "upvote"
+        setUserVote(newVote)
 
-        const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}");
-        votedPosts[post._id] = newVote;
-        localStorage.setItem("votedPosts", JSON.stringify(votedPosts));
+        const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}")
+        votedPosts[post._id] = newVote
+        localStorage.setItem("votedPosts", JSON.stringify(votedPosts))
 
         if (newVote === "upvote") {
-          setIsAnimating(true);
-          setTimeout(() => setIsAnimating(false), 1000);
+          setIsAnimating(true)
+          setTimeout(() => setIsAnimating(false), 1000)
+          setSyncAnimation(true)
 
-          const soundEnabled = localStorage.getItem("soundEnabled") === "true";
+          const soundEnabled = localStorage.getItem("soundEnabled") === "true"
           if (soundEnabled) {
-            const upvoteSound = new Audio("/upvote-sound.mp3");
-            upvoteSound.volume = 0.3;
-            upvoteSound.play().catch((e) => console.log("Audio play failed:", e));
+            const upvoteSound = new Audio("/upvote-sound.mp3")
+            upvoteSound.volume = 0.3
+            upvoteSound.play().catch((e) => console.log("Audio failed:", e))
           }
         }
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message)
       }
     } catch (error) {
-      console.error("Error upvoting post:", error);
-      alert(error.response?.data?.message || "Error upvoting post");
+      console.error("Vote failed:", error)
+      toast.error(error.response?.data?.message || "Vote failed")
     }
-  };
+  }
 
   const handleDownvote = async (e) => {
-    e.stopPropagation();
+    e.stopPropagation()
 
     if (!token) {
-      alert("Please log in to vote");
-      return;
+      toast.error("Authentication required to vote")
+      return
     }
 
     try {
@@ -174,78 +198,81 @@ export const PostCard = ({ post, navigate }) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
-      );
+        },
+      )
 
       if (response.data.success) {
-        setUpVotes(response.data.upVotes);
-        setDownVotes(response.data.downVotes);
+        setUpVotes(response.data.upVotes)
+        setDownVotes(response.data.downVotes)
 
-        const newVote = userVote === "downvote" ? null : "downvote";
-        setUserVote(newVote);
+        const newVote = userVote === "downvote" ? null : "downvote"
+        setUserVote(newVote)
 
-        const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}");
-        votedPosts[post._id] = newVote;
-        localStorage.setItem("votedPosts", JSON.stringify(votedPosts));
+        const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}")
+        votedPosts[post._id] = newVote
+        localStorage.setItem("votedPosts", JSON.stringify(votedPosts))
 
         if (newVote === "downvote") {
-          const soundEnabled = localStorage.getItem("soundEnabled") === "true";
+          setSyncAnimation(true)
+          const soundEnabled = localStorage.getItem("soundEnabled") === "true"
           if (soundEnabled) {
-            const downvoteSound = new Audio("/downvote-sound.mp3");
-            downvoteSound.volume = 0.3;
-            downvoteSound.play().catch((e) => console.log("Audio play failed:", e));
+            const downvoteSound = new Audio("/downvote-sound.mp3")
+            downvoteSound.volume = 0.3
+            downvoteSound.play().catch((e) => console.log("Audio failed:", e))
           }
         }
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message)
       }
     } catch (error) {
-      console.error("Error downvoting post:", error);
-      alert(error.response?.data?.message || "Error downvoting post");
+      console.error("Vote failed:", error)
+      toast.error(error.response?.data?.message || "Vote failed")
     }
-  };
+  }
 
   const fetchComments = async () => {
     if (!showComments) {
-      setIsLoadingComments(true);
+      setIsLoadingComments(true)
       try {
         const response = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${post._id}/comments`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        });
+        })
 
         if (response.data.success) {
-          setComments(response.data.comments);
+          setComments(response.data.comments)
         }
       } catch (error) {
-        console.error("Error fetching comments:", error);
+        console.error("Failed to fetch comments:", error)
+        toast.error("Failed to retrieve comments")
       } finally {
-        setIsLoadingComments(false);
+        setIsLoadingComments(false)
       }
     }
-    setShowComments(!showComments);
+    setShowComments(!showComments)
 
     if (!showComments) {
-      const soundEnabled = localStorage.getItem("soundEnabled") === "true";
+      setSyncAnimation(true)
+      const soundEnabled = localStorage.getItem("soundEnabled") === "true"
       if (soundEnabled) {
-        const commentSound = new Audio("/comment-sound.mp3");
-        commentSound.volume = 0.3;
-        commentSound.play().catch((e) => console.log("Audio play failed:", e));
+        const commentSound = new Audio("/comment-sound.mp3")
+        commentSound.volume = 0.3
+        commentSound.play().catch((e) => console.log("Audio failed:", e))
       }
     }
-  };
+  }
 
   const addComment = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!token) {
-      alert("Please log in to comment");
-      return;
+      toast.error("Authentication required to comment")
+      return
     }
 
     if (!commentText.trim()) {
-      return;
+      return
     }
 
     try {
@@ -259,68 +286,99 @@ export const PostCard = ({ post, navigate }) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
-      );
+        },
+      )
 
       if (response.data.success) {
+        setCommentText("")
+        setSyncAnimation(true)
+        toast.success("Comment posted successfully")
         setCommentText("");
         const commentsResponse = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${post._id}/comments`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        });
+        })
 
         if (commentsResponse.data.success) {
-          setComments(commentsResponse.data.comments);
+          setComments(commentsResponse.data.comments)
         }
       }
     } catch (error) {
-      console.error("Error adding comment:", error);
-      alert(error.response?.data?.message || "Error adding comment");
+      console.error("Failed to post comment:", error)
+      toast.error(error.response?.data?.message || "Failed to post comment")
     }
-  };
+  }
 
   const renderPostHeader = () => {
     return (
-      <div className="neo-post-header">
-        <div className="neo-avatar-container">
+      <div className="post-header">
+        <div className="avatar-container">
           {post.createdBy?.avatar ? (
-            <img
-              src={post.createdBy.avatar || "/placeholder.svg"}
-              alt={post.createdBy.username}
-              className="neo-avatar"
-            />
+            <img src={post.createdBy.avatar || "/placeholder.svg"} alt={post.createdBy.username} className="avatar" />
           ) : (
-            <div className="neo-avatar">
+            <div className="avatar">
               <span>{post.createdBy?.username?.charAt(0) || "U"}</span>
             </div>
           )}
-          <div className="neo-avatar-glow"></div>
-        </div>
-        <div className="neo-author-info">
-          <div className="neo-author-name-container">
-            <h3 className="neo-author-name">{post.createdBy?.username || "Anonymous"}</h3>
-            <span className={`neo-post-type neo-post-type-${post.type}`}>{post.type}</span>
+          <div className="avatar-glow"></div>
+          <div className="avatar-ring"></div>
+          <div className="avatar-particles">
+            <span className="avatar-particle"></span>
+            <span className="avatar-particle"></span>
           </div>
-          <div className="neo-post-meta">
-            <span className="neo-timestamp">{getTimeAgo(post.createdAt)}</span>
-            <span className="neo-post-sent-from">Post sent from Mars</span>
+        </div>
+        <div className="author-info">
+          <div className="author-name-container">
+            <h3 className="author-name">{post.createdBy?.username || "Anonymous"}</h3>
+            <span className={`post-type post-type-${post.type}`}>
+              <span className="post-type-text">{post.type}</span>
+            </span>
+            <div className="verification-badge" title="Verified">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 22 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+                <path
+                  d="M8 12L10.5 14.5L16 9"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
+          <div className="post-meta">
+            <span className="timestamp">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="meta-icon">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M12 6V12L16 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              {getTimeAgo(post.createdAt)}
+            </span>
+            <div className="sync-indicator" title="Sync Status">
+              <div className={`sync-dot ${syncAnimation ? "active" : ""}`}></div>
+              <span>Sync</span>
+            </div>
           </div>
         </div>
       </div>
-    );
-  };
+    )
+  }
 
   const renderPostActions = () => {
     return (
-      <div className="neo-post-actions">
-        <div className="neo-action-buttons">
+      <div className="post-actions">
+        <div className="action-buttons">
           <button
-            className={`neo-action-button ${userVote === "upvote" ? "neo-active" : ""}`}
+            className={`action-button neo-action ${userVote === "upvote" ? "active" : ""}`}
             id={`upvote-${post._id}`}
             onClick={handleUpvote}
           >
-            <span className={`neo-action-icon neo-upvote ${isAnimating ? "neo-pulse" : ""}`}>
+            <span className={`action-icon upvote ${isAnimating ? "pulse" : ""}`}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -333,14 +391,17 @@ export const PostCard = ({ post, navigate }) => {
                 <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
               </svg>
             </span>
-            <span className="neo-action-count">{upVotes}</span>
+            <div className="action-data">
+              <span className="action-count">{upVotes}</span>
+            </div>
+            <div className="action-particles"></div>
           </button>
           <button
-            className={`neo-action-button ${userVote === "downvote" ? "neo-active" : ""}`}
+            className={`action-button neo-action ${userVote === "downvote" ? "active" : ""}`}
             id={`downvote-${post._id}`}
             onClick={handleDownvote}
           >
-            <span className="neo-action-icon neo-downvote">
+            <span className="action-icon downvote">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -353,17 +414,19 @@ export const PostCard = ({ post, navigate }) => {
                 <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
               </svg>
             </span>
-            <span className="neo-action-count">{downVotes}</span>
+            <div className="action-data">
+              <span className="action-count">{downVotes}</span>
+            </div>
           </button>
           <button
-            className={`neo-action-button ${showComments ? "neo-active" : ""}`}
+            className={`action-button neo-action ${showComments ? "active" : ""}`}
             id={`comment-${post._id}`}
             onClick={(e) => {
-              e.stopPropagation();
-              fetchComments();
+              e.stopPropagation()
+              fetchComments()
             }}
           >
-            <span className="neo-action-icon neo-comment">
+            <span className="action-icon comment">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -376,14 +439,16 @@ export const PostCard = ({ post, navigate }) => {
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
               </svg>
             </span>
-            <span className="neo-action-count">{post.commentCount || comments.length || 0}</span>
+            <div className="action-data">
+              <span className="action-count">{post.commentCount || comments.length || 0}</span>
+            </div>
           </button>
           <button
-            className={`neo-action-button ${isBookmarked ? "neo-active" : ""}`}
+            className={`action-button neo-action ${isBookmarked ? "active" : ""}`}
             id={`bookmark-${post._id}`}
             onClick={toggleBookmark}
           >
-            <span className="neo-action-icon neo-bookmark">
+            <span className="action-icon bookmark">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -396,14 +461,11 @@ export const PostCard = ({ post, navigate }) => {
                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
               </svg>
             </span>
+            <div className="action-data"></div>
           </button>
-          <div className="neo-action-spacer"></div>
-          <button
-            className="neo-action-button"
-            id={`share-${post._id}`}
-            onClick={handleShareClick(post._id)}
-          >
-            <span className="neo-action-icon neo-share">
+          <div className="action-spacer"></div>
+          <button className="action-button neo-action" id={`share-${post._id}`} onClick={handleShareClick(post._id)}>
+            <span className="action-icon share">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -420,42 +482,41 @@ export const PostCard = ({ post, navigate }) => {
                 <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
               </svg>
             </span>
+            <div className="action-data"></div>
           </button>
         </div>
       </div>
-    );
-  };
+    )
+  }
 
   const renderAttachments = () => {
     if (post.attachments && post.attachments.length > 0) {
       return (
-        <div className="neo-post-images">
-          <ImageCarousel
-            images={post.attachments.filter((attachment) => attachment.fileType?.startsWith("image/"))}
-          />
+        <div className="post-images">
+          <ImageCarousel images={post.attachments.filter((attachment) => attachment.fileType?.startsWith("image/"))} />
         </div>
-      );
+      )
     }
-    return null;
-  };
+    return null
+  }
 
   const renderPostContent = () => {
-    let content;
+    let content
     switch (post.type) {
       case "issue":
-        content = renderIssuePost();
-        break;
+        content = renderIssuePost()
+        break
       case "poll":
-        content = renderPollPost();
-        break;
+        content = renderPollPost()
+        break
       case "marketplace":
-        content = renderMarketplacePost();
-        break;
+        content = renderMarketplacePost()
+        break
       case "announcements":
-        content = renderAnnouncementPost();
-        break;
+        content = renderAnnouncementPost()
+        break
       default:
-        content = renderGeneralPost();
+        content = renderGeneralPost()
     }
 
     return (
@@ -463,23 +524,23 @@ export const PostCard = ({ post, navigate }) => {
         {content}
         {renderCommentSection()}
       </>
-    );
-  };
+    )
+  }
 
   const renderIssuePost = () => {
     return (
-      <div className="neo-post-content neo-issue-post">
+      <div className="post-content">
         {renderPostHeader()}
-        <div className="neo-issue-container">
-          <div className="neo-issue-status">
-            <span className="neo-issue-badge">Issue</span>
-            <span className="neo-issue-priority">High Priority</span>
+        <div className="issue-container">
+          <div className="issue-status">
+            <span className="issue-badge">Issue</span>
+            <span className="issue-priority">High Priority</span>
           </div>
-          <h4 className="neo-post-title">{post.title}</h4>
-          <p className="neo-post-text">{post.description}</p>
+          <h4 className="post-title">{post.title}</h4>
+          <p className="post-text">{post.description}</p>
           {renderAttachments()}
-          <div className="neo-issue-details">
-            <div className="neo-issue-detail">
+          <div className="issue-details">
+            <div className="issue-detail">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -490,14 +551,14 @@ export const PostCard = ({ post, navigate }) => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="neo-issue-icon"
+                className="issue-icon"
               >
                 <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
                 <path d="M12 6v6l4 2"></path>
               </svg>
               <span>Status: Open</span>
             </div>
-            <div className="neo-issue-detail">
+            <div className="issue-detail">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -508,7 +569,7 @@ export const PostCard = ({ post, navigate }) => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="neo-issue-icon"
+                className="issue-icon"
               >
                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
@@ -519,85 +580,142 @@ export const PostCard = ({ post, navigate }) => {
         </div>
         {renderPostActions()}
       </div>
-    );
-  };
+    )
+  }
 
   const renderPollPost = () => {
-    const [selectedPollOption, setSelectedPollOption] = useState(null);
-    const isPollActive = post.poll?.status !== "closed";
-    const hasVoted = selectedPollOption !== null || post.poll?.options?.some((opt) => opt.voters?.includes(user?._id));
+    const isPollActive = post.poll?.status !== "closed"
+    const hasVoted = selectedPollOption !== null || post.poll?.options?.some((opt) => opt.voters?.includes(user?._id))
+
+    const handlePollVote = async (optionId) => {
+      if (!token) {
+        toast.error("Authentication required to vote")
+        return
+      }
+
+      try {
+        const response = await axios.post(
+          "http://localhost:3000/post/vote",
+          {
+            postId: post._id,
+            optionId: optionId,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        )
+
+        if (response.data.success) {
+          setSelectedPollOption(optionId)
+          setSyncAnimation(true)
+          toast.success("Vote registered")
+
+          const postResponse = await axios.get(`http://localhost:3000/post/${post._id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+
+          if (postResponse.data.success) {
+            window.location.reload()
+          }
+        } else {
+          toast.error(response.data.message)
+        }
+      } catch (error) {
+        console.error("Vote failed:", error)
+        toast.error(error.response?.data?.message || "Vote failed")
+      }
+    }
 
     return (
-      <div className="neo-post-content neo-poll-post">
+      <div className="post-content">
         {renderPostHeader()}
-        <h4 className="neo-post-title">{post.title}</h4>
-        <p className="neo-post-text">{post.description}</p>
+        <h4 className="post-title">{post.title}</h4>
+        <p className="post-text">{post.description}</p>
         {renderAttachments()}
 
         {post.poll && (
-          <div className="neo-poll-details">
-            <div className="neo-poll-status">
+          <div className="poll-details">
+            <div className="poll-status">
               {isPollActive ? (
-                <span className="neo-poll-badge neo-poll-badge-active">Active Poll</span>
+                <span className="poll-badge active">
+                  <span className="badge-pulse"></span>
+                  Active Poll
+                </span>
               ) : (
-                <span className="neo-poll-badge neo-poll-badge-closed">Closed</span>
+                <span className="poll-badge closed">Closed</span>
               )}
               {post.poll.endDate && (
-                <span className="neo-poll-time-remaining">
+                <span className="poll-time-remaining">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="poll-icon">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M12 6V12L16 14" stroke="currentColor" strokeWidth="1.5" strokeacronym="round" />
+                  </svg>
                   {isPollActive ? `Ends ${formatDate(post.poll.endDate)}` : `Ended ${formatDate(post.poll.endDate)}`}
                 </span>
               )}
             </div>
 
-            <h5 className="neo-poll-question">{post.poll.question}</h5>
+            <h5 className="poll-question">{post.poll.question}</h5>
 
-            <div className="neo-poll-options">
+            <div className="poll-options">
               {post.poll.options?.map((option, index) => {
-                const totalVotes = post.poll.options?.reduce((sum, opt) => sum + (opt.votes || 0), 0);
-                const percentage = totalVotes > 0 ? Math.round((option.votes / totalVotes) * 100) : 0;
-                const isSelected = selectedPollOption === option._id || option.voters?.includes(user?._id);
+                const totalVotes = post.poll.options?.reduce((sum, opt) => sum + (opt.votes || 0), 0)
+                const percentage = totalVotes > 0 ? Math.round((option.votes / totalVotes) * 100) : 0
+                const isSelected = selectedPollOption === option._id || option.voters?.includes(user?._id)
 
                 return (
                   <div
                     key={`poll-option-${post._id}-${index}`}
-                    className={`neo-poll-option ${isSelected ? "selected" : ""}`}
+                    className={`poll-option ${isSelected ? "selected" : ""}`}
                   >
-                    <div className="neo-poll-option-header">
+                    <div className="poll-option-header">
                       <span>{option.text}</span>
                       {(hasVoted || !isPollActive) && (
-                        <span>
+                        <span className="poll-votes">
                           {option.votes || 0} votes ({percentage}%)
                         </span>
                       )}
                     </div>
 
                     {(hasVoted || !isPollActive) && (
-                      <div className="neo-poll-option-bar">
+                      <div className="poll-option-bar">
                         <div
-                          className={`neo-poll-option-progress neo-poll-color-${index % 4}`}
+                          className={`poll-option-progress poll-color-${index % 4}`}
                           style={{ width: `${percentage}%` }}
-                        ></div>
+                        >
+                          <div className="progress-particles"></div>
+                        </div>
                       </div>
                     )}
 
                     {isPollActive && !hasVoted && (
                       <button
-                        className="neo-poll-vote-button"
+                        className="poll-vote-button"
                         onClick={(e) => {
-                          e.stopPropagation();
-                          handlePollVote(option._id);
+                          e.stopPropagation()
+                          handlePollVote(option._id)
                         }}
                       >
+                        <span className="vote-icon">
+                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                            <path d="M12 5V19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                          </svg>
+                        </span>
                         Vote
                       </button>
                     )}
                   </div>
-                );
+                )
               })}
             </div>
 
-            <div className="neo-poll-meta">
-              <div className="neo-poll-votes">
+            <div className="poll-meta">
+              <div className="poll-votes">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -608,13 +726,13 @@ export const PostCard = ({ post, navigate }) => {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="neo-poll-icon"
+                  className="poll-icon"
                 >
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                 </svg>
                 <span>{post.poll.options?.reduce((sum, opt) => sum + (opt.votes || 0), 0) || 0} total votes</span>
               </div>
-              <div className="neo-poll-time-left">
+              <div className="poll-time-left">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -625,7 +743,7 @@ export const PostCard = ({ post, navigate }) => {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="neo-poll-icon"
+                  className="poll-icon"
                 >
                   <circle cx="12" cy="12" r="10"></circle>
                   <polyline points="12 6 12 12 16 14"></polyline>
@@ -637,38 +755,65 @@ export const PostCard = ({ post, navigate }) => {
         )}
         {renderPostActions()}
       </div>
-    );
-  };
+    )
+  }
 
   const renderMarketplacePost = () => {
-    const [showContactForm, setShowContactForm] = useState(false);
-    const [contactMessage, setContactMessage] = useState("");
-
     const handleContactSeller = (e) => {
-      e.stopPropagation();
-      setShowContactForm(!showContactForm);
-    };
+      e.stopPropagation()
+      setShowContactForm(!showContactForm)
+    }
 
-    const handleSendMessage = (e) => {
-      e.stopPropagation();
-      if (contactMessage.trim()) {
-        alert(`Message sent to seller: ${contactMessage}`);
-        setContactMessage("");
-        setShowContactForm(false);
+    const handleSendMessage = async (e) => {
+      e.stopPropagation()
+      
+      if (!token) {
+        toast.error("Authentication required to send message")
+        return
       }
-    };
+
+      if (!contactMessage.trim()) {
+        toast.error("Please enter a message")
+        return
+      }
+
+      try {
+        const response = await axios.post(
+          `http://localhost:3000/post/marketplacePosts/${post._id}/message`,
+          { message: contactMessage },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }
+        )
+
+        if (response.data.success) {
+          toast.success("Completed")
+          setContactMessage("")
+          setShowContactForm(false)
+          setSyncAnimation(true)
+        } else {
+          toast.error(response.data.message || "Failed to send message")
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Error sending message")
+      }
+    }
 
     return (
-      <div className="neo-post-content neo-marketplace-post">
+      <div className="post-content">
         {renderPostHeader()}
-        <h4 className="neo-post-title">{post.title}</h4>
+        <h4 className="post-title">{post.title}</h4>
 
         {renderAttachments()} 
 
-        <div className="neo-marketplace-details">
+        <div className="marketplace-details">
           {post.marketplace && (
             <>
-              <div className="neo-marketplace-price">
+              <div className="marketplace-price">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -679,22 +824,22 @@ export const PostCard = ({ post, navigate }) => {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="neo-price-icon"
+                  className="price-icon"
                 >
                   <line x1="12" y1="1" x2="12" y2="23"></line>
                   <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                 </svg>
-                <span>${post.marketplace.price}</span>
-                <span className="neo-marketplace-badge">{post.marketplace.itemType || "Sale"}</span>
+                <span className="price-value">${post.marketplace.price}</span>
+                <span className="marketplace-badge">{post.marketplace.itemType || "Sale"}</span>
                 {post.marketplace.condition && (
-                  <span className="neo-marketplace-condition">{post.marketplace.condition}</span>
+                  <span className="marketplace-condition">{post.marketplace.condition}</span>
                 )}
               </div>
 
-              <p className="neo-post-text">{post.description}</p>
+              <p className="post-text">{post.description}</p>
 
               {post.marketplace.location && (
-                <div className="neo-marketplace-location">
+                <div className="marketplace-location">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -705,7 +850,7 @@ export const PostCard = ({ post, navigate }) => {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="neo-location-icon"
+                    className="location-icon"
                   >
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                     <circle cx="12" cy="10" r="3"></circle>
@@ -715,16 +860,16 @@ export const PostCard = ({ post, navigate }) => {
               )}
 
               {post.marketplace.tags && post.marketplace.tags.length > 0 && (
-                <div className="neo-marketplace-tags">
+                <div className="marketplace-tags">
                   {post.marketplace.tags.map((tag, index) => (
-                    <span key={`tag-${index}`} className="neo-marketplace-tag">
+                    <span key={`tag-${index}`} className="marketplace-tag">
                       {tag}
                     </span>
                   ))}
                 </div>
               )}
 
-              <button className="neo-marketplace-contact-button" onClick={handleContactSeller}>
+              <button className="marketplace-contact-button" onClick={handleContactSeller}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -735,7 +880,7 @@ export const PostCard = ({ post, navigate }) => {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="neo-contact-icon"
+                  className="contact-icon"
                 >
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
@@ -743,20 +888,39 @@ export const PostCard = ({ post, navigate }) => {
               </button>
 
               {showContactForm && (
-                <div className="neo-marketplace-contact-form" onClick={(e) => e.stopPropagation()}>
+                <div className="marketplace-contact-form" onClick={(e) => e.stopPropagation()}>
                   <textarea
-                    className="neo-marketplace-message"
-                    placeholder="Write your message to the seller..."
+                    className="marketplace-message"
+                    placeholder="Compose message..."
                     value={contactMessage}
                     onChange={(e) => setContactMessage(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
                     rows={4}
                   ></textarea>
-                  <div className="neo-marketplace-form-actions">
-                    <button className="neo-marketplace-cancel-button" onClick={handleContactSeller}>
+                  <div className="marketplace-form-actions">
+                    <button className="marketplace-cancel-button" onClick={handleContactSeller}>
                       Cancel
                     </button>
-                    <button className="neo-marketplace-send-button" onClick={handleSendMessage}>
-                      Send Message
+                    <button className="marketplace-send-button" onClick={handleSendMessage}>
+                      <span className="send-icon">
+                        <svg viewBox="0 0 24  Regards,24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path
+                            d="M22 2L11 13"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M22 2L15 22L11 13L2 9L22 2Z"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                      Send
                     </button>
                   </div>
                 </div>
@@ -766,18 +930,18 @@ export const PostCard = ({ post, navigate }) => {
         </div>
         {renderPostActions()}
       </div>
-    );
-  };
+    )
+  }
 
   const renderAnnouncementPost = () => {
     return (
-      <div className="neo-post-content neo-announcement-post">
+      <div className="post-content">
         {renderPostHeader()}
-        <div className="neo-announcement-container">
-          <div className="neo-announcement-header">
-            <h4 className="neo-post-title">{post.title}</h4>
+        <div className="announcement-container">
+          <div className="announcement-header">
+            <h4 className="post-title">{post.title}</h4>
             {post.important && (
-              <span className="neo-announcement-badge">
+              <span className="announcement-badge">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -788,7 +952,7 @@ export const PostCard = ({ post, navigate }) => {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="neo-announcement-icon"
+                  className="announcement-icon"
                 >
                   <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                   <line x1="12" y1="9" x2="12" y2="13"></line>
@@ -799,21 +963,21 @@ export const PostCard = ({ post, navigate }) => {
             )}
           </div>
 
-          <p className="neo-post-text">{post.description}</p>
+          <p className="post-text">{post.description}</p>
           {renderAttachments()}
 
           {post.event && (
-            <div className="neo-announcement-event">
-              <div className="neo-event-date-badge">
-                <div className="neo-event-date-month">
+            <div className="announcement-event">
+              <div className="event-date-badge">
+                <div className="event-date-month">
                   {new Date(post.event.date).toLocaleString("default", {
                     month: "short",
                   })}
                 </div>
-                <div className="neo-event-date-day">{new Date(post.event.date).getDate()}</div>
+                <div className="event-date-day">{new Date(post.event.date).getDate()}</div>
               </div>
-              <div className="neo-event-info">
-                <div className="neo-event-info-item">
+              <div className="event-info">
+                <div className="event-info-item">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -824,7 +988,7 @@ export const PostCard = ({ post, navigate }) => {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="neo-event-icon"
+                    className="event-icon"
                   >
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -834,7 +998,7 @@ export const PostCard = ({ post, navigate }) => {
                   <span>{post.event.formattedDate}</span>
                 </div>
                 {post.event.time && (
-                  <div className="neo-event-info-item">
+                  <div className="event-info-item">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -845,7 +1009,7 @@ export const PostCard = ({ post, navigate }) => {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="neo-event-icon"
+                      className="event-icon"
                     >
                       <circle cx="12" cy="12" r="10"></circle>
                       <polyline points="12 6 12 12 16 14"></polyline>
@@ -854,7 +1018,7 @@ export const PostCard = ({ post, navigate }) => {
                   </div>
                 )}
                 {post.event.location && (
-                  <div className="neo-event-info-item">
+                  <div className="event-info-item">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -865,7 +1029,7 @@ export const PostCard = ({ post, navigate }) => {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="neo-event-icon"
+                      className="event-icon"
                     >
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                       <circle cx="12" cy="10" r="3"></circle>
@@ -873,7 +1037,7 @@ export const PostCard = ({ post, navigate }) => {
                     <span>{post.event.location}</span>
                   </div>
                 )}
-                <div className="neo-event-rsvp">
+                <div className="event-rsvp">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -884,7 +1048,7 @@ export const PostCard = ({ post, navigate }) => {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="neo-event-icon"
+                    className="event-icon"
                   >
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 00-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
@@ -894,8 +1058,8 @@ export const PostCard = ({ post, navigate }) => {
                   <span>{post.event.rsvpCount || 0} people attending</span>
                 </div>
               </div>
-              <div className="neo-event-rsvp-actions">
-                <button className="neo-event-rsvp-button neo-event-rsvp-yes">
+              <div className="event-rsvp-actions">
+                <button className="event-rsvp-button event-rsvp-yes">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -906,17 +1070,15 @@ export const PostCard = ({ post, navigate }) => {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="neo-rsvp-icon"
+                    className="rsvp-icon"
                   >
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                     <polyline points="22 4 12 14.01 9 11.01"></polyline>
                   </svg>
                   Going
                 </button>
-                <button className="neo
-
--event-rsvp-button neo-event-rsvp-maybe">Maybe</button>
-                <button className="neo-event-rsvp-button neo-event-rsvp-no">
+                <button className="event-rsvp-button event-rsvp-maybe">Maybe</button>
+                <button className="event-rsvp-button event-rsvp-no">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -927,7 +1089,7 @@ export const PostCard = ({ post, navigate }) => {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="neo-rsvp-icon"
+                    className="rsvp-icon"
                   >
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -940,44 +1102,44 @@ export const PostCard = ({ post, navigate }) => {
         </div>
         {renderPostActions()}
       </div>
-    );
-  };
+    )
+  }
 
   const renderGeneralPost = () => {
     return (
-      <div className="neo-post-content">
+      <div className="post-content">
         {renderPostHeader()}
-        <h4 className="neo-post-title">{post.title}</h4>
-        <p className="neo-post-text">{post.description}</p>
+        <h4 className="post-title">{post.title}</h4>
+        <p className="post-text">{post.description}</p>
         {renderAttachments()}
         {renderPostActions()}
       </div>
-    );
-  };
+    )
+  }
 
   const renderCommentSection = () => {
-    if (!showComments) return null;
+    if (!showComments) return null
 
     return (
-      <div className="neo-comments-section" onClick={(e) => e.stopPropagation()}>
-        <div className="neo-comments-header">
-          <h4 className="neo-comments-title">Neural Transmissions</h4>
-          <span className="neo-comments-count">{comments.length}</span>
+      <div className="comments-section" onClick={(e) => e.stopPropagation()}>
+        <div className="comments-header">
+          <h4 className="comments-title">Comments</h4>
+          <span className="comments-count">{comments.length}</span>
         </div>
 
-        <form className="neo-comment-form" onSubmit={addComment}>
-          <div className="neo-comment-input-container">
+        <form className="comment-form" onSubmit={addComment}>
+          <div className="comment-input-container">
             <input
               type="text"
-              className="neo-comment-input"
+              className="comment-input"
               placeholder={placeholders[placeholderIndex]}
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
             />
-            <div className="neo-input-glow"></div>
+            <div className="input-glow"></div>
           </div>
-          <button type="submit" className="neo-comment-submit" disabled={!commentText.trim()}>
-            <span className="neo-submit-icon">
+          <button type="submit" className="comment-submit" disabled={!commentText.trim()}>
+            <span className="submit-icon">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -995,42 +1157,46 @@ export const PostCard = ({ post, navigate }) => {
         </form>
 
         {isLoadingComments ? (
-          <div className="neo-comments-loading">
-            <div className="neo-loading-spinner"></div>
-            <p>Loading neural transmissions...</p>
+          <div className="comments-loading">
+            <div className="loading-spinner"></div>
+            <p>Loading comments...</p>
           </div>
         ) : comments.length === 0 ? (
-          <div className="neo-comments-empty">
-            <p>No neural transmissions yet. Be the first to comment!</p>
+          <div className="comments-empty">
+            <p>No comments yet. Be the first to comment!</p>
           </div>
         ) : (
-          <div className="neo-comments-list">
+          <div className="comments-list">
             {comments.map((comment) => (
-              <div key={comment._id} className="neo-comment">
-                <div className="neo-comment-avatar-container">
+              <div key={comment._id} className="comment">
+                <div className="comment-avatar-container">
                   {comment.userId?.avatar ? (
                     <img
                       src={comment.userId.avatar || "/placeholder.svg"}
                       alt={comment.userId.username}
-                      className="neo-comment-avatar"
+                      className="comment-avatar"
                     />
                   ) : (
-                    <div className="neo-comment-avatar">
+                    <div className="comment-avatar">
                       <span>{comment.userId?.username?.charAt(0) || "U"}</span>
                     </div>
                   )}
+                  <div className="comment-avatar-glow"></div>
                 </div>
-                <div className="neo-comment-content">
-                  <div className="neo-comment-header">
-                    <div className="neo-comment-author-container">
-                      <h5 className="neo-comment-author">{comment.userId?.username || "Anonymous"}</h5>
+                <div className="comment-content">
+                  <div className="comment-header">
+                    <div className="comment-author-container">
+                      <h5 className="comment-author">{comment.userId?.username || "Anonymous"}</h5>
+                      <div className="connection-level" title="Connection Level">
+                        <span className="connection-level-indicator">L4</span>
+                      </div>
                     </div>
-                    <span className="neo-comment-timestamp">{getTimeAgo(comment.createdAt)}</span>
+                    <span className="comment-timestamp">{getTimeAgo(comment.createdAt)}</span>
                   </div>
-                  <p className="neo-comment-text">{comment.message}</p>
-                  <div className="neo-comment-actions">
-                    <button className="neo-comment-action">
-                      <span className="neo-comment-action-icon neo-upvote">
+                  <p className="comment-text">{comment.message}</p>
+                  <div className="comment-actions">
+                    <button className="comment-action">
+                      <span className="comment-action-icon upvote">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
@@ -1045,8 +1211,8 @@ export const PostCard = ({ post, navigate }) => {
                       </span>
                       <span>Like</span>
                     </button>
-                    <button className="neo-comment-action">
-                      <span className="neo-comment-action-icon neo-reply">
+                    <button className="comment-action">
+                      <span className="comment-action-icon reply">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
@@ -1113,15 +1279,28 @@ export const PostCard = ({ post, navigate }) => {
 
   return (
     <div
-      className={`neo-post-card neo-post-card-${post.type} ${isHovered ? "neo-hovered" : ""}`}
+      ref={cardRef}
+      className={`post-card post-card-${post.type} state-${visualState} futuristic-card`}
       onClick={() => {
-        navigate(`/post/${post._id}`);
+        navigate(`/post/${post._id}`)
       }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       id={`post-${post._id}`}
     >
-      {renderPostContent()}
+      <div className="card-background"></div>
+      <div className="card-glow"></div>
+      <div className="card-content">{renderPostContent()}</div>
+      <div className="card-particles">
+        <span className="particle particle-1"></span>
+        <span className="particle particle-2"></span>
+        <span className="particle particle-3"></span>
+        <span className="particle particle-4"></span>
+      </div>
+      <div className="card-holographic-edge"></div>
+      <div className="card-circuit-lines">
+        <span className="circuit-line line-1"></span>
+        <span className="circuit-line line-2"></span>
+        <span className="circuit-line line-3"></span>
+      </div>
     </div>
-  );
-};
+  )
+}

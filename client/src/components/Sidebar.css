@@ -1,94 +1,47 @@
-/* Sidebar.css */
-
 /* Base theme variables */
 :root {
-  /* Base colors - Futuristic dark theme */
   --background: #030014;
   --foreground: #e2e8ff;
-  
-  /* Glassmorphism */
   --glass-background: rgba(15, 23, 42, 0.3);
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-highlight: rgba(255, 255, 255, 0.05);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-
-  /* Card and UI elements */
   --card: rgba(23, 25, 35, 0.6);
   --card-foreground: #e2e8ff;
   --card-hover: rgba(38, 43, 70, 0.8);
   --card-glow: 0 0 15px rgba(101, 44, 255, 0.3);
-
-  /* Primary brand color - Neon purple */
   --primary: #652cff;
   --primary-foreground: #ffffff;
   --primary-glow: 0 0 20px rgba(101, 44, 255, 0.6);
-
-  /* Secondary color - Cyan */
   --secondary: #0ff4c6;
   --secondary-foreground: #050505;
   --secondary-glow: 0 0 20px rgba(15, 244, 198, 0.6);
-
-  /* Accent color - Neon pink */
   --accent: #ff2cf3;
   --accent-foreground: #ffffff;
   --accent-glow: 0 0 20px rgba(255, 44, 243, 0.6);
-
-  /* Muted elements */
   --muted: rgba(30, 41, 59, 0.6);
   --muted-foreground: #94a3b8;
-
-  /* Destructive elements */
   --destructive: #ff3d5e;
   --destructive-foreground: #ffffff;
   --destructive-glow: 0 0 20px rgba(255, 61, 94, 0.6);
-
-  /* Success elements */
   --success: #0ff4c6;
   --success-foreground: #050505;
   --success-glow: 0 0 20px rgba(15, 244, 198, 0.6);
-
-  /* Warning elements */
   --warning: #ffb01f;
   --warning-foreground: #050505;
   --warning-glow: 0 0 20px rgba(255, 176, 31, 0.6);
-
-  /* UI elements */
   --border: rgba(255, 255, 255, 0.1);
   --input: rgba(255, 255, 255, 0.1);
   --ring: #652cff;
-
-  /* Light theme variables */
-  --sidebar-background-light: #F5F5F5; /* Soft off-white for modern look */
-  --sidebar-foreground-light: #1F2A44; /* Dark slate for text */
-  --sidebar-border-light: #E5E7EB; /* Light gray border */
-  --muted-light: rgba(100, 116, 139, 0.6); /* Muted gray */
-  --muted-foreground-light: #6B7280; /* Mid-gray for secondary text */
-  --background-light: #FFFFFF; /* Pure white for main content */
-  --border-light: #D1D5DB; /* Slightly darker gray for borders */
-
-  /* Dark theme variables */
-  --sidebar-background-dark: #030014; /* Matches base --background */
-  --sidebar-foreground-dark: #e2e8ff; /* Matches base --foreground */
-  --sidebar-border-dark: rgba(255, 255, 255, 0.1); /* Matches base --border */
-  --muted-dark: rgba(30, 41, 59, 0.6); /* Matches base --muted */
-  --muted-foreground-dark: #94a3b8; /* Matches base --muted-foreground */
-  --background-dark: #030014; /* Matches base --background */
-  --border-dark: rgba(255, 255, 255, 0.1); /* Matches base --border */
-
-  /* Radius */
+  --backdrop: rgba(0, 0, 0, 0.5);
   --radius: 0.75rem;
   --radius-sm: 0.5rem;
   --radius-lg: 1rem;
   --radius-xl: 1.5rem;
   --radius-full: 9999px;
-
-  /* Gradients */
   --gradient-primary: linear-gradient(135deg, #652cff, #0ff4c6);
   --gradient-secondary: linear-gradient(135deg, #0ff4c6, #ff2cf3);
   --gradient-accent: linear-gradient(135deg, #ff2cf3, #ffb01f);
   --gradient-dark: linear-gradient(135deg, #030014, #1a103f);
-
-  /* Holographic effect */
   --holographic: linear-gradient(
     135deg,
     rgba(255, 44, 243, 0.5),
@@ -96,42 +49,85 @@
     rgba(15, 244, 198, 0.5),
     rgba(255, 176, 31, 0.5)
   );
-
-  /* Other variables */
   --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
   --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.5);
-
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0, 0, 0.2, 1);
   --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-
   --font-family: "Space Grotesk", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
     sans-serif;
 }
 
-/* Default light theme */
-.sidebar {
-  --sidebar-background: var(--sidebar-background-light);
-  --sidebar-foreground: var(--sidebar-foreground-light);
-  --sidebar-border: var(--sidebar-border-light);
-  --muted: var(--muted-light);
-  --muted-foreground: var(--muted-foreground-light);
-  --background: var(--background-light);
-  --border: var(--border-light);
+/* Light theme */
+.light {
+  --background: #f8fafd;
+  --foreground: #0a0c16;
+  --glass-background: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-highlight: rgba(0, 0, 0, 0.05);
+  --card: rgba(255, 255, 255, 0.9);
+  --card-foreground: #0a0c16;
+  --card-hover: rgba(241, 245, 250, 0.8);
+  --primary: #2563eb;
+  --primary-foreground: #f8fafd;
+  --secondary: #7c3aed;
+  --secondary-foreground: #f8fafd;
+  --accent: #14b8a6;
+  --accent-foreground: #f8fafd;
+  --muted: rgba(241, 245, 250, 0.6);
+  --muted-foreground: #64748b;
+  --border: rgba(0, 0, 0, 0.1);
 }
 
-/* Apply dark theme variables when data-theme="dark" is set */
-.sidebar[data-theme="dark"] {
-  --sidebar-background: var(--sidebar-background-dark);
-  --sidebar-foreground: var(--sidebar-foreground-dark);
-  --sidebar-border: var(--sidebar-border-dark);
-  --muted: var(--muted-dark);
-  --muted-foreground: var(--muted-foreground-dark);
-  --background: var(--background-dark);
-  --border: var(--border-dark);
+/* Dark theme */
+.dark {
+  --background: #030014;
+  --foreground: #e2e8ff;
+  --glass-background: rgba(15, 23, 42, 0.3);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.05);
+  --card: rgba(23, 25, 35, 0.6);
+  --card-foreground: #e2e8ff;
+  --card-hover: rgba(38, 43, 70, 0.8);
+  --primary: #652cff;
+  --primary-foreground: #ffffff;
+  --secondary: #0ff4c6;
+  --secondary-foreground: #050505;
+  --accent: #ff2cf3;
+  --accent-foreground: #ffffff;
+  --muted: rgba(30, 41, 59, 0.6);
+  --muted-foreground: #94a3b8;
+  --border: rgba(255, 255, 255, 0.1);
+}
+
+/* Force theme application */
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Global styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-family);
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
 a {
@@ -158,12 +154,12 @@ button {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(37, 99, 235, 0.5);
+  background: var(--primary);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(37, 99, 235, 0.7);
+  background: var(--primary);
 }
 
 /* Animations */
@@ -182,10 +178,10 @@ button {
 @keyframes pulse-glow {
   0%,
   100% {
-    box-shadow: 0 0 10px 2px rgba(37, 99, 235, 0.3);
+    box-shadow: var(--primary-glow);
   }
   50% {
-    box-shadow: 0 0 20px 5px rgba(37, 99, 235, 0.5);
+    box-shadow: var(--primary-glow);
   }
 }
 
@@ -254,10 +250,10 @@ button {
   flex-direction: column;
   height: 100vh;
   width: 260px;
-  border-right: 1px solid var(--sidebar-border);
-  color: var(--sidebar-foreground);
-  background-color: var(--sidebar-background);
-  transition: width 0.3s ease, transform 0.3s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  border-right: 1px solid var(--border);
+  color: var(--foreground);
+  background-color: var(--glass-background);
+  transition: width var(--transition-normal), transform var(--transition-normal), background-color var(--transition-normal), color var(--transition-normal), border-color var(--transition-normal);
   overflow: hidden;
   z-index: 10;
   flex-shrink: 0;
@@ -272,8 +268,8 @@ button {
   align-items: center;
   height: 64px;
   padding: 0 1rem;
-  border-bottom: 1px solid var(--sidebar-border);
-  transition: border-color 0.3s ease;
+  border-bottom: 1px solid var(--border);
+  transition: border-color var(--transition-normal);
 }
 
 .sidebar-logo {
@@ -290,9 +286,9 @@ button {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: white;
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+  background: var(--gradient-primary);
+  color: var(--primary-foreground);
+  box-shadow: var(--primary-glow);
   flex-shrink: 0;
 }
 
@@ -301,7 +297,7 @@ button {
   font-weight: bold;
   white-space: nowrap;
   overflow: hidden;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
 }
 
 .logo-highlight {
@@ -330,8 +326,8 @@ button {
   color: var(--muted-foreground);
   cursor: pointer;
   z-index: 20;
-  transition: color 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: color var(--transition-fast), background-color var(--transition-normal), border-color var(--transition-normal);
+  box-shadow: var(--shadow-sm);
 }
 
 .sidebar-toggle:hover {
@@ -362,11 +358,11 @@ button {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--sidebar-foreground);
+  color: var(--foreground);
   opacity: 0.7;
   margin-bottom: 0.5rem;
   padding-left: 0.5rem;
-  transition: opacity 0.3s ease, color 0.3s ease;
+  transition: opacity var(--transition-normal), color var(--transition-normal);
 }
 
 .sidebar-collapsed .sidebar-section-title {
@@ -389,9 +385,9 @@ button {
   gap: 0.75rem;
   padding: 0.625rem 0.75rem;
   border-radius: 0.5rem;
-  color: var(--sidebar-foreground);
+  color: var(--foreground);
   font-weight: 500;
-  transition: all 0.2s ease, background-color 0.3s ease, color 0.3s ease;
+  transition: all var(--transition-fast), background-color var(--transition-normal), color var(--transition-normal);
   position: relative;
   overflow: hidden;
 }
@@ -402,15 +398,11 @@ button {
 }
 
 .sidebar-nav-item:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.sidebar[data-theme="dark"] .sidebar-nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--card-hover);
 }
 
 .sidebar-nav-item.active {
-  background-color: rgba(59, 130, 246, 0.1);
+  background-color: var(--glass-background);
   color: var(--primary);
 }
 
@@ -421,28 +413,24 @@ button {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background-color: rgba(0, 0, 0, 0.05);
-  color: var(--sidebar-foreground);
-  transition: all 0.2s ease, background-color 0.3s ease, color 0.3s ease;
+  background-color: var(--glass-background);
+  color: var(--foreground);
+  transition: all var(--transition-fast), background-color var(--transition-normal), color var(--transition-normal);
   flex-shrink: 0;
-}
-
-.sidebar[data-theme="dark"] .sidebar-nav-icon {
-  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .sidebar-nav-item:hover .sidebar-nav-icon,
 .sidebar-nav-item.active .sidebar-nav-icon {
   background-color: var(--primary);
-  color: white;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+  color: var(--primary-foreground);
+  box-shadow: var(--primary-glow);
 }
 
 .sidebar-nav-text {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: opacity 0.3s ease, transform 0.3s ease, color 0.3s ease;
+  transition: opacity var(--transition-normal), transform var(--transition-normal), color var(--transition-normal);
 }
 
 .sidebar-collapsed .sidebar-nav-text {
@@ -459,12 +447,12 @@ button {
   height: 20px;
   padding: 0 6px;
   border-radius: 10px;
-  background-color: rgba(59, 130, 246, 0.2);
+  background-color: var(--glass-background);
   color: var(--primary);
   font-size: 0.75rem;
   font-weight: 600;
   margin-left: auto;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
 }
 
 .sidebar-collapsed .sidebar-nav-badge {
@@ -498,24 +486,22 @@ button {
 @keyframes pulse {
   0% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    box-shadow: var(--destructive-glow);
   }
-
   70% {
     transform: scale(1);
-    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    box-shadow: var(--destructive-glow);
   }
-
   100% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    box-shadow: var(--destructive-glow);
   }
 }
 
 .sidebar-footer {
   padding: 1rem;
-  border-top: 1px solid var(--sidebar-border);
-  transition: border-color 0.3s ease;
+  border-top: 1px solid var(--border);
+  transition: border-color var(--transition-normal);
 }
 
 .theme-toggle-container {
@@ -528,16 +514,12 @@ button {
   gap: 0.75rem;
   padding: 0.5rem;
   border-radius: 0.5rem;
-  transition: background-color 0.2s ease;
+  transition: background-color var(--transition-fast);
   cursor: pointer;
 }
 
 .sidebar-user:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.sidebar[data-theme="dark"] .sidebar-user:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--card-hover);
 }
 
 .sidebar-user-avatar {
@@ -550,16 +532,16 @@ button {
   justify-content: center;
   font-weight: 600;
   color: var(--primary);
-  border: 2px solid rgba(59, 130, 246, 0.2);
+  border: 2px solid var(--glass-border);
   flex-shrink: 0;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  transition: background-color var(--transition-normal), border-color var(--transition-normal);
 }
 
 .sidebar-user-info {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
 }
 
 .sidebar-collapsed .sidebar-user-info {
@@ -573,7 +555,7 @@ button {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: color 0.3s ease;
+  transition: color var(--transition-normal);
 }
 
 .sidebar-user-role {
@@ -582,7 +564,7 @@ button {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: color 0.3s ease;
+  transition: color var(--transition-normal);
 }
 
 @media (max-width: 768px) {
@@ -591,8 +573,8 @@ button {
     left: 0;
     top: 0;
     transform: translateX(-100%);
-    transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    transition: transform var(--transition-normal), background-color var(--transition-normal), color var(--transition-normal);
+    box-shadow: var(--shadow-lg);
   }
 
   .sidebar.open {
@@ -612,14 +594,14 @@ button {
     border-radius: 50%;
     background-color: var(--background);
     border: 1px solid var(--border);
-    color: var(--sidebar-foreground);
+    color: var(--foreground);
     position: fixed;
     left: 1rem;
     top: 1rem;
     z-index: 30;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    transition: background-color var(--transition-normal), color var(--transition-normal), border-color var(--transition-normal);
   }
 
   .sidebar-backdrop {
@@ -628,11 +610,11 @@ button {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--backdrop);
     z-index: 5;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s ease;
+    transition: opacity var(--transition-normal);
   }
 
   .sidebar-backdrop.active {
@@ -659,13 +641,9 @@ button {
   background-color: transparent;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
 .sidebar-footer button.sidebar-nav-item:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.sidebar[data-theme="dark"] .sidebar-footer button.sidebar-nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--card-hover);
 }

@@ -183,7 +183,6 @@ function CreatePost() {
     const newQuestions = [...formData.survey.questions];
     newQuestions[index][field] = value;
     
-    // If changing to multiple-choice and options are empty, initialize with two options
     if (field === "type" && value === "multiple-choice" && (!newQuestions[index].options || newQuestions[index].options.length === 0)) {
       newQuestions[index].options = ["", ""];
     }
@@ -320,14 +319,12 @@ function CreatePost() {
     try {
       validateForm();
 
-      // Prepare data for submission
       const postData = new FormData();
       postData.append("title", formData.title);
       postData.append("description", formData.description);
       postData.append("type", formData.type);
       postData.append("important", formData.important);
 
-      // Include type-specific data
       if (formData.type === "poll") {
         postData.append("poll", JSON.stringify({
           question: formData.poll.question,
@@ -353,7 +350,6 @@ function CreatePost() {
         }));
       }
 
-      // Append files if any
       if (files.length > 0) {
         files.forEach((file) => {
           postData.append("attachments", file);
@@ -364,8 +360,7 @@ function CreatePost() {
         throw new Error("User is not authenticated");
       }
 
-      // API call to create post
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_BASEURL}/post/create`, postData, {
+      const response = await axios.post("http://localhost:3000/post/create", postData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
@@ -374,7 +369,6 @@ function CreatePost() {
 
       setSuccess("Post created successfully!");
 
-      // Reset form after successful submission
       setFormData({
         title: "",
         description: "",
@@ -552,7 +546,7 @@ function CreatePost() {
             <form onSubmit={handleSubmit}>
               <motion.div className="create-post-form-group" variants={fadeIn}>
                 <label htmlFor="title">
-                  <HiOutlinePencilAlt className="create-post-input-icon" />{" "}
+                  <HiOutlinePencilAlt className="create-post-input-icon" /> 
                   Title
                 </label>
                 <input
@@ -569,7 +563,7 @@ function CreatePost() {
 
               <motion.div className="create-post-form-group" variants={fadeIn}>
                 <label htmlFor="description">
-                  <HiOutlineDocumentText className="create-post-input-icon" />{" "}
+                  <HiOutlineDocumentText className="create-post-input-icon" /> 
                   Description
                 </label>
                 <textarea
@@ -595,7 +589,7 @@ function CreatePost() {
                     transition={{ duration: 0.4, ease: [0.6, 0.05, 0.01, 0.9] }}
                   >
                     <label>
-                      <HiOutlineClipboardList className="create-post-input-icon" />{" "}
+                      <HiOutlineClipboardList className="create-post-input-icon" /> 
                       Poll Question
                     </label>
                     <input
@@ -653,7 +647,7 @@ function CreatePost() {
                       Add Option
                     </motion.button>
                     <label>
-                      <HiOutlineCalendar className="create-post-input-icon" />{" "}
+                      <HiOutlineCalendar className="create-post-input-icon" /> 
                       Poll Deadline
                     </label>
                     <DatePicker
@@ -683,7 +677,7 @@ function CreatePost() {
                     transition={{ duration: 0.4, ease: [0.6, 0.05, 0.01, 0.9] }}
                   >
                     <label>
-                      <HiOutlineDocumentText className="create-post-input-icon" />{" "}
+                      <HiOutlineDocumentText className="create-post-input-icon" /> 
                       Survey Questions
                     </label>
                     {formData.survey.questions.map((question, index) => (
@@ -808,7 +802,7 @@ function CreatePost() {
                       Add Question
                     </motion.button>
                     <label>
-                      <HiOutlineCalendar className="create-post-input-icon" />{" "}
+                      <HiOutlineCalendar className="create-post-input-icon" /> 
                       Survey Deadline
                     </label>
                     <DatePicker
@@ -839,7 +833,7 @@ function CreatePost() {
                   >
                     <div className="create-post-form-group">
                       <label htmlFor="important">
-                        <HiOutlineExclamationCircle className="create-post-input-icon" />{" "}
+                        <HiOutlineExclamationCircle className="create-post-input-icon" /> 
                         Important Announcement
                       </label>
                       <input
@@ -862,7 +856,6 @@ function CreatePost() {
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.4, ease: [0.6, 0.05, 0.01, 0.9] }}
                   >
-                    {/* Item Type */}
                     <div className="create-post-form-group">
                       <label htmlFor="itemType">
                         <HiOutlineTag className="create-post-input-icon" /> Item
@@ -882,11 +875,10 @@ function CreatePost() {
                       </select>
                     </div>
 
-                    {/* Price (only for 'sale' items) */}
                     {formData.marketplace.itemType === "sale" && (
                       <div className="create-post-form-group">
                         <label htmlFor="price">
-                          <HiOutlineCurrencyDollar className="create-post-input-icon" />{" "}
+                          <HiOutlineCurrencyDollar className="create-post-input-icon" /> 
                           Price
                         </label>
                         <input
@@ -903,10 +895,9 @@ function CreatePost() {
                       </div>
                     )}
 
-                    {/* Location */}
                     <div className="create-post-form-group">
                       <label htmlFor="location">
-                        <HiOutlineLocationMarker className="create-post-input-icon" />{" "}
+                        <HiOutlineLocationMarker className="create-post-input-icon" /> 
                         Location
                       </label>
                       <input
@@ -921,10 +912,9 @@ function CreatePost() {
                       />
                     </div>
 
-                    {/* Status */}
                     <div className="create-post-form-group">
                       <label htmlFor="status">
-                        <HiOutlineTag className="create-post-input-icon" />{" "}
+                        <HiOutlineTag className="create-post-input-icon" /> 
                         Status
                       </label>
                       <select
@@ -941,7 +931,6 @@ function CreatePost() {
                       </select>
                     </div>
 
-                    {/* Tags (optional) */}
                     <div className="create-post-form-group">
                       <label htmlFor="tags">
                         <HiOutlineTag className="create-post-input-icon" /> Tags
@@ -973,7 +962,7 @@ function CreatePost() {
 
               <motion.div className="create-post-form-group" variants={fadeIn}>
                 <label htmlFor="attachments">
-                  <HiOutlinePaperClip className="create-post-input-icon" />{" "}
+                  <HiOutlinePaperClip className="create-post-input-icon" /> 
                   Attachments
                 </label>
                 <div className="create-post-file-upload-container">
@@ -998,7 +987,7 @@ function CreatePost() {
                     />
                   </motion.label>
                   <span className="create-post-file-help-text">
-                    Upload images or documents (optional) - {uploadsRemaining}{" "}
+                    Upload images or documents (optional) - {uploadsRemaining} 
                     uploads remaining
                   </span>
                 </div>

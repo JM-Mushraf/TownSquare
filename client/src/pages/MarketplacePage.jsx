@@ -293,7 +293,7 @@ const MarketplaceItem = ({ item, onContact, onSave }) => {
 };
 
 export default function Marketplace() {
-  const { token } = useSelector((state) => state.user); // Get token from Redux store
+  const { token } = useSelector((state) => state.user);
   const [activeTab, setActiveTab] = useState("all");
   const [viewMode, setViewMode] = useState("grid");
   const [searchQuery, setSearchQuery] = useState("");
@@ -310,25 +310,17 @@ export default function Marketplace() {
     condition: "all",
   });
   const [sortOption, setSortOption] = useState("newest");
+  const [theme, setTheme] = useState("light");
 
-  // Set initial theme based on system preference
+  // Load and apply saved theme
   useEffect(() => {
-    const setTheme = () => {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      document.documentElement.classList.remove("light-theme", "dark-theme");
-      document.documentElement.classList.add(prefersDark ? "dark-theme" : "light-theme");
-    };
-
-    setTheme(); // Set theme on load
-
-    // Listen for system theme changes
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    mediaQuery.addEventListener("change", setTheme);
-
-    return () => mediaQuery.removeEventListener("change", setTheme);
+    const savedTheme = localStorage.getItem("theme") || "light";
+    setTheme(savedTheme);
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    document.documentElement.classList.add(savedTheme);
   }, []);
 
-  // Fetch marketplace posts from the backend
+  // Fetch marketplace posts
   useEffect(() => {
     const fetchMarketplacePosts = async () => {
       try {
@@ -348,9 +340,8 @@ export default function Marketplace() {
     };
 
     fetchMarketplacePosts();
-  }, [token]); // Add token as a dependency
+  }, [token]);
 
-  // Handle sending a message to the seller
   const handleContact = async (postId, message) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_BACKEND_BASEURL}/post/marketplacePosts/${postId}/message`, {
@@ -358,10 +349,8 @@ export default function Marketplace() {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // Include cookies for authentication
-        body: JSON.stringify({
-          message, // Only send the message
-        }),
+        credentials: "include",
+        body: JSON.stringify({ message }),
       });
 
       if (!response.ok) {
@@ -375,13 +364,10 @@ export default function Marketplace() {
     }
   };
 
-  // Handle saving an item
   const handleSave = (item) => {
     console.log("Item saved:", item);
-    // Implement save functionality here
   };
 
-  // Handle tab change
   const handleTabChange = (tab) => {
     if (tab === activeTab || tabTransitioning) return;
 
@@ -392,7 +378,6 @@ export default function Marketplace() {
     }, 300);
   };
 
-  // Toggle filter and sort dropdowns
   const toggleFilter = () => {
     setIsFilterOpen(!isFilterOpen);
     if (isSortOpen) setIsSortOpen(false);
@@ -403,7 +388,6 @@ export default function Marketplace() {
     if (isFilterOpen) setIsFilterOpen(false);
   };
 
-  // Handle filter changes
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({
@@ -412,30 +396,23 @@ export default function Marketplace() {
     }));
   };
 
-  // Apply filters
   const applyFilters = () => {
     setIsFilterOpen(false);
-    // In a real app, you would apply the filters to your data here
     alert("Filters applied successfully!");
   };
 
-  // Handle sort changes
   const handleSortChange = (option) => {
     setSortOption(option);
     setIsSortOpen(false);
-    // In a real app, you would sort your data here
   };
 
-  // Get filtered items
   const getFilteredItems = () => {
     let filtered = [...items];
 
-    // Filter by tab
     if (activeTab !== "all") {
       filtered = filtered.filter((item) => item.itemType === activeTab);
     }
 
-    // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -446,7 +423,6 @@ export default function Marketplace() {
       );
     }
 
-    // Apply price filters
     if (filters.minPrice) {
       filtered = filtered.filter((item) => item.price >= Number.parseFloat(filters.minPrice));
     }
@@ -454,12 +430,10 @@ export default function Marketplace() {
       filtered = filtered.filter((item) => item.price <= Number.parseFloat(filters.maxPrice));
     }
 
-    // Apply location filter
     if (filters.location) {
       filtered = filtered.filter((item) => item.location.toLowerCase().includes(filters.location.toLowerCase()));
     }
 
-    // Sort items
     switch (sortOption) {
       case "newest":
         filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -512,7 +486,6 @@ export default function Marketplace() {
           Community <span className="gradient-text">Marketplace</span>
         </h1>
         <p className="marketplace-subtitle">Buy, sell, and trade with your neighbors</p>
-
         <div className="marketplace-search-container">
           <div className="marketplace-search-box">
             <Search className="search-icon" />

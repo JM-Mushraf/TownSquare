@@ -1,62 +1,87 @@
+/* Base styles and variables */
 :root {
-  /* Market place.css */
-  /* Base colors */
-  --background: #f8fafd;
-  --foreground: #0a0c16;
+  --marketplace-background: #f8fafd;
+  --marketplace-foreground: #0a0c16;
+  --marketplace-card: #ffffff;
+  --marketplace-card-foreground: #0a0c16;
+  --marketplace-card-hover: #f1f5fa;
+  --marketplace-primary: #2563eb;
+  --marketplace-primary-foreground: #f8fafd;
+  --marketplace-secondary: #7c3aed;
+  --marketplace-secondary-foreground: #f8fafd;
+  --marketplace-accent: #14b8a6;
+  --marketplace-accent-foreground: #f8fafd;
+  --marketplace-muted: #f1f5fa;
+  --marketplace-muted-foreground: #64748b;
+  --marketplace-destructive: #ef4444;
+  --marketplace-destructive-foreground: #f8fafd;
+  --marketplace-success: #22c55e;
+  --marketplace-success-foreground: #f8fafd;
+  --marketplace-warning: #f59e0b;
+  --marketplace-warning-foreground: #0a0c16;
+  --marketplace-border: #e2e8f0;
+  --marketplace-input: #e2e8f0;
+  --marketplace-ring: #2563eb;
+  --marketplace-radius: 0.75rem;
+  --marketplace-gradient-primary: linear-gradient(135deg, #2563eb, #7c3aed);
+  --marketplace-gradient-secondary: linear-gradient(135deg, #7c3aed, #c026d3);
+  --marketplace-gradient-accent: linear-gradient(135deg, #14b8a6, #10b981);
+  --marketplace-shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
+  --marketplace-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --marketplace-shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --marketplace-transition-fast: 0.15s ease;
+  --marketplace-transition-normal: 0.3s ease;
+  --marketplace-transition-slow: 0.5s ease;
+  --marketplace-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
 
-  /* Card and UI elements */
-  --card: #ffffff;
-  --card-foreground: #0a0c16;
-  --card-hover: #f1f5fa;
+/* Light theme */
+.light {
+  --marketplace-background: #f8fafd;
+  --marketplace-foreground: #0a0c16;
+  --marketplace-card: #ffffff;
+  --marketplace-card-foreground: #0a0c16;
+  --marketplace-card-hover: #f1f5fa;
+  --marketplace-primary: #2563eb;
+  --marketplace-primary-foreground: #f8fafd;
+  --marketplace-secondary: #7c3aed;
+  --marketplace-secondary-foreground: #f8fafd;
+  --marketplace-accent: #14b8a6;
+  --marketplace-accent-foreground: #f8fafd;
+  --marketplace-muted: #f1f5fa;
+  --marketplace-muted-foreground: #64748b;
+  --marketplace-border: #e2e8f0;
+  --marketplace-input: #e2e8f0;
+  --marketplace-ring: #2563eb;
+}
 
-  /* Primary brand color - Vibrant blue */
-  --primary: #2563eb;
-  --primary-foreground: #f8fafd;
+/* Dark theme */
+.dark {
+  --marketplace-background: #0a0c16;
+  --marketplace-foreground: #f8fafd;
+  --marketplace-card: #0f1629;
+  --marketplace-card-foreground: #f8fafd;
+  --marketplace-card-hover: #1e293b;
+  --marketplace-primary: #60a5fa;
+  --marketplace-primary-foreground: #0a0c16;
+  --marketplace-secondary: #a78bfa;
+  --marketplace-secondary-foreground: #0a0c16;
+  --marketplace-accent: #14b8a6;
+  --marketplace-accent-foreground: #0a0c16;
+  --marketplace-muted: #1e293b;
+  --marketplace-muted-foreground: #94a3b8;
+  --marketplace-border: #1e293b;
+  --marketplace-input: #1e293b;
+  --marketplace-ring: #60a5fa;
+}
 
-  /* Secondary color - Purple */
-  --secondary: #7c3aed;
-  --secondary-foreground: #f8fafd;
+/* Force theme application */
+html[data-theme="light"] {
+  color-scheme: light;
+}
 
-  /* Accent color - Teal */
-  --accent: #14b8a6;
-  --accent-foreground: #f8fafd;
-
-  /* Muted elements */
-  --muted: #f1f5fa;
-  --muted-foreground: #64748b;
-
-  /* Destructive elements */
-  --destructive: #ef4444;
-  --destructive-foreground: #f8fafd;
-
-  /* Success elements */
-  --success: #22c55e;
-  --success-foreground: #f8fafd;
-
-  /* Warning elements */
-  --warning: #f59e0b;
-  --warning-foreground: #0a0c16;
-
-  /* UI elements */
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #2563eb;
-
-  /* Radius */
-  --radius: 0.75rem;
-
-  /* Gradients */
-  --gradient-primary: linear-gradient(135deg, var(--primary), var(--secondary));
-  --gradient-secondary: linear-gradient(135deg, var(--secondary), #c026d3);
-  --gradient-accent: linear-gradient(135deg, var(--accent), #10b981);
-  --border-radius: 0.75rem;
-  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.3s ease;
-  --transition-slow: 0.5s ease;
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+html[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 /* Global styles */
@@ -66,6 +91,16 @@
   padding: 0;
 }
 
+body {
+  background-color: var(--marketplace-background);
+  color: var(--marketplace-foreground);
+  font-family: var(--marketplace-font-family);
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  transition: background-color var(--marketplace-transition-normal), color var(--marketplace-transition-normal);
+}
 
 button {
   cursor: pointer;
@@ -93,7 +128,7 @@ button {
   font-weight: 800;
   line-height: 1.2;
   margin-bottom: 0.5rem;
-  color: var(--foreground);
+  color: var(--marketplace-foreground);
   position: relative;
   display: inline-block;
   letter-spacing: -0.5px;
@@ -106,13 +141,13 @@ button {
   left: 25%;
   width: 50%;
   height: 4px;
-  background-image: var(--gradient-primary);
+  background-image: var(--marketplace-gradient-primary);
   border-radius: 4px;
   animation: expandWidth 1s ease-out forwards;
 }
 
 .gradient-text {
-  background-image: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
+  background-image: var(--marketplace-gradient-primary);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -120,11 +155,28 @@ button {
 }
 
 .marketplace-subtitle {
-  color: var(--muted-foreground);
+  color: var(--marketplace-muted-foreground);
   font-size: 1.2rem;
   margin-top: 1.5rem;
   animation: fadeIn 1s ease-out;
   font-weight: 500;
+}
+
+.theme-toggle-button {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--marketplace-primary);
+  color: var(--marketplace-primary-foreground);
+  border: none;
+  border-radius: var(--marketplace-radius);
+  font-weight: 600;
+  margin: 1rem auto;
+  display: block;
+  transition: all var(--marketplace-transition-fast);
+}
+
+.theme-toggle-button:hover {
+  background-color: var(--marketplace-secondary);
+  transform: translateY(-2px);
 }
 
 /* Search and filter styles */
@@ -149,22 +201,22 @@ button {
 .marketplace-search-box {
   display: flex;
   align-items: center;
-  background-color: var(--card);
+  background-color: var(--marketplace-card);
   border-radius: 30px;
   padding: 0.5rem 1rem;
   flex: 1;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
-  transition: all var(--transition-normal);
+  box-shadow: var(--marketplace-shadow-sm);
+  border: 1px solid var(--marketplace-border);
+  transition: all var(--marketplace-transition-normal);
 }
 
 .marketplace-search-box:focus-within {
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
-  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--marketplace-ring);
+  border-color: var(--marketplace-primary);
 }
 
 .search-icon {
-  color: var(--muted-foreground);
+  color: var(--marketplace-muted-foreground);
   width: 1.2rem;
   height: 1.2rem;
   margin-right: 0.75rem;
@@ -176,23 +228,24 @@ button {
   width: 100%;
   font-size: 1rem;
   background: transparent;
+  color: var(--marketplace-foreground);
 }
 
 .search-clear-button {
   background: none;
   border: none;
-  color: var(--muted-foreground);
+  color: var(--marketplace-muted-foreground);
   font-size: 1.2rem;
   cursor: pointer;
   padding: 0 0.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition: all var(--marketplace-transition-fast);
 }
 
 .search-clear-button:hover {
-  color: var(--destructive);
+  color: var(--marketplace-destructive);
   transform: scale(1.1);
 }
 
@@ -204,16 +257,17 @@ button {
 .filter-button,
 .sort-button,
 .view-button {
-  background-color: var(--card);
-  border: 1px solid var(--border);
+  background-color: var(--marketplace-card);
+  border: 1px solid var(--marketplace-border);
   border-radius: 50%;
   width: 2.5rem;
   height: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-normal);
-  box-shadow: var(--shadow-sm);
+  transition: all var(--marketplace-transition-normal);
+  box-shadow: var(--marketplace-shadow-sm);
+  color: var(--marketplace-foreground);
 }
 
 .filter-button:hover,
@@ -222,8 +276,8 @@ button {
 .filter-button.active,
 .sort-button.active,
 .view-button.active {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
+  background-color: var(--marketplace-primary);
+  color: var(--marketplace-primary-foreground);
   transform: translateY(-2px);
 }
 
@@ -241,14 +295,15 @@ button {
   right: 50%;
   transform: translateX(50%);
   margin-top: 0.5rem;
-  background-color: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
+  background-color: var(--marketplace-card);
+  border-radius: var(--marketplace-radius);
+  box-shadow: var(--marketplace-shadow-md);
   padding: 1rem;
   z-index: 100;
   width: 300px;
   animation: fadeIn 0.3s ease-out;
-  border: 1px solid var(--border);
+  border: 1px solid var(--marketplace-border);
+  color: var(--marketplace-foreground);
 }
 
 .filter-header,
@@ -258,7 +313,7 @@ button {
   align-items: center;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--marketplace-border);
 }
 
 .close-filter-button,
@@ -266,14 +321,14 @@ button {
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: var(--muted-foreground);
+  color: var(--marketplace-muted-foreground);
   cursor: pointer;
-  transition: color var(--transition-fast);
+  transition: color var(--marketplace-transition-fast);
 }
 
 .close-filter-button:hover,
 .close-sort-button:hover {
-  color: var(--destructive);
+  color: var(--marketplace-destructive);
 }
 
 .filter-content {
@@ -291,41 +346,42 @@ button {
 .filter-group label {
   font-size: 0.9rem;
   font-weight: 500;
-  color: var(--foreground);
+  color: var(--marketplace-foreground);
 }
 
 .filter-input,
 .filter-select {
   padding: 0.5rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 1px solid var(--marketplace-border);
+  border-radius: var(--marketplace-radius);
   font-size: 0.9rem;
-  background-color: var(--background);
+  background-color: var(--marketplace-background);
+  color: var(--marketplace-foreground);
 }
 
 .filter-input:focus,
 .filter-select:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--marketplace-primary);
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
 .apply-filters-button {
   width: 100%;
   padding: 0.75rem;
-  background-color: var(--primary);
-  color: var(--primary-foreground);
+  background-color: var(--marketplace-primary);
+  color: var(--marketplace-primary-foreground);
   border: none;
-  border-radius: var(--radius);
+  border-radius: var(--marketplace-radius);
   margin-top: 0.5rem;
   font-weight: 500;
-  transition: all var(--transition-fast);
+  transition: all var(--marketplace-transition-fast);
 }
 
 .apply-filters-button:hover {
-  background-color: var(--secondary);
+  background-color: var(--marketplace-secondary);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--marketplace-shadow-sm);
 }
 
 .sort-options {
@@ -339,23 +395,24 @@ button {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  background-color: var(--background);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  background-color: var(--marketplace-background);
+  border: 1px solid var(--marketplace-border);
+  border-radius: var(--marketplace-radius);
   font-size: 0.9rem;
-  transition: all var(--transition-fast);
+  transition: all var(--marketplace-transition-fast);
   text-align: left;
+  color: var(--marketplace-foreground);
 }
 
 .sort-option:hover {
-  background-color: var(--muted);
+  background-color: var(--marketplace-muted);
   transform: translateX(5px);
 }
 
 .sort-option.active {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  border-color: var(--primary);
+  background-color: var(--marketplace-primary);
+  color: var(--marketplace-primary-foreground);
+  border-color: var(--marketplace-primary);
 }
 
 .sort-option-icon {
@@ -369,19 +426,19 @@ button {
   justify-content: center;
   gap: 0.75rem;
   padding: 0.75rem 1.5rem;
-  background-image: var(--gradient-primary);
-  color: var(--primary-foreground);
+  background-image: var(--marketplace-gradient-primary);
+  color: var(--marketplace-primary-foreground);
   border: none;
-  border-radius: var(--radius);
+  border-radius: var(--marketplace-radius);
   font-weight: 600;
   margin-top: 2rem;
-  transition: all var(--transition-normal);
-  box-shadow: var(--shadow-md);
+  transition: all var(--marketplace-transition-normal);
+  box-shadow: var(--marketplace-shadow-md);
 }
 
 .list-item-button:hover {
   transform: translateY(-3px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--marketplace-shadow-lg);
 }
 
 .button-icon {
@@ -397,18 +454,18 @@ button {
 
 .marketplace-tabs-list {
   display: flex;
-  border-radius: var(--border-radius);
+  border-radius: var(--marketplace-radius);
   overflow: hidden;
   margin-bottom: 2.5rem;
   width: 100%;
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border);
+  box-shadow: var(--marketplace-shadow-md);
+  border: 1px solid var(--marketplace-border);
   position: relative;
   z-index: 1;
-  background-color: var(--card);
+  background-color: var(--marketplace-card);
 }
 
 .marketplace-tab {
@@ -417,8 +474,8 @@ button {
   border: none;
   font-size: 1rem;
   font-weight: 600;
-  transition: all var(--transition-normal);
-  color: var(--muted-foreground);
+  transition: all var(--marketplace-transition-normal);
+  color: var(--marketplace-muted-foreground);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -430,12 +487,12 @@ button {
 
 .tab-icon {
   font-size: 1rem;
-  transition: transform var(--transition-normal);
+  transition: transform var(--marketplace-transition-normal);
 }
 
 .marketplace-tab:hover {
-  color: var(--primary);
-  background-color: rgba(106, 17, 203, 0.03);
+  color: var(--marketplace-primary);
+  background-color: rgba(37, 99, 235, 0.03);
 }
 
 .marketplace-tab:hover .tab-icon {
@@ -443,8 +500,8 @@ button {
 }
 
 .marketplace-tab.active {
-  color: var(--primary);
-  background-color: rgba(106, 17, 203, 0.05);
+  color: var(--marketplace-primary);
+  background-color: rgba(37, 99, 235, 0.05);
 }
 
 .marketplace-tab.active .tab-icon {
@@ -458,12 +515,12 @@ button {
   left: 0;
   width: 100%;
   height: 4px;
-  background-image: linear-gradient(to right, var(--primary), var(--secondary));
+  background-image: var(--marketplace-gradient-primary);
   animation: slideInFromLeft 0.3s ease-out;
 }
 
 .marketplace-tab-content {
-  transition: opacity var(--transition-normal), transform var(--transition-normal);
+  transition: opacity var(--marketplace-transition-normal), transform var(--marketplace-transition-normal);
 }
 
 .marketplace-tab-content.tab-transitioning {
@@ -531,17 +588,17 @@ button {
 
 /* Marketplace item styles */
 .marketplace-item {
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-md);
+  border-radius: var(--marketplace-radius);
+  box-shadow: var(--marketplace-shadow-md);
   overflow: hidden;
-  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  transition: transform var(--marketplace-transition-normal), box-shadow var(--marketplace-transition-normal);
   display: flex;
   flex-direction: column;
   animation: fadeIn 0.5s ease-out;
-  border: 1px solid var(--border);
+  border: 1px solid var(--marketplace-border);
   position: relative;
   z-index: 1;
-  background-color: var(--card);
+  background-color: var(--marketplace-card);
 }
 
 .marketplace-item::before {
@@ -553,7 +610,7 @@ button {
   height: 100%;
   background-image: linear-gradient(135deg, rgba(37, 99, 235, 0.03), rgba(124, 58, 237, 0.03));
   opacity: 0;
-  transition: opacity var(--transition-normal);
+  transition: opacity var(--marketplace-transition-normal);
   z-index: -1;
 }
 
@@ -563,21 +620,21 @@ button {
 
 .marketplace-item:hover {
   transform: translateY(-6px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--marketplace-shadow-lg);
 }
 
 .marketplace-item.hovered {
   transform: translateY(-6px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--marketplace-shadow-lg);
 }
 
 .marketplace-item-header {
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--marketplace-border);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  background: linear-gradient(to right, rgba(106, 17, 203, 0.05), rgba(37, 117, 252, 0.05));
+  background: linear-gradient(to right, rgba(37, 99, 235, 0.05), rgba(124, 58, 237, 0.05));
 }
 
 .item-title-container {
@@ -588,7 +645,7 @@ button {
   font-size: 1.35rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  color: var(--foreground);
+  color: var(--marketplace-card-foreground);
   line-height: 1.3;
   position: relative;
   display: inline-block;
@@ -599,7 +656,7 @@ button {
   display: flex;
   gap: 1rem;
   font-size: 0.9rem;
-  color: var(--muted-foreground);
+  color: var(--marketplace-muted-foreground);
 }
 
 .item-date,
@@ -610,7 +667,7 @@ button {
 }
 
 .meta-icon {
-  color: var(--primary);
+  color: var(--marketplace-primary);
   width: 1rem;
   height: 1rem;
 }
@@ -622,13 +679,13 @@ button {
   border-radius: 30px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--primary-foreground);
+  color: var(--marketplace-primary-foreground);
   margin-left: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: all var(--transition-fast);
+  transition: all var(--marketplace-transition-fast);
 }
 
 .marketplace-item:hover .item-badge {
@@ -642,15 +699,15 @@ button {
 }
 
 .item-badge.sale {
-  background: linear-gradient(45deg, var(--primary), #60a5fa);
+  background: linear-gradient(45deg, var(--marketplace-primary), #60a5fa);
 }
 
 .item-badge.free {
-  background: linear-gradient(45deg, var(--accent), #22c55e);
+  background: linear-gradient(45deg, var(--marketplace-accent), #22c55e);
 }
 
 .item-badge.wanted {
-  background: linear-gradient(45deg, var(--secondary), #c026d3);
+  background: linear-gradient(45deg, var(--marketplace-secondary), #c026d3);
 }
 
 .marketplace-item-images {
@@ -676,11 +733,12 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition: all var(--marketplace-transition-fast);
   backdrop-filter: blur(4px);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   opacity: 0;
   transform: translateX(10px);
+  color: var(--marketplace-foreground);
 }
 
 .marketplace-item:hover .quick-action-button {
@@ -701,14 +759,14 @@ button {
 }
 
 .quick-action-button:hover {
-  background-color: white;
+  background-color: var(--marketplace-card);
   transform: scale(1.1);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .quick-action-button.active {
-  background-color: var(--primary);
-  color: white;
+  background-color: var(--marketplace-primary);
+  color: var(--marketplace-primary-foreground);
 }
 
 .quick-action-icon {
@@ -733,7 +791,7 @@ button {
 .item-price {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--primary);
+  color: var(--marketplace-primary);
   display: flex;
   align-items: center;
   gap: 0.25rem;
@@ -748,20 +806,20 @@ button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--muted-foreground);
+  color: var(--marketplace-muted-foreground);
   font-size: 0.9rem;
 }
 
 .location-icon {
   width: 1rem;
   height: 1rem;
-  color: var(--secondary);
+  color: var(--marketplace-secondary);
 }
 
 .item-description {
   font-size: 0.95rem;
   line-height: 1.6;
-  color: var(--foreground);
+  color: var(--marketplace-foreground);
 }
 
 .item-tags {
@@ -771,7 +829,7 @@ button {
 }
 
 .tags-icon {
-  color: var(--accent);
+  color: var(--marketplace-accent);
   width: 1rem;
   height: 1rem;
 }
@@ -785,23 +843,23 @@ button {
 .item-tag {
   font-size: 0.8rem;
   padding: 0.25rem 0.75rem;
-  background-color: var(--muted);
+  background-color: var(--marketplace-muted);
   border-radius: 20px;
-  color: var(--foreground);
-  transition: all var(--transition-fast);
+  color: var(--marketplace-foreground);
+  transition: all var(--marketplace-transition-fast);
 }
 
 .item-tag:hover {
-  background-color: var(--primary);
-  color: white;
+  background-color: var(--marketplace-primary);
+  color: var(--marketplace-primary-foreground);
   transform: translateY(-2px);
 }
 
 .marketplace-item-footer {
   padding: 1.25rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--marketplace-border);
   background-color: rgba(0, 0, 0, 0.02);
-  transition: background-color var(--transition-fast);
+  transition: background-color var(--marketplace-transition-fast);
 }
 
 .marketplace-item:hover .marketplace-item-footer {
@@ -811,17 +869,17 @@ button {
 .contact-button {
   width: 100%;
   padding: 0.75rem 1.5rem;
-  background-image: var(--gradient-primary);
-  color: var(--primary-foreground);
+  background-image: var(--marketplace-gradient-primary);
+  color: var(--marketplace-primary-foreground);
   border: none;
-  border-radius: var(--radius);
+  border-radius: var(--marketplace-radius);
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
+  transition: all var(--marketplace-transition-fast);
+  box-shadow: var(--marketplace-shadow-sm);
   position: relative;
   overflow: hidden;
 }
@@ -843,7 +901,7 @@ button {
 
 .contact-button:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--marketplace-shadow-md);
 }
 
 .contact-overlay {
@@ -861,9 +919,9 @@ button {
 }
 
 .contact-card {
-  background-color: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
+  background-color: var(--marketplace-card);
+  border-radius: var(--marketplace-radius);
+  box-shadow: var(--marketplace-shadow-lg);
   width: 90%;
   max-width: 500px;
   animation: scaleIn 0.3s ease-out;
@@ -875,26 +933,27 @@ button {
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem;
-  border-bottom: 1px solid var(--border);
-  background-color: var(--muted);
+  border-bottom: 1px solid var(--marketplace-border);
+  background-color: var(--marketplace-muted);
 }
 
 .contact-header h4 {
   font-size: 1.25rem;
   font-weight: 600;
+  color: var(--marketplace-foreground);
 }
 
 .close-button {
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: var(--muted-foreground);
+  color: var(--marketplace-muted-foreground);
   cursor: pointer;
-  transition: color var(--transition-fast);
+  transition: color var(--marketplace-transition-fast);
 }
 
 .close-button:hover {
-  color: var(--destructive);
+  color: var(--marketplace-destructive);
 }
 
 .contact-content {
@@ -914,8 +973,8 @@ button {
   width: 3rem;
   height: 3rem;
   border-radius: 50%;
-  background-color: var(--primary);
-  color: white;
+  background-color: var(--marketplace-primary);
+  color: var(--marketplace-primary-foreground);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -932,6 +991,7 @@ button {
 .contact-name {
   font-size: 1.1rem;
   font-weight: 600;
+  color: var(--marketplace-foreground);
 }
 
 .contact-rating {
@@ -943,60 +1003,63 @@ button {
 .rating-icon {
   width: 1rem;
   height: 1rem;
-  color: var(--muted-foreground);
+  color: var(--marketplace-muted-foreground);
 }
 
 .rating-icon.filled {
-  color: var(--warning);
+  color: var(--marketplace-warning);
 }
 
 .rating-text {
   margin-left: 0.5rem;
   font-size: 0.9rem;
   font-weight: 600;
+  color: var(--marketplace-foreground);
 }
 
 .contact-message {
   width: 100%;
   min-height: 120px;
   padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-family: var(--font-family);
+  border: 1px solid var(--marketplace-border);
+  border-radius: var(--marketplace-radius);
+  font-family: var(--marketplace-font-family);
   font-size: 1rem;
   resize: vertical;
-  transition: all var(--transition-normal);
+  transition: all var(--marketplace-transition-normal);
+  background-color: var(--marketplace-background);
+  color: var(--marketplace-foreground);
 }
 
 .contact-message:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--marketplace-primary);
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
 .send-message-button {
   padding: 0.75rem 1.5rem;
-  background-color: var(--primary);
-  color: white;
+  background-color: var(--marketplace-primary);
+  color: var(--marketplace-primary-foreground);
   border: none;
-  border-radius: var(--radius);
+  border-radius: var(--marketplace-radius);
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  transition: all var(--transition-fast);
+  transition: all var(--marketplace-transition-fast);
 }
 
 .send-message-button:hover {
-  background-color: var(--secondary);
+  background-color: var(--marketplace-secondary);
   transform: translateY(-2px);
 }
 
 /* Image carousel styles */
 .image-carousel {
   width: 100%;
-  border-radius: var(--border-radius);
+  border-radius: var(--marketplace-radius);
   overflow: hidden;
   position: relative;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -1029,7 +1092,7 @@ button {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform var(--transition-slow);
+  transition: transform var(--marketplace-transition-slow);
 }
 
 .carousel-slide:hover .carousel-image {
@@ -1041,7 +1104,7 @@ button {
   top: 50%;
   transform: translateY(-50%);
   background-color: rgba(255, 255, 255, 0.8);
-  color: var(--foreground);
+  color: var(--marketplace-foreground);
   border: none;
   width: 3rem;
   height: 3rem;
@@ -1051,7 +1114,7 @@ button {
   justify-content: center;
   z-index: 10;
   backdrop-filter: blur(4px);
-  transition: all var(--transition-fast);
+  transition: all var(--marketplace-transition-fast);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   opacity: 0;
 }
@@ -1061,7 +1124,7 @@ button {
 }
 
 .carousel-button:hover {
-  background-color: white;
+  background-color: var(--marketplace-card);
   transform: translateY(-50%) scale(1.1);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
@@ -1095,7 +1158,7 @@ button {
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--marketplace-transition-fast);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -1117,8 +1180,8 @@ button {
 .marketplace-loading-spinner {
   width: 4rem;
   height: 4rem;
-  border: 4px solid rgba(106, 17, 203, 0.1);
-  border-top-color: var(--primary);
+  border: 4px solid rgba(37, 99, 235, 0.1);
+  border-top-color: var(--marketplace-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1.5rem;
@@ -1127,9 +1190,9 @@ button {
 .marketplace-error {
   text-align: center;
   padding: 3rem 2rem;
-  background-color: var(--card);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-md);
+  background-color: var(--marketplace-card);
+  border-radius: var(--marketplace-radius);
+  box-shadow: var(--marketplace-shadow-md);
   max-width: 500px;
   margin: 0 auto;
   animation: fadeIn 0.5s ease-out;
@@ -1141,47 +1204,49 @@ button {
 
 .error-icon {
   font-size: 3rem;
-  color: var(--destructive);
+  color: var(--marketplace-destructive);
 }
 
 .marketplace-error-title {
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 0.75rem;
-  color: var(--destructive);
+  color: var(--marketplace-destructive);
 }
 
 .marketplace-error-message {
-  color: var(--muted-foreground);
-  margin-bottom: 2rem;
+  color: var(--marketplace-muted-foreground);
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
 .marketplace-error-button {
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(to right, var(--primary), var(--secondary));
-  color: var(--primary-foreground);
+  background-image: var(--marketplace-gradient-primary);
+  color: var(--marketplace-primary-foreground);
   border: none;
-  border-radius: var(--border-radius);
+  border-radius: var(--marketplace-radius);
   font-weight: 600;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all var(--transition-fast);
-  display: flex;
-  align-items: center;
-  gap: 0, 0, 0.1;
-  );
-  transition: all var(--transition-fast);
+  box-shadow: var(--marketplace-shadow-sm);
+  transition: all var(--marketplace-transition-fast);
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
+.marketplace-error-button:hover {
+  background-image: var(--marketplace-gradient-secondary);
+  transform: translateY(-2px);
+  box-shadow: var(--marketplace-shadow-md);
+}
+
 .marketplace-empty {
   text-align: center;
   padding: 4rem 2rem;
-  color: var(--muted-foreground);
-  background-color: rgba(0, 0, 0, 0.02);
-  border-radius: var(--border-radius);
-  border: 1px dashed var(--border);
+  color: var(--marketplace-muted-foreground);
+  background-color: var(--marketplace-card);
+  border-radius: var(--marketplace-radius);
+  border: 1px dashed var(--marketplace-border);
   font-size: 1.2rem;
   display: flex;
   flex-direction: column;
@@ -1194,7 +1259,7 @@ button {
   width: 5rem;
   height: 5rem;
   border-radius: 50%;
-  background-color: rgba(37, 99, 235, 0.05);
+  background-color: var(--marketplace-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1203,30 +1268,30 @@ button {
 
 .empty-icon {
   font-size: 2.5rem;
-  color: var(--muted-foreground);
-  opacity: 0.5;
+  color: var(--marketplace-muted-foreground);
 }
 
 .clear-search-button {
   padding: 0.5rem 1rem;
-  background-color: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  background-color: var(--marketplace-card);
+  border: 1px solid var(--marketplace-border);
+  border-radius: var(--marketplace-radius);
   font-size: 0.9rem;
-  transition: all var(--transition-fast);
+  transition: all var(--marketplace-transition-fast);
+  color: var(--marketplace-foreground);
 }
 
 .clear-search-button:hover {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  border-color: var(--primary);
+  background-color: var(--marketplace-primary);
+  color: var(--marketplace-primary-foreground);
+  border-color: var(--marketplace-primary);
 }
 
 /* Footer styles */
 .marketplace-footer {
   margin-top: 4rem;
   padding-top: 2rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--marketplace-border);
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -1244,20 +1309,20 @@ button {
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background-color: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
+  background-color: var(--marketplace-card);
+  border-radius: var(--marketplace-radius);
+  box-shadow: var(--marketplace-shadow-sm);
   min-width: 200px;
-  transition: all var(--transition-normal);
+  transition: all var(--marketplace-transition-normal);
 }
 
 .stat-item:hover {
   transform: translateY(-5px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--marketplace-shadow-md);
 }
 
 .stat-icon {
-  color: var(--primary);
+  color: var(--marketplace-primary);
   font-size: 1.5rem;
   padding: 0.75rem;
   background-color: rgba(37, 99, 235, 0.1);
@@ -1272,12 +1337,12 @@ button {
 .stat-value {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--foreground);
+  color: var(--marketplace-foreground);
 }
 
 .stat-label {
   font-size: 0.9rem;
-  color: var(--muted-foreground);
+  color: var(--marketplace-muted-foreground);
 }
 
 .marketplace-help {
@@ -1286,26 +1351,26 @@ button {
   justify-content: center;
   gap: 0.75rem;
   padding: 1rem;
-  background-color: rgba(37, 99, 235, 0.05);
-  border-radius: var(--radius);
+  background-color: var(--marketplace-muted);
+  border-radius: var(--marketplace-radius);
   margin: 0 auto;
   max-width: 600px;
 }
 
 .help-icon {
-  color: var(--primary);
+  color: var(--marketplace-primary);
 }
 
 .help-link {
-  color: var(--primary);
+  color: var(--marketplace-primary);
   font-weight: 600;
   text-decoration: none;
-  transition: all var(--transition-fast);
+  transition: all var(--marketplace-transition-fast);
 }
 
 .help-link:hover {
   text-decoration: underline;
-  color: var(--secondary);
+  color: var(--marketplace-secondary);
 }
 
 /* Animations */
@@ -1472,82 +1537,5 @@ button {
 
   .marketplace-footer {
     margin-top: 2rem;
-  }
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1e293b;
-    --foreground: #f8fafc;
-    --card: #0f172a;
-    --muted: #334155;
-    --muted-foreground: #94a3b8;
-    --border: #334155;
-  }
-
-  .marketplace-item {
-    border-color: rgba(255, 255, 255, 0.05);
-  }
-
-  .carousel-button {
-    background-color: rgba(30, 41, 59, 0.8);
-    color: var(--foreground);
-  }
-
-  .carousel-button:hover {
-    background-color: #1e293b;
-  }
-
-  .empty-icon-container {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-
-  .marketplace-search-box {
-    background-color: #1e293b;
-  }
-
-  .filter-button,
-  .sort-button,
-  .view-button {
-    background-color: #1e293b;
-    color: var(--foreground);
-  }
-
-  .filter-dropdown,
-  .sort-dropdown {
-    background-color: #0f172a;
-    border-color: #334155;
-  }
-
-  .stat-item {
-    background-color: #0f172a;
-  }
-
-  .quick-action-button {
-    background-color: rgba(15, 23, 42, 0.8);
-    color: var(--foreground);
-  }
-
-  .quick-action-button:hover {
-    background-color: #1e293b;
-  }
-
-  .contact-card {
-    background-color: #0f172a;
-  }
-
-  .contact-header {
-    background-color: #1e293b;
-  }
-
-  .contact-message {
-    background-color: #1e293b;
-    color: var(--foreground);
-  }
-
-  .marketplace-empty {
-    background-color: rgba(255, 255, 255, 0.03);
-    border-color: #334155;
   }
 }
