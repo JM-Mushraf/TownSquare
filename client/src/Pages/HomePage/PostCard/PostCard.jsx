@@ -45,7 +45,7 @@ export const PostCard = ({ post, navigate }) => {
 
       if (response.data.success) {
         setIsBookmarked(!isBookmarked);
-        console.log(response.data.message);
+        
       }
     } catch (error) {
       console.error("Error toggling bookmark:", error.response?.data?.message || error.message);

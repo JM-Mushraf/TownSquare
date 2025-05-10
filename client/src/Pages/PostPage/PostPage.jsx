@@ -49,13 +49,13 @@ const PostPage = () => {
           return
         }
 
-        const response = await axios.get(`http://localhost:3000/post/${id}`, {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         })
 
-        console.log(response)
+        
         if (response.data.success) {
           setPost(response.data.post)
           setUpVotes(response.data.post.upVotes || 0)
@@ -72,7 +72,7 @@ const PostPage = () => {
           setIsBookmarked(bookmarkedPosts.includes(id))
 
           // Fetch comments
-          const commentsResponse = await axios.get(`http://localhost:3000/post/${id}/comments`, {
+          const commentsResponse = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${id}/comments`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -116,7 +116,7 @@ const PostPage = () => {
 
     try {
       const endpoint =
-        userVote === "upvote" ? `http://localhost:3000/post/remove/${id}` : `http://localhost:3000/post/up/${id}`
+        userVote === "upvote" ? `${import.meta.env.VITE_BACKEND_BASEURL}/post/remove/${id}` : `${import.meta.env.VITE_BACKEND_BASEURL}/post/up/${id}`
 
       const response = await axios.post(
         endpoint,
@@ -159,7 +159,7 @@ const PostPage = () => {
 
     try {
       const endpoint =
-        userVote === "downvote" ? `http://localhost:3000/post/remove/${id}` : `http://localhost:3000/post/down/${id}`
+        userVote === "downvote" ? `${import.meta.env.VITE_BACKEND_BASEURL}/post/remove/${id}` : `${import.meta.env.VITE_BACKEND_BASEURL}/post/down/${id}`
 
       const response = await axios.post(
         endpoint,
@@ -223,7 +223,7 @@ const PostPage = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/post/comment",
+        `${import.meta.env.VITE_BACKEND_BASEURL}/post/comment`,
         {
           postId: id,
           message: commentText,
@@ -238,7 +238,7 @@ const PostPage = () => {
       if (response.data.success) {
         setCommentText("")
         // Refresh comments
-        const commentsResponse = await axios.get(`http://localhost:3000/post/${id}/comments`, {
+        const commentsResponse = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${id}/comments`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -267,7 +267,7 @@ const PostPage = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:3000/post/${id}/vote`,
+        `${import.meta.env.VITE_BACKEND_BASEURL}/post/${id}/vote`,
         {
           option: post.poll.options[selectedOption]._id, // changed from optionId to option
           userId: userData._id, // added userId

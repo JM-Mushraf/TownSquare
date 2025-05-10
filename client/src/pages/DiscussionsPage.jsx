@@ -6,7 +6,7 @@ import { formatDate } from "./utils/formatDate";
 import { renderIcon } from "./utils/renderIcon";
 import { io } from "socket.io-client";
 import EmojiPicker from "emoji-picker-react";
-
+import { useNavigate } from "react-router-dom";
 function DiscussionsPage() {
   const [activeChannel, setActiveChannel] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -24,9 +24,25 @@ function DiscussionsPage() {
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const emojiPickerRef = useRef(null);
+  const navigate=useNavigate();
+  const { userData,token } = useSelector((state) => state.user);
+const api = axios.create({
+  baseURL: import.meta.env.VITE_BACKEND_BASEURL,
+  headers: {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  },
+});
 
-  const { userData } = useSelector((state) => state.user);
-
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      navigate(`${import.meta.env.VITE_BACKEND_BASEURL}/login`)
+    }
+    return Promise.reject(error);
+  }
+);
   // Initialize Socket.IO client
   const socket = useRef(null);
   const handleShowMembers = (channel) => {
@@ -37,13 +53,14 @@ function DiscussionsPage() {
   };
   useEffect(() => {
     // Connect to the Socket.IO server
-    socket.current = io("http://localhost:3000", {
+    socket.current = io(`${import.meta.env.VITE_BACKEND_BASEURL}`, {
       withCredentials: true,
+    auth: { token },
     });
 
     // Listen for new group messages
     socket.current.on("receive-group-message", (newMessage) => {
-      console.log("Received group message:", newMessage);
+      
       setMessages((prevMessages) => {
         // Check if message already exists to prevent duplicates
         if (!prevMessages.some((msg) => msg._id === newMessage._id)) {
@@ -126,13 +143,9 @@ function DiscussionsPage() {
     const fetchUserChats = async () => {
       try {
         setIsLoadingChannels(true);
-        const { data } = await axios.get("http://localhost:3000/user/chats", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const { data } = await api.get('/user/chats');
         await setChannels(data.chats);
-        console.log(channels[0]);
+        
 
         if (data.chats.length > 0) {
           setActiveChannel(data.chats[0]);
@@ -152,14 +165,7 @@ function DiscussionsPage() {
   const fetchMessages = async (chatId) => {
     try {
       setIsLoadingMessages(true);
-      const response = await axios.get(
-        `http://localhost:3000/message/all/${chatId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const response = await api.get(`/message/all/${chatId}`);
       const sortedMessages = response.data.messages.sort(
         (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
       );
@@ -190,13 +196,12 @@ function DiscussionsPage() {
         formData.append("attachments", file);
       });
 
-      const response = await axios.post(
-        "http://localhost:3000/message/send",
+      const response = await api.post(
+        `/message/send`,
         formData,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "multipart/form-data",
+            'Content-Type': 'multipart/form-data',
           },
         }
       );

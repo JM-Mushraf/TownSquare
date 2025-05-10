@@ -838,3 +838,91 @@ export const getUserActivityStats = AsyncHandler(async (req, res, next) => {
     .status(200)
     .json(new ApiResponse(200, response, "User activity stats fetched successfully"));
 });
+
+export const getMyPosts = async (req, res) => {
+  try {
+    // Get the user ID from the authenticated request
+    const userId = req.user._id;
+
+    // Fetch all posts created by this user and populate createdBy with user details
+    const posts = await Post.find({ createdBy: userId })
+      .populate("createdBy", "username email avatar avatarPublicId") // Populate user details
+      .sort({ createdAt: -1 }); // Sort by creation date in descending order
+
+    // Return the posts
+    res.status(200).json({
+      success: true,
+      message: "Posts created by you fetched successfully",
+      posts,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching your posts",
+      error: error.message,
+    });
+  }
+};
+
+
+export const deleteMyPost = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const { postId } = req.params;
+    const userId = req.user._id;
+
+    // 1. Verify the post exists and belongs to the user
+    const post = await Post.findOne({ _id: postId, createdBy: userId }).session(session);
+    
+    if (!post) {
+      await session.abortTransaction();
+      return res.status(404).json({
+        success: false,
+        message: "Post not found or you don't have permission to delete it",
+      });
+    }
+
+    // 2. Delete all comments associated with this post
+    await Comment.deleteMany({ postId }).session(session);
+
+    // 3. Remove this post from all users' bookmarks
+    await User.updateMany(
+      { bookmarks: postId },
+      { $pull: { bookmarks: postId } },
+      { session }
+    );
+
+    // 4. If it's a marketplace post, delete contact messages
+    if (post.type === "marketplace" && post.marketplace?.contactMessages) {
+      // Marketplace contact messages are embedded, so they'll be deleted with the post
+    }
+
+    // 5. Delete the post itself
+    await Post.deleteOne({ _id: postId }).session(session);
+
+    // 6. If there are attachments, you might want to delete them from cloud storage here
+    // (This would require your specific cloud storage implementation)
+    // Example:
+    // if (post.attachments && post.attachments.length > 0) {
+    //   await deleteCloudFiles(post.attachments.map(a => a.publicId));
+    // }
+
+    await session.commitTransaction();
+    
+    res.status(200).json({
+      success: true,
+      message: "Post and all associated data deleted successfully",
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    res.status(500).json({
+      success: false,
+      message: "Error deleting post",
+      error: error.message,
+    });
+  } finally {
+    session.endSession();
+  }
+};

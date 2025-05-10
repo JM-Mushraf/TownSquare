@@ -260,7 +260,7 @@ export const UserProfileContent = () => {
 
   // Create axios instance with default config
   const api = axios.create({
-    baseURL: "http://localhost:3000",
+    baseURL: `${import.meta.env.VITE_BACKEND_BASEURL}`,
     headers: {
       "Content-Type": "application/json",
     },
@@ -401,14 +401,14 @@ export const UserProfileContent = () => {
       if (activeTab === "overview" && token) {
         setIsGettingActivityStats(true);
         try {
-          console.log("Making API call..."); // Debug log
+          
       const response = await api.get('/user/getUserActivityStats');
-          console.log(response);
+          
           
           // Check for successful response and expected data structure
           if (response.data?.success && response.data?.data?.activityStats) {
             setActivitystats(response.data.data.activityStats);
-            console.log(response.data.data.activityStats);
+            
             
           } else {
             // Set default values if data is not in expected format
@@ -923,9 +923,7 @@ export const UserProfileContent = () => {
     setVerifyError(null);
 
     try {
-      const response = await api.post(
-        "http://localhost:3000/user/resend-verification"
-      );
+       const response = await api.post('/user/resend-verification');
 
       if (response.data.success) {
         setResendSuccess(true);
@@ -2049,7 +2047,7 @@ export const UserProfileContent = () => {
                     key={bookmark._id}
                     className="neo-bookmark-card"
                     onClick={() =>
-                      (window.location.href = `http://localhost:5173/post/${bookmark._id}`)
+                      (window.location.href = `${import.meta.env.VITE_FRONTEND_BASEURL}/post/${bookmark._id}`)
                     }
                   >
                     <h3 className="neo-bookmark-title">{bookmark.title}</h3>

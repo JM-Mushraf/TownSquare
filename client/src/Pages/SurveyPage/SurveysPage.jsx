@@ -40,7 +40,7 @@ function SurveysPage() {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch("http://localhost:3000/post/survey-and-poll-posts")
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_BASEURL}/post/survey-and-poll-posts`)
         if (!response.ok) throw new Error("Failed to fetch posts")
         const data = await response.json()
         setPosts(data.posts)
@@ -110,7 +110,7 @@ function SurveysPage() {
         return
       }
 
-      const response = await fetch(`http://localhost:3000/post/${postId}/vote`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${postId}/vote`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -195,7 +195,7 @@ function SurveysPage() {
 
   const handleViewResults = async (postId) => {
     try {
-      const response = await fetch(`http://localhost:3000/post/${postId}/results`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${postId}/results`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

@@ -332,7 +332,7 @@ export default function Marketplace() {
   useEffect(() => {
     const fetchMarketplacePosts = async () => {
       try {
-        const response = await fetch("http://localhost:3000/post/marketplacePosts", {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_BASEURL}/post/marketplacePosts`, {
           credentials: "include", // Include cookies in the request
         });
         if (!response.ok) {
@@ -353,7 +353,7 @@ export default function Marketplace() {
   // Handle sending a message to the seller
   const handleContact = async (postId, message) => {
     try {
-      const response = await fetch(`http://localhost:3000/post/marketplacePosts/${postId}/message`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_BASEURL}/post/marketplacePosts/${postId}/message`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

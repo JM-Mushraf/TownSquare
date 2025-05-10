@@ -9,7 +9,7 @@ function EmergencyPage() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch('http://localhost:3000/emergency/get-all-emergency-services');
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_BASEURL}/emergency/get-all-emergency-services`);
         if (!response.ok) {
           throw new Error('Failed to fetch emergency services');
         }
