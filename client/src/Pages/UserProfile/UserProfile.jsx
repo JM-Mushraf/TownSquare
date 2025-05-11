@@ -1,4 +1,4 @@
-"use client"
+
 import { useState, useEffect, createContext, useContext } from "react"
 import { UserProfileContent } from "./UserProfileContent.jsx"
 import { CheckCircle, X, AlertTriangle, Bell } from "lucide-react"

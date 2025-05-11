@@ -1,8 +1,8 @@
-"use client"
+
 
 import { useState, useEffect } from "react"
 import "./AnnouncementsPage.css"
-import { fetchAnnouncements } from "../Apis/postApi"
+import { fetchAnnouncements } from "../../Apis/postApi.jsx"
 import {
   FiBell,
   FiCalendar,
@@ -23,7 +23,7 @@ import {
   FiZap,
 } from "react-icons/fi"
 import { motion, AnimatePresence } from "framer-motion"
-import ImageCarousel from "./SurveyPage/imageCarousel"
+import ImageCarousel from "../SurveyPage/ImageCarousel"
 
 function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState([])

@@ -1,4 +1,4 @@
-"use client";
+
 
 import { useState, useRef } from "react";
 import { FiEye, FiEyeOff, FiEdit2, FiCheck, FiMail, FiLock, FiUser, FiPhone, FiMapPin, FiHome } from "react-icons/fi";

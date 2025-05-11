@@ -16,7 +16,7 @@ axios.defaults.withCredentials = true
 // Lazy load all page components
 const HomePage = lazy(() => import("./Pages/HomePage/HomePage.jsx"))
 const DiscussionsPage = lazy(() => import("./Pages/DiscussionsPage.jsx"))
-const AnnouncementsPage = lazy(() => import("./Pages/AnnouncementsPage.jsx"))
+const AnnouncementsPage = lazy(() => import("./Pages/Announcements/AnnouncementsPage.jsx"))
 // const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"))
 const UserProfile = lazy(() => import("./Pages/UserProfile/UserProfile.jsx"))
 const EmergencyPage = lazy(() => import("./Pages/EmergencyPage.jsx"))
