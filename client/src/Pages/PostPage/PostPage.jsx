@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 import { useTheme } from "../../components/ThemeProvider"
 import "./PostPage.css"
-import { Vote, ChevronLeft, ChevronRight, Send } from "lucide-react"
+import { Vote, Send } from "lucide-react"
 import { useSelector } from "react-redux"
 import { toast } from "react-hot-toast"
 import "react-toastify/dist/ReactToastify.css"
@@ -106,7 +106,9 @@ const PostPage = () => {
 
     try {
       const endpoint =
-        userVote === "upvote" ? `${import.meta.env.VITE_BACKEND_BASEURL}/post/remove/${id}` : `${import.meta.env.VITE_BACKEND_BASEURL}/post/up/${id}`
+        userVote === "upvote"
+          ? `${import.meta.env.VITE_BACKEND_BASEURL}/post/remove/${id}`
+          : `${import.meta.env.VITE_BACKEND_BASEURL}/post/up/${id}`
 
       const response = await axios.post(
         endpoint,
@@ -149,7 +151,9 @@ const PostPage = () => {
 
     try {
       const endpoint =
-        userVote === "downvote" ? `${import.meta.env.VITE_BACKEND_BASEURL}/post/remove/${id}` : `${import.meta.env.VITE_BACKEND_BASEURL}/post/down/${id}`
+        userVote === "downvote"
+          ? `${import.meta.env.VITE_BACKEND_BASEURL}/post/remove/${id}`
+          : `${import.meta.env.VITE_BACKEND_BASEURL}/post/down/${id}`
 
       const response = await axios.post(
         endpoint,
@@ -384,12 +388,14 @@ const PostPage = () => {
             <p className="xai-post-text">{post.description}</p>
 
             {post.attachments && post.attachments.length > 0 && (
-              <ImageCarousel
-                images={post.attachments.filter((attachment) => attachment.fileType?.startsWith("image/"))}
-              />
+              <div className="xai-post-image-carousel" style={{ maxHeight: "400px", overflow: "hidden" }}>
+                <ImageCarousel
+                  images={post.attachments.filter((attachment) => attachment.fileType?.startsWith("image/"))}
+                />
+              </div>
             )}
 
-            {post.poll && (
+            {post.poll && post.type === "poll" && (
               <div className="xai-post-poll-section">
                 <div className="xai-post-poll-header">
                   <h3 className="xai-post-poll-title">{post.poll.question}</h3>
@@ -517,7 +523,10 @@ const PostPage = () => {
                   <span className="xai-post-action-count">{downVotes}</span>
                 </button>
                 <div className="xai-post-action-spacer"></div>
-                <button className={`xai-post-action-button ${isBookmarked ? "xai-post-active" : ""}`} onClick={handleBookmark}>
+                <button
+                  className={`xai-post-action-button ${isBookmarked ? "xai-post-active" : ""}`}
+                  onClick={handleBookmark}
+                >
                   <span className="xai-post-action-icon xai-post-bookmark">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

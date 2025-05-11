@@ -1445,3 +1445,249 @@
 :root.light .xai-post-comments-section {
   border-top-color: var(--neo-border);
 }
+
+
+/* Enhanced styling for the post page */
+
+.xai-post-page {
+  position: relative;
+  max-width: 900px; /* Reduced from 1200px for better readability */
+  margin: 0 auto;
+  padding: 1.5rem;
+  color: var(--neo-text-primary);
+  min-height: 100vh;
+  overflow: hidden;
+  font-family: var(--font-family);
+}
+
+/* Cyberpunk grid background */
+.xai-post-cyber-grid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(rgba(15, 244, 198, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 244, 198, 0.02) 1px, transparent 1px);
+  background-size: 30px 30px;
+  z-index: -1;
+  animation: xai-post-gridPulse 15s infinite alternate;
+  pointer-events: none;
+}
+
+.xai-post-container {
+  position: relative;
+  border-radius: var(--neo-radius-lg);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  animation: xai-post-fadeIn 0.6s ease-out;
+  box-shadow: var(--neo-shadow-lg);
+}
+
+.xai-post-card {
+  padding: 1.5rem;
+  background-color: var(--neo-bg-card);
+  border: 1px solid var(--neo-border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--neo-radius-lg);
+}
+
+/* Improved header styling */
+.xai-post-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  position: relative;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.xai-post-avatar-container {
+  position: relative;
+  margin-right: 1rem;
+}
+
+.xai-post-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--neo-radius-full);
+  background-color: var(--neo-bg-input);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: var(--neo-text-primary);
+  overflow: hidden;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+  z-index: 1;
+}
+
+/* Enhanced image carousel */
+.xai-post-image-carousel {
+  margin: 1rem 0;
+  border-radius: var(--neo-radius-md);
+  overflow: hidden;
+  box-shadow: var(--neo-shadow-md);
+  background-color: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--neo-border);
+}
+
+.xai-post-carousel-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--neo-radius-md);
+}
+
+.xai-post-carousel-track {
+  display: flex;
+  transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.xai-post-carousel-slide {
+  min-width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.xai-post-carousel-image {
+  max-width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  transition: transform var(--neo-transition-normal);
+}
+
+/* Improved poll section */
+.xai-post-poll-section {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border-radius: var(--neo-radius-md);
+  background-color: rgba(15, 23, 42, 0.2);
+  border: 1px solid var(--neo-border);
+  position: relative;
+  overflow: hidden;
+}
+
+.xai-post-poll-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--neo-gradient-secondary);
+}
+
+.xai-post-poll-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.xai-post-poll-title {
+  font-size: 1.1rem;
+  margin: 0;
+  color: var(--neo-text-primary);
+  font-weight: 600;
+}
+
+/* Enhanced comment section */
+.xai-post-comments-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+}
+
+.xai-post-comment-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+
+.xai-post-comment-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--neo-border);
+  border-radius: var(--neo-radius-md);
+  background-color: rgba(15, 23, 42, 0.2);
+  color: var(--neo-text-primary);
+  font-size: 0.95rem;
+  transition: all var(--neo-transition-normal);
+}
+
+.xai-post-comment {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--neo-radius-md);
+  background-color: rgba(15, 23, 42, 0.15);
+  transition: all var(--neo-transition-normal);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.xai-post-comment:hover {
+  background-color: rgba(15, 23, 42, 0.25);
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .xai-post-page {
+    padding: 1rem 0.75rem;
+  }
+
+  .xai-post-card {
+    padding: 1.25rem 1rem;
+  }
+
+  .xai-post-title {
+    font-size: 1.4rem;
+  }
+
+  .xai-post-text {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .xai-post-carousel-image {
+    max-height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .xai-post-header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .xai-post-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .xai-post-author-name {
+    font-size: 1rem;
+  }
+
+  .xai-post-carousel-image {
+    max-height: 200px;
+  }
+
+  .xai-post-comment-avatar {
+    width: 32px;
+    height: 32px;
+  }
+}
