@@ -10,6 +10,7 @@ import session from 'express-session';
 import { MessageRouter } from "./routes/messageRouter.js";
 
 export const app = express();
+dotenv.config()
 // app.use(Error)
 app.use(
   cors({
@@ -17,13 +18,20 @@ app.use(
     credentials: true, // if you're using cookies or HTTP authentication
   })
 );
+const isProduction = process.env.NODE_ENV === "production";
+// console.log("#############################",isProduction);
+
 app.use(session({
-  secret: 'Mushraf123',  // Using your custom secret key
+  secret: process.env.SESSION_SECRET, // move to .env ideally
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false }  // Set to true if using HTTPS in production
+  cookie: {
+    secure: isProduction,       // send cookie only over HTTPS in production
+    httpOnly: true,
+    sameSite: isProduction ? "none" : "lax", // support cross-origin cookie if needed
+  },
 }));
-
+app.set("trust proxy", 1);
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static("public"));

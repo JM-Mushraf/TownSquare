@@ -360,7 +360,7 @@ function CreatePost() {
         throw new Error("User is not authenticated");
       }
 
-      const response = await axios.post("http://localhost:3000/post/create", postData, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_BASEURL}/post/create`, postData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,

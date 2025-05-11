@@ -595,7 +595,7 @@ export const PostCard = ({ post, navigate }) => {
 
       try {
         const response = await axios.post(
-          "http://localhost:3000/post/vote",
+          `${import.meta.env.VITE_BACKEND_BASEURL}/post/vote`,
           {
             postId: post._id,
             optionId: optionId,
@@ -612,7 +612,7 @@ export const PostCard = ({ post, navigate }) => {
           setSyncAnimation(true)
           toast.success("Vote registered")
 
-          const postResponse = await axios.get(`http://localhost:3000/post/${post._id}`, {
+          const postResponse = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${post._id}`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -779,7 +779,7 @@ export const PostCard = ({ post, navigate }) => {
 
       try {
         const response = await axios.post(
-          `http://localhost:3000/post/marketplacePosts/${post._id}/message`,
+          `${import.meta.env.VITE_BACKEND_BASEURL}/post/marketplacePosts/${post._id}/message`,
           { message: contactMessage },
           {
             headers: {
