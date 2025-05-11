@@ -9,7 +9,7 @@ import axios from "axios"
 import { Toaster } from "react-hot-toast"
 import { useSelector } from "react-redux"
 import SurveysPage from "./Pages/SurveyPage/SurveysPage.jsx"
-import MarketplacePage from "./Pages/MarketplacePage.jsx"
+
 import PostPage from './Pages/PostPage/PostPage.jsx'
 axios.defaults.withCredentials = true
 
@@ -20,6 +20,8 @@ const AnnouncementsPage = lazy(() => import("./Pages/AnnouncementsPage.jsx"))
 // const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"))
 const UserProfile = lazy(() => import("./Pages/UserProfile/UserProfile.jsx"))
 const EmergencyPage = lazy(() => import("./Pages/EmergencyPage.jsx"))
+const MarketplacePage = lazy(() => import("./Pages/MarketplacePage.jsx"))
+
 
 const AuthPage = lazy(() => import("./components/Login.jsx"))
 const CreatePost = lazy(() => import("./components/CreatePost.jsx"))
