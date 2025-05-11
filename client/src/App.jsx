@@ -1,30 +1,30 @@
-"use client"
+
 
 import { Suspense, lazy } from "react"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
-import { ThemeProvider } from "./components/ThemeProvider"
-import Layout from "./components/Layout"
+import { ThemeProvider } from "./components/ThemeProvider.jsx"
+import Layout from "./components/Layout.jsx"
 import "./App.css"
 import axios from "axios"
 import { Toaster } from "react-hot-toast"
 import { useSelector } from "react-redux"
-import SurveysPage from "./Pages/SurveyPage/SurveysPage"
-import MarketplacePage from "./pages/MarketplacePage"
-import PostPage from './Pages/PostPage/PostPage'
+import SurveysPage from "./Pages/SurveyPage/SurveysPage.jsx"
+import MarketplacePage from "./Pages/MarketplacePage.jsx"
+import PostPage from './Pages/PostPage/PostPage.jsx'
 axios.defaults.withCredentials = true
 
 // Lazy load all page components
-const HomePage = lazy(() => import("./Pages/HomePage/HomePage"))
-const DiscussionsPage = lazy(() => import("./Pages/DiscussionsPage"))
-const AnnouncementsPage = lazy(() => import("./Pages/AnnouncementsPage"))
+const HomePage = lazy(() => import("./Pages/HomePage/HomePage.jsx"))
+const DiscussionsPage = lazy(() => import("./Pages/DiscussionsPage.jsx"))
+const AnnouncementsPage = lazy(() => import("./Pages/AnnouncementsPage.jsx"))
 // const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"))
-const UserProfile = lazy(() => import("./Pages/UserProfile/UserProfile"))
-const EmergencyPage = lazy(() => import("./Pages/EmergencyPage"))
+const UserProfile = lazy(() => import("./Pages/UserProfile/UserProfile.jsx"))
+const EmergencyPage = lazy(() => import("./Pages/EmergencyPage.jsx"))
 
-const AuthPage = lazy(() => import("./components/Login"))
-const CreatePost = lazy(() => import("./components/CreatePost"))
+const AuthPage = lazy(() => import("./components/Login.jsx"))
+const CreatePost = lazy(() => import("./components/CreatePost.jsx"))
 
-const Verify = lazy(() => import("./pages/Verification/Verify"))
+const Verify = lazy(() => import("./Pages/Verification/Verify.jsx"))
 
 
 // Loading component
