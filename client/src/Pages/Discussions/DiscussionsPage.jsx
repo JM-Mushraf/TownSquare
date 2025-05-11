@@ -2,12 +2,12 @@ import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import "./DiscussionsPage.css";
 import { useSelector } from "react-redux";
-import { formatDate } from "./utils/formatDate";
-import { renderIcon } from "./utils/renderIcon";
+import { formatDate } from '../utils/formatDate.jsx';
+import { renderIcon } from "../utils/renderIcon.jsx";
 import { io } from "socket.io-client";
 import EmojiPicker from "emoji-picker-react";
 import { useNavigate } from "react-router-dom";
-import { useTheme } from "../components/ThemeProvider";
+import { useTheme } from "../../components/ThemeProvider.jsx";
 function DiscussionsPage() {
   const {theme}=useTheme()
   const [activeChannel, setActiveChannel] = useState(null);

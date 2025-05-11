@@ -19,8 +19,8 @@ const DiscussionsPage = lazy(() => import("./Pages/DiscussionsPage.jsx"))
 const AnnouncementsPage = lazy(() => import("./Pages/Announcements/AnnouncementsPage.jsx"))
 // const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"))
 const UserProfile = lazy(() => import("./Pages/UserProfile/UserProfile.jsx"))
-const EmergencyPage = lazy(() => import("./Pages/EmergencyPage.jsx"))
-const MarketplacePage = lazy(() => import("./Pages/MarketplacePage.jsx"))
+const EmergencyPage = lazy(() => import("./Pages/Emergency/EmergencyPage.jsx"))
+const MarketplacePage = lazy(() => import("./Pages/MarketPlace/MarketplacePage.jsx"))
 
 
 const AuthPage = lazy(() => import("./components/Login.jsx"))
