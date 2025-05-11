@@ -1,39 +1,53 @@
-"use client"
-
-import { useState, useRef, useEffect } from "react"
-import axios from "axios"
-import "./DiscussionsPage.css"
-import { useSelector } from "react-redux"
-import { formatDate } from "./utils/formatDate"
-import { renderIcon } from "./utils/renderIcon"
-import { io } from "socket.io-client"
-import EmojiPicker from "emoji-picker-react"
-import { useTheme } from "../components/ThemeProvider"
-
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import "./DiscussionsPage.css";
+import { useSelector } from "react-redux";
+import { formatDate } from "./utils/formatDate";
+import { renderIcon } from "./utils/renderIcon";
+import { io } from "socket.io-client";
+import EmojiPicker from "emoji-picker-react";
+import { useNavigate } from "react-router-dom";
+import { useTheme } from "../components/ThemeProvider";
 function DiscussionsPage() {
-  const { theme } = useTheme()
-  const [activeChannel, setActiveChannel] = useState(null)
-  const [messages, setMessages] = useState([])
-  const [newMessage, setNewMessage] = useState("")
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isChannelsOpen, setIsChannelsOpen] = useState(false)
-  const [channels, setChannels] = useState([])
-  const [isLoadingChannels, setIsLoadingChannels] = useState(true)
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false)
-  const [selectedFiles, setSelectedFiles] = useState([])
-  const [previewUrls, setPreviewUrls] = useState([])
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  const [showMembersPopup, setShowMembersPopup] = useState(false)
-  const [currentGroupMembers, setCurrentGroupMembers] = useState([])
-  const [isTyping, setIsTyping] = useState(false)
-  const fileInputRef = useRef(null)
-  const messagesEndRef = useRef(null)
-  const emojiPickerRef = useRef(null)
-  const messagesContainerRef = useRef(null)
-  const typingTimeoutRef = useRef(null)
+  const {theme}=useTheme()
+  const [activeChannel, setActiveChannel] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isChannelsOpen, setIsChannelsOpen] = useState(false);
+  const [channels, setChannels] = useState([]);
+  const [isLoadingChannels, setIsLoadingChannels] = useState(true);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showMembersPopup, setShowMembersPopup] = useState(false);
+  const [currentGroupMembers, setCurrentGroupMembers] = useState([]);
+  const [isTyping,setIsTyping]=useState(false);
+  const fileInputRef = useRef(null);
+  const messagesEndRef = useRef(null);
+  const emojiPickerRef = useRef(null);
+  const messagesContainerRef=useRef(null);
+  const typingTimeoutRef=useRef(null);
+  const navigate=useNavigate();
+  const { userData,token } = useSelector((state) => state.user);
+const api = axios.create({
+  baseURL: import.meta.env.VITE_BACKEND_BASEURL,
+  headers: {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  },
+});
 
-  const { userData } = useSelector((state) => state.user)
-
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      navigate(`${import.meta.env.VITE_BACKEND_BASEURL}/login`)
+    }
+    return Promise.reject(error);
+  }
+);
   // Initialize Socket.IO client
   const socket = useRef(null)
 
@@ -46,12 +60,14 @@ function DiscussionsPage() {
 
   useEffect(() => {
     // Connect to the Socket.IO server
-    socket.current = io("http://localhost:3000", {
+    socket.current = io(`${import.meta.env.VITE_BACKEND_BASEURL}`, {
       withCredentials: true,
-    })
+    auth: { token },
+    });
 
     // Listen for new group messages
     socket.current.on("receive-group-message", (newMessage) => {
+      
       setMessages((prevMessages) => {
         // Check if message already exists to prevent duplicates
         if (!prevMessages.some((msg) => msg._id === newMessage._id)) {
@@ -150,13 +166,10 @@ function DiscussionsPage() {
   useEffect(() => {
     const fetchUserChats = async () => {
       try {
-        setIsLoadingChannels(true)
-        const { data } = await axios.get("http://localhost:3000/user/chats", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
-        setChannels(data.chats)
+        setIsLoadingChannels(true);
+        const { data } = await api.get('/user/chats');
+        await setChannels(data.chats);
+        
 
         if (data.chats.length > 0) {
           setActiveChannel(data.chats[0])
@@ -175,14 +188,12 @@ function DiscussionsPage() {
   // Fetch messages for a specific chat
   const fetchMessages = async (chatId) => {
     try {
-      setIsLoadingMessages(true)
-      const response = await axios.get(`http://localhost:3000/message/all/${chatId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-      const sortedMessages = response.data.messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
-      setMessages(sortedMessages)
+      setIsLoadingMessages(true);
+      const response = await api.get(`/message/all/${chatId}`);
+      const sortedMessages = response.data.messages.sort(
+        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+      );
+      setMessages(sortedMessages);
 
       // Join the group room
       socket.current.emit("join-group", chatId)
@@ -219,12 +230,15 @@ function DiscussionsPage() {
         formData.append("attachments", file)
       })
 
-      const response = await axios.post("http://localhost:3000/message/send", formData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      const response = await api.post(
+        `/message/send`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
 
       const newMessageWithSender = {
         ...response.data.newMessage,

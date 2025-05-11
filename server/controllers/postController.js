@@ -876,8 +876,8 @@ export const viewResults = async (req, res) => {
     });
   }
 };
-//MarketPlace
 
+//MarketPlace
 // Fetch marketplace posts
 export const getMarketplacePosts = async (req, res) => {
   try {
@@ -1221,6 +1221,7 @@ export const downvotePost = async (req, res) => {
     });
   }
 };
+
 // Remove a vote from a post
 export const removeVote = async (req, res) => {
   try {

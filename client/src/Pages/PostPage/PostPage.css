@@ -1,63 +1,290 @@
 :root {
-  --primary-color: #00f5ff;
-  --primary-hover: #00c8ff;
-  --secondary-color: #ff00cc;
-  --accent-color: #7928ca;
-  --background: #000000;
-  --card-bg: #0a0a0a;
-  --text-color: #ffffff;
-  --text-muted: #a0a0a0;
-  --border-color: #222222;
-  --hover-bg: rgba(255, 255, 255, 0.05);
-  --avatar-bg: #333333;
-  --avatar-text: #ffffff;
-  --tag-bg: #333333;
-  --tag-text: #ffffff;
-  --input-bg: #111111;
-  --image-bg: #111111;
+  /* Primary Colors */
+  --neo-primary: #652cff;
+  --neo-secondary: #0ff4c6;
+  --neo-accent: #ff2cf3;
+  --neo-warning: #ffb01f;
+  --neo-danger: #ff3d5e;
 
-  /* Dark mode specific */
-  --dark-card-bg: #0a0a0a;
-  --dark-text-color: #f0f0f0;
-  --dark-border-color: #333333;
-  --dark-input-bg: #111111;
+  /* Background Colors */
+  --neo-bg-dark: #030014;
+  --neo-bg-card: rgba(23, 25, 35, 0.6);
+  --neo-bg-input: rgba(15, 23, 42, 0.3);
+
+  /* Text Colors */
+  --neo-text-primary: #e2e8ff;
+  --neo-text-secondary: #94a3b8;
+  --neo-text-accent: #0ff4c6;
+
+  /* Border Colors */
+  --neo-border: rgba(255, 255, 255, 0.1);
+  --neo-border-glow: rgba(101, 44, 255, 0.3);
+
+  /* Glassmorphism */
+  --neo-glass-bg: rgba(15, 23, 42, 0.3);
+  --neo-glass-border: rgba(255, 255, 255, 0.1);
+  --neo-glass-highlight: rgba(255, 255, 255, 0.05);
+
+  /* Shadows */
+  --neo-shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.2);
+  --neo-shadow-md: 0 4px 10px rgba(0, 0, 0, 0.3);
+  --neo-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
+
+  /* Glows */
+  --neo-glow-primary: 0 0 15px rgba(101, 44, 255, 0.6);
+  --neo-glow-secondary: 0 0 15px rgba(15, 244, 198, 0.6);
+  --neo-glow-accent: 0 0 15px rgba(255, 44, 243, 0.6);
+  --neo-glow-warning: 0 0 15px rgba(255, 176, 31, 0.6);
+  --neo-glow-danger: 0 0 15px rgba(255, 61, 94, 0.6);
+
+  /* Gradients */
+  --neo-gradient-primary: linear-gradient(135deg, #652cff, #0ff4c6);
+  --neo-gradient-secondary: linear-gradient(135deg, #0ff4c6, #ff2cf3);
+  --neo-gradient-accent: linear-gradient(135deg, #ff2cf3, #ffb01f);
+
+  /* Holographic effect */
+  --neo-holographic: linear-gradient(
+    135deg,
+    rgba(255, 44, 243, 0.5),
+    rgba(101, 44, 255, 0.5),
+    rgba(15, 244, 198, 0.5),
+    rgba(255, 176, 31, 0.5)
+  );
+
+  /* Transitions */
+  --neo-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --neo-transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --neo-transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --neo-transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Border Radius */
+  --neo-radius-sm: 0.5rem;
+  --neo-radius-md: 0.75rem;
+  --neo-radius-lg: 1rem;
+  --neo-radius-xl: 1.5rem;
+  --neo-radius-full: 9999px;
+
+  /* Original TownSquare Variables */
+  --background: #030014;
+  --foreground: #e2e8ff;
+  --glass-background: rgba(15, 23, 42, 0.3);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.05);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --card: rgba(23, 25, 35, 0.6);
+  --card-foreground: #e2e8ff;
+  --card-hover: rgba(38, 43, 70, 0.8);
+  --card-glow: 0 0 15px rgba(101, 44, 255, 0.3);
+  --primary: #652cff;
+  --primary-foreground: #ffffff;
+  --primary-glow: 0 0 20px rgba(101, 44, 255, 0.6);
+  --secondary: #0ff4c6;
+  --secondary-foreground: #050505;
+  --secondary-glow: 0 0 20px rgba(15, 244, 198, 0.6);
+  --accent: #ff2cf3;
+  --accent-foreground: #ffffff;
+  --accent-glow: 0 0 20px rgba(255, 44, 243, 0.6);
+  --muted: rgba(30, 41, 59, 0.6);
+  --muted-foreground: #94a3b8;
+  --destructive: #ff3d5e;
+  --destructive-foreground: #ffffff;
+  --destructive-glow: 0 0 20px rgba(255, 61, 94, 0.6);
+  --success: #0ff4c6;
+  --success-foreground: #050505;
+  --success-glow: 0 0 20px rgba(15, 244, 198, 0.6);
+  --warning: #ffb01f;
+  --warning-foreground: #050505;
+  --warning-glow: 0 0 20px rgba(255, 176, 31, 0.6);
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #652cff;
+  --radius: 0.75rem;
+  --radius-sm: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+  --gradient-primary: linear-gradient(135deg, #652cff, #0ff4c6);
+  --gradient-secondary: linear-gradient(135deg, #0ff4c6, #ff2cf3);
+  --gradient-accent: linear-gradient(135deg, #ff2cf3, #ffb01f);
+  --gradient-dark: linear-gradient(135deg, #030014, #1a103f);
+  --holographic: linear-gradient(
+    135deg,
+    rgba(255, 44, 243, 0.5),
+    rgba(101, 44, 255, 0.5),
+    rgba(15, 244, 198, 0.5),
+    rgba(255, 176, 31, 0.5)
+  );
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.5);
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --font-family: "Space Grotesk", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  --button-foreground: #e2e8ff;
+
+  /* Poll-specific variables */
+  --poll-option-bg: rgba(15, 23, 42, 0.4);
+  --poll-option-selected-bg: rgba(101, 44, 255, 0.2);
+  --poll-bar-bg: rgba(255, 255, 255, 0.1);
+  --primary-color: #652cff;
+  --text-muted: #94a3b8;
 
   /* Poll colors */
-  --poll-color-0: #00f5ff;
-  --poll-color-1: #ff00cc;
-  --poll-color-2: #ffbb00;
-  --poll-color-3: #00ff88;
+  --poll-color-0: #652cff;
+  --poll-color-1: #0ff4c6;
+  --poll-color-2: #ff2cf3;
+  --poll-color-3: #ffb01f;
 }
 
+/* Light mode variables */
+:root.light {
+  /* Neo Light Mode Variables */
+  --neo-primary: #4f46e5;
+  --neo-secondary: #0d9488;
+  --neo-accent: #d946ef;
+  --neo-warning: #f59e0b;
+  --neo-danger: #ef4444;
 
+  --neo-bg-dark: #f8fafc;
+  --neo-bg-card: rgba(255, 255, 255, 0.8);
+  --neo-bg-input: rgba(226, 232, 240, 0.8);
 
-.neo-post-page {
+  --neo-text-primary: #0f172a;
+  --neo-text-secondary: #64748b;
+  --neo-text-accent: #0d9488;
+
+  --neo-border: rgba(226, 232, 240, 0.8);
+  --neo-border-glow: rgba(79, 70, 229, 0.2);
+
+  --neo-glass-bg: rgba(255, 255, 255, 0.7);
+  --neo-glass-border: rgba(15, 23, 42, 0.1);
+  --neo-glass-highlight: rgba(255, 255, 255, 0.9);
+
+  --neo-shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
+  --neo-shadow-md: 0 4px 10px rgba(0, 0, 0, 0.15);
+  --neo-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.2);
+
+  --neo-glow-primary: 0 0 20px rgba(79, 70, 229, 0.3);
+  --neo-glow-secondary: 0 0 20px rgba(13, 148, 136, 0.3);
+  --neo-glow-accent: 0 0 20px rgba(217, 70, 239, 0.3);
+  --neo-glow-warning: 0 0 20px rgba(245, 158, 11, 0.3);
+  --neo-glow-danger: 0 0 20px rgba(239, 68, 68, 0.3);
+
+  --neo-gradient-primary: linear-gradient(135deg, #4f46e5, #0d9488);
+  --neo-gradient-secondary: linear-gradient(135deg, #0d9488, #d946ef);
+  --neo-gradient-accent: linear-gradient(135deg, #d946ef, #f59e0b);
+
+  --neo-holographic: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.3),
+    rgba(13, 148, 136, 0.3),
+    rgba(217, 70, 239, 0.3),
+    rgba(245, 158, 11, 0.3)
+  );
+
+  /* Original TownSquare Light Mode Variables */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --glass-background: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(15, 23, 42, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+  --glass-shadow: 0 8px 32px rgba(15, 23, 42, 0.1);
+  --card: rgba(255, 255, 255, 0.8);
+  --card-foreground: #0f172a;
+  --card-hover: rgba(255, 255, 255, 0.95);
+  --card-glow: 0 0 15px rgba(99, 102, 241, 0.2);
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+  --primary-glow: 0 0 20px rgba(79, 70, 229, 0.3);
+  --secondary: #0d9488;
+  --secondary-foreground: #ffffff;
+  --secondary-glow: 0 0 20px rgba(13, 148, 136, 0.3);
+  --accent: #d946ef;
+  --accent-foreground: #ffffff;
+  --accent-glow: 0 0 20px rgba(217, 70, 239, 0.3);
+  --muted: rgba(241, 245, 249, 0.8);
+  --muted-foreground: #64748b;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --destructive-glow: 0 0 20px rgba(239, 68, 68, 0.3);
+  --success: #10b981;
+  --success-foreground: #ffffff;
+  --success-glow: 0 0 20px rgba(16, 185, 129, 0.3);
+  --warning: #f59e0b;
+  --warning-foreground: #ffffff;
+  --warning-glow: 0 0 20px rgba(245, 158, 11, 0.3);
+  --border: rgba(226, 232, 240, 0.8);
+  --input: rgba(226, 232, 240, 0.8);
+  --ring: #4f46e5;
+  --gradient-primary: linear-gradient(135deg, #4f46e5, #0d9488);
+  --gradient-secondary: linear-gradient(135deg, #0d9488, #d946ef);
+  --gradient-accent: linear-gradient(135deg, #d946ef, #f59e0b);
+  --gradient-light: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  --holographic: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.3),
+    rgba(13, 148, 136, 0.3),
+    rgba(217, 70, 239, 0.3),
+    rgba(245, 158, 11, 0.3)
+  );
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.25);
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --font-family: "Space Grotesk", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  --button-foreground: #0f172a;
+
+  /* Poll-specific variables */
+  --poll-option-bg: rgba(241, 245, 249, 0.8);
+  --poll-option-selected-bg: rgba(79, 70, 229, 0.1);
+  --poll-bar-bg: rgba(226, 232, 240, 0.8);
+  --primary-color: #4f46e5;
+  --text-muted: #64748b;
+
+  /* Poll colors */
+  --poll-color-0: #4f46e5;
+  --poll-color-1: #0d9488;
+  --poll-color-2: #d946ef;
+  --poll-color-3: #f59e0b;
+}
+
+.xai-post-page {
   position: relative;
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  color: var(--text-color);
-  background-color: var(--background);
+  color: var(--neo-text-primary);
+  /* background-color: var(--neo-bg-dark); */
   min-height: 100vh;
   overflow: hidden;
+  font-family: var(--font-family);
 }
 
 /* Cyberpunk grid background */
-.cyber-grid {
+.xai-post-cyber-grid {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(15, 244, 198, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 244, 198, 0.03) 1px, transparent 1px);
   background-size: 30px 30px;
   z-index: -1;
-  animation: gridPulse 15s infinite alternate;
+  animation: xai-post-gridPulse 15s infinite alternate;
   pointer-events: none;
 }
 
-@keyframes gridPulse {
+@keyframes xai-post-gridPulse {
   0% {
     opacity: 0.3;
   }
@@ -69,15 +296,15 @@
   }
 }
 
-.neo-post-container {
+.xai-post-container {
   position: relative;
-  border-radius: 12px;
+  border-radius: var(--neo-radius-lg);
   overflow: hidden;
   backdrop-filter: blur(10px);
-  animation: fadeIn 0.6s ease-out;
+  animation: xai-post-fadeIn 0.6s ease-out;
 }
 
-@keyframes fadeIn {
+@keyframes xai-post-fadeIn {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -88,50 +315,50 @@
   }
 }
 
-.neo-post-card {
+.xai-post-card {
   padding: 2rem;
-  background-color: rgba(10, 10, 10, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 20px rgba(0, 245, 255, 0.1), 0 0 40px rgba(0, 245, 255, 0.05);
+  background-color: var(--neo-bg-card);
+  border: 1px solid var(--neo-border);
+  box-shadow: var(--neo-shadow-lg), var(--neo-glow-secondary);
   position: relative;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: var(--neo-radius-lg);
 }
 
-.neo-post-card::before {
+.xai-post-card::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  background: var(--neo-gradient-primary);
   z-index: 1;
-  box-shadow: 0 0 10px rgba(0, 245, 255, 0.7);
+  box-shadow: var(--neo-glow-primary);
 }
 
-.neo-post-header {
+.xai-post-header {
   display: flex;
   align-items: center;
   margin-bottom: 1.5rem;
   position: relative;
 }
 
-.neo-avatar-container {
+.xai-post-avatar-container {
   position: relative;
   margin-right: 1rem;
 }
 
-.neo-avatar {
+.xai-post-avatar {
   width: 48px;
   height: 48px;
-  border-radius: 50%;
-  background-color: var(--avatar-bg);
+  border-radius: var(--neo-radius-full);
+  background-color: var(--neo-bg-input);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  color: var(--avatar-text);
+  color: var(--neo-text-primary);
   overflow: hidden;
   border: 2px solid transparent;
   background-clip: padding-box;
@@ -139,41 +366,41 @@
   z-index: 1;
 }
 
-.neo-avatar img {
+.xai-post-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.neo-avatar-glow {
+.xai-post-avatar-glow {
   position: absolute;
   top: -4px;
   left: -4px;
   right: -4px;
   bottom: -4px;
-  border-radius: 50%;
-  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+  border-radius: var(--neo-radius-full);
+  background: var(--neo-gradient-primary);
   z-index: 0;
   opacity: 0.7;
   filter: blur(4px);
-  animation: glowPulse 3s infinite alternate;
+  animation: xai-post-glowPulse 3s infinite alternate;
 }
 
-.neo-comment-avatar-glow {
+.xai-post-comment-avatar-glow {
   position: absolute;
   top: -3px;
   left: -3px;
   right: -3px;
   bottom: -3px;
-  border-radius: 50%;
-  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+  border-radius: var(--neo-radius-full);
+  background: var(--neo-gradient-primary);
   z-index: 0;
   opacity: 0.5;
   filter: blur(3px);
-  animation: glowPulse 3s infinite alternate;
+  animation: xai-post-glowPulse 3s infinite alternate;
 }
 
-@keyframes glowPulse {
+@keyframes xai-post-glowPulse {
   0% {
     opacity: 0.5;
     filter: blur(4px);
@@ -184,28 +411,28 @@
   }
 }
 
-.neo-author-info {
+.xai-post-author-info {
   flex: 1;
 }
 
-.neo-author-name-container {
+.xai-post-author-name-container {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.neo-author-name {
+.xai-post-author-name {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  background: linear-gradient(90deg, #ffffff, var(--primary-color));
+  background: var(--neo-gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: shimmer 3s infinite;
+  animation: xai-post-shimmer 3s infinite;
   background-size: 200% auto;
 }
 
-@keyframes shimmer {
+@keyframes xai-post-shimmer {
   0% {
     background-position: -100% 0;
   }
@@ -214,74 +441,74 @@
   }
 }
 
-.neo-post-type {
+.xai-post-type {
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  background-color: var(--tag-bg);
-  color: var(--tag-text);
+  border-radius: var(--neo-radius-sm);
+  background-color: var(--neo-bg-input);
+  color: var(--neo-text-primary);
   text-transform: capitalize;
   position: relative;
   overflow: hidden;
 }
 
-.neo-post-type::before {
+.xai-post-type::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, var(--neo-glass-highlight), transparent);
   transform: translateX(-100%);
-  animation: shimmerEffect 2s infinite;
+  animation: xai-post-shimmerEffect 2s infinite;
 }
 
-@keyframes shimmerEffect {
+@keyframes xai-post-shimmerEffect {
   100% {
     transform: translateX(100%);
   }
 }
 
-.neo-post-type-discussion {
-  background-color: var(--primary-color);
-  color: #000;
+.xai-post-type-discussion {
+  background-color: var(--neo-primary);
+  color: var(--primary-foreground);
 }
 
-.neo-post-type-announcements {
+.xai-post-type-announcements {
   background-color: #4a6bdf;
-  color: white;
+  color: var(--primary-foreground);
 }
 
-.neo-post-type-poll {
-  background-color: #e67e22;
-  color: white;
+.xai-post-type-poll {
+  background-color: var(--neo-warning);
+  color: var(--warning-foreground);
 }
 
-.neo-post-type-marketplace {
-  background-color: #2ecc71;
-  color: white;
+.xai-post-type-marketplace {
+  background-color: var(--success);
+  color: var(--success-foreground);
 }
 
-.neo-post-type-issue {
-  background-color: #e74c3c;
-  color: white;
+.xai-post-type-issue {
+  background-color: var(--neo-danger);
+  color: var(--destructive-foreground);
 }
 
-.neo-post-meta {
+.xai-post-meta {
   display: flex;
   gap: 1rem;
   font-size: 0.85rem;
-  color: var(--text-muted);
+  color: var(--neo-text-secondary);
   margin-top: 0.25rem;
 }
 
-.neo-timestamp {
+.xai-post-timestamp {
   position: relative;
   padding-left: 16px;
 }
 
-.neo-timestamp::before {
+.xai-post-timestamp::before {
   content: "";
   position: absolute;
   left: 0;
@@ -289,12 +516,12 @@
   transform: translateY(-50%);
   width: 8px;
   height: 8px;
-  background-color: var(--primary-color);
-  border-radius: 50%;
-  animation: blinkDot 2s infinite;
+  background-color: var(--neo-primary);
+  border-radius: var(--neo-radius-full);
+  animation: xai-post-blinkDot 2s infinite;
 }
 
-@keyframes blinkDot {
+@keyframes xai-post-blinkDot {
   0%,
   100% {
     opacity: 1;
@@ -304,110 +531,110 @@
   }
 }
 
-.neo-post-sent-from {
-  color: var(--secondary-color);
+.xai-post-sent-from {
+  color: var(--neo-secondary);
   position: relative;
   overflow: hidden;
 }
 
-.neo-post-content {
+.xai-post-content {
   margin-bottom: 2rem;
   position: relative;
 }
 
-.neo-post-title {
+.xai-post-title {
   font-size: 1.8rem;
   margin-bottom: 1rem;
-  color: var(--text-color);
-  text-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
+  color: var(--neo-text-primary);
+  text-shadow: var(--neo-glow-secondary);
   letter-spacing: 0.5px;
 }
 
-.neo-post-text {
+.xai-post-text {
   font-size: 1.1rem;
   line-height: 1.6;
   margin-bottom: 1.5rem;
-  color: var(--text-color);
+  color: var(--neo-text-primary);
   white-space: pre-line;
   position: relative;
   z-index: 1;
 }
 
 /* Image Carousel Styles */
-.neo-image-carousel {
+.xai-post-image-carousel {
   margin: 1.5rem 0;
-  border-radius: 12px;
+  border-radius: var(--neo-radius-lg);
   overflow: hidden;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--neo-shadow-lg);
 }
 
-.neo-carousel-container {
+.xai-post-carousel-container {
   position: relative;
   width: 100%;
   overflow: hidden;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: var(--neo-radius-lg);
+  border: 1px solid var(--neo-border);
+  background-color: var(--neo-glass-bg);
 }
 
-.neo-carousel-track {
+.xai-post-carousel-track {
   display: flex;
   transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
-.neo-carousel-slide {
+.xai-post-carousel-slide {
   min-width: 100%;
   position: relative;
 }
 
-.neo-carousel-image {
+.xai-post-carousel-image {
   width: 100%;
   height: auto;
   max-height: 500px;
   object-fit: contain;
-  background-color: var(--image-bg);
-  transition: transform 0.3s;
+  background-color: var(--neo-bg-input);
+  transition: transform var(--neo-transition-normal);
 }
 
-.neo-carousel-button {
+.xai-post-carousel-button {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background-color: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
+  background-color: var(--neo-glass-bg);
+  border: 1px solid var(--neo-glass-border);
+  color: var(--neo-text-primary);
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--neo-radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  transition: all 0.3s;
+  transition: all var(--neo-transition-normal);
   opacity: 0.7;
 }
 
-.neo-carousel-button:hover {
-  background-color: rgba(0, 0, 0, 0.8);
+.xai-post-carousel-button:hover {
+  background-color: var(--neo-glass-highlight);
   opacity: 1;
-  box-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+  box-shadow: var(--neo-glow-secondary);
 }
 
-.neo-carousel-button-prev {
+.xai-post-carousel-button-prev {
   left: 15px;
 }
 
-.neo-carousel-button-next {
+.xai-post-carousel-button-next {
   right: 15px;
 }
 
-.neo-carousel-icon {
+.xai-post-carousel-icon {
   width: 24px;
   height: 24px;
 }
 
-.neo-carousel-indicators {
+.xai-post-carousel-indicators {
   position: absolute;
   bottom: 15px;
   left: 0;
@@ -418,50 +645,50 @@
   z-index: 10;
 }
 
-.neo-carousel-indicator {
+.xai-post-carousel-indicator {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: var(--neo-radius-full);
+  background-color: var(--neo-glass-highlight);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--neo-transition-normal);
   border: none;
   padding: 0;
 }
 
-.neo-carousel-indicator:hover {
-  background-color: rgba(255, 255, 255, 0.8);
+.xai-post-carousel-indicator:hover {
+  background-color: var(--neo-text-primary);
 }
 
-.neo-carousel-indicator.active {
-  background-color: var(--primary-color);
-  box-shadow: 0 0 10px var(--primary-color);
+.xai-post-carousel-indicator.active {
+  background-color: var(--neo-primary);
+  box-shadow: var(--neo-glow-primary);
   width: 24px;
-  border-radius: 4px;
+  border-radius: var(--neo-radius-sm);
 }
 
 /* Poll Section */
-.neo-poll-section {
+.xai-post-poll-section {
   margin: 2rem 0;
   padding: 1.5rem;
-  border-radius: 12px;
-  background-color: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--neo-radius-lg);
+  background-color: var(--neo-glass-bg);
+  border: 1px solid var(--neo-border);
   position: relative;
   overflow: hidden;
 }
 
-.neo-poll-section::before {
+.xai-post-poll-section::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, var(--secondary-color), transparent);
+  background: var(--neo-gradient-secondary);
 }
 
-.neo-poll-header {
+.xai-post-poll-header {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -469,267 +696,267 @@
   margin-bottom: 1.5rem;
 }
 
-.neo-poll-title {
+.xai-post-poll-title {
   font-size: 1.3rem;
   margin: 0 0 0.5rem 0;
-  color: var(--text-color);
+  color: var(--neo-text-primary);
   flex: 1;
   min-width: 200px;
 }
 
-.neo-poll-meta {
+.xai-post-poll-meta {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.neo-poll-status {
+.xai-post-poll-status {
   font-size: 0.8rem;
   padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  background-color: rgba(255, 255, 255, 0.1);
-  color: var(--text-muted);
+  border-radius: var(--neo-radius-sm);
+  background-color: var(--neo-glass-bg);
+  color: var(--neo-text-secondary);
 }
 
-.neo-poll-status.active {
-  background-color: rgba(46, 204, 113, 0.2);
-  color: #2ecc71;
+.xai-post-poll-status.active {
+  background-color: var(--success);
+  color: var(--success-foreground);
 }
 
-.neo-poll-votes {
+.xai-post-poll-votes {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.85rem;
-  color: var(--text-muted);
+  color: var(--neo-text-secondary);
 }
 
-.neo-poll-icon {
+.xai-post-poll-icon {
   width: 16px;
   height: 16px;
 }
 
-.neo-poll-results {
+.xai-post-poll-results {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
 }
 
-.neo-poll-result {
+.xai-post-poll-result {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.neo-poll-result-header {
+.xai-post-poll-result-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.neo-poll-result-label {
+.xai-post-poll-result-label {
   font-size: 1rem;
-  color: var(--text-color);
+  color: var(--neo-text-primary);
 }
 
-.neo-poll-result-percentage {
+.xai-post-poll-result-percentage {
   font-weight: 600;
   font-size: 0.9rem;
 }
 
-.neo-poll-color-0 {
+.xai-post-poll-color-0 {
   color: var(--poll-color-0);
 }
 
-.neo-poll-color-1 {
+.xai-post-poll-color-1 {
   color: var(--poll-color-1);
 }
 
-.neo-poll-color-2 {
+.xai-post-poll-color-2 {
   color: var(--poll-color-2);
 }
 
-.neo-poll-color-3 {
+.xai-post-poll-color-3 {
   color: var(--poll-color-3);
 }
 
-.neo-poll-result-bar {
+.xai-post-poll-result-bar {
   height: 8px;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  background-color: var(--poll-bar-bg);
+  border-radius: var(--neo-radius-sm);
   overflow: hidden;
 }
 
-.neo-poll-result-progress {
+.xai-post-poll-result-progress {
   height: 100%;
-  border-radius: 4px;
-  transition: width 0.5s ease-out;
+  border-radius: var(--neo-radius-sm);
+  transition: width var(--neo-transition-normal);
 }
 
-.neo-poll-result-progress.neo-poll-color-0 {
-  background: linear-gradient(90deg, var(--poll-color-0), rgba(0, 245, 255, 0.7));
-  box-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
+.xai-post-poll-result-progress.xai-post-poll-color-0 {
+  background: var(--neo-gradient-primary);
+  box-shadow: var(--neo-glow-primary);
 }
 
-.neo-poll-result-progress.neo-poll-color-1 {
-  background: linear-gradient(90deg, var(--poll-color-1), rgba(255, 0, 204, 0.7));
-  box-shadow: 0 0 10px rgba(255, 0, 204, 0.3);
+.xai-post-poll-result-progress.xai-post-poll-color-1 {
+  background: var(--neo-gradient-secondary);
+  box-shadow: var(--neo-glow-secondary);
 }
 
-.neo-poll-result-progress.neo-poll-color-2 {
-  background: linear-gradient(90deg, var(--poll-color-2), rgba(255, 187, 0, 0.7));
-  box-shadow: 0 0 10px rgba(255, 187, 0, 0.3);
+.xai-post-poll-result-progress.xai-post-poll-color-2 {
+  background: var(--neo-gradient-accent);
+  box-shadow: var(--neo-glow-accent);
 }
 
-.neo-poll-result-progress.neo-poll-color-3 {
-  background: linear-gradient(90deg, var(--poll-color-3), rgba(0, 255, 136, 0.7));
-  box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+.xai-post-poll-result-progress.xai-post-poll-color-3 {
+  background: linear-gradient(90deg, var(--neo-warning), rgba(255, 176, 31, 0.7));
+  box-shadow: var(--neo-glow-warning);
 }
 
-.neo-poll-result-votes {
+.xai-post-poll-result-votes {
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: var(--neo-text-secondary);
 }
 
-.neo-poll-options {
+.xai-post-poll-options {
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
 }
 
-.neo-poll-option {
+.xai-post-poll-option {
   display: flex;
   align-items: center;
   gap: 1rem;
   padding: 0.8rem 1rem;
-  border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--neo-radius-md);
+  background-color: var(--poll-option-bg);
+  border: 1px solid var(--neo-border);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--neo-transition-normal);
 }
 
-.neo-poll-option:hover {
-  background-color: rgba(255, 255, 255, 0.08);
+.xai-post-poll-option:hover {
+  background-color: var(--neo-glass-highlight);
 }
 
-.neo-poll-option.selected {
-  background-color: rgba(0, 245, 255, 0.1);
-  border-color: rgba(0, 245, 255, 0.3);
-  box-shadow: 0 0 15px rgba(0, 245, 255, 0.1);
+.xai-post-poll-option.selected {
+  background-color: var(--poll-option-selected-bg);
+  border-color: var(--neo-border-glow);
+  box-shadow: var(--neo-glow-primary);
 }
 
-.neo-poll-radio-container {
+.xai-post-poll-radio-container {
   position: relative;
   width: 20px;
   height: 20px;
 }
 
-.neo-poll-radio {
+.xai-post-poll-radio {
   position: absolute;
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-.neo-poll-radio-checkmark {
+.xai-post-poll-radio-checkmark {
   position: absolute;
   top: 0;
   left: 0;
   height: 20px;
   width: 20px;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
+  background-color: var(--neo-glass-bg);
+  border: 1px solid var(--neo-border);
+  border-radius: var(--neo-radius-full);
 }
 
-.neo-poll-option:hover .neo-poll-radio-checkmark {
-  background-color: rgba(255, 255, 255, 0.15);
+.xai-post-poll-option:hover .xai-post-poll-radio-checkmark {
+  background-color: var(--neo-glass-highlight);
 }
 
-.neo-poll-radio:checked ~ .neo-poll-radio-checkmark {
-  background-color: rgba(0, 245, 255, 0.2);
-  border-color: var(--primary-color);
+.xai-post-poll-radio:checked ~ .xai-post-poll-radio-checkmark {
+  background-color: var(--poll-option-selected-bg);
+  border-color: var(--neo-primary);
 }
 
-.neo-poll-radio-checkmark:after {
+.xai-post-poll-radio-checkmark:after {
   content: "";
   position: absolute;
   display: none;
 }
 
-.neo-poll-radio:checked ~ .neo-poll-radio-checkmark:after {
+.xai-post-poll-radio:checked ~ .xai-post-poll-radio-checkmark:after {
   display: block;
   top: 5px;
   left: 5px;
   width: 8px;
   height: 8px;
-  border-radius: 50%;
-  background: var(--primary-color);
-  box-shadow: 0 0 8px var(--primary-color);
+  border-radius: var(--neo-radius-full);
+  background: var(--neo-primary);
+  box-shadow: var(--neo-glow-primary);
 }
 
-.neo-poll-option-label {
+.xai-post-poll-option-label {
   flex: 1;
   font-size: 1rem;
-  color: var(--text-color);
+  color: var(--neo-text-primary);
   cursor: pointer;
 }
 
-.neo-poll-submit {
+.xai-post-poll-submit {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   margin-top: 1rem;
   padding: 0.8rem;
-  border-radius: 8px;
-  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-  color: #000;
+  border-radius: var(--neo-radius-md);
+  background: var(--neo-gradient-primary);
+  color: var(--primary-foreground);
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--neo-transition-normal);
   position: relative;
   overflow: hidden;
 }
 
-.neo-poll-submit::before {
+.xai-post-poll-submit::before {
   content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transition: left 0.5s;
+  background: linear-gradient(90deg, transparent, var(--neo-glass-highlight), transparent);
+  transition: left var(--neo-transition-slow);
 }
 
-.neo-poll-submit:hover::before {
+.xai-post-poll-submit:hover::before {
   left: 100%;
 }
 
-.neo-poll-submit.disabled {
+.xai-post-poll-submit.disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.neo-poll-submit-icon {
+.xai-post-poll-submit-icon {
   width: 18px;
   height: 18px;
 }
 
-.neo-poll-submit-spinner {
+.xai-post-poll-submit-spinner {
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(0, 0, 0, 0.3);
-  border-top: 2px solid #000;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+  border: 2px solid var(--neo-glass-bg);
+  border-top: 2px solid var(--neo-text-primary);
+  border-radius: var(--neo-radius-full);
+  animation: xai-post-spin 1s linear infinite;
   margin-right: 0.5rem;
 }
 
-@keyframes spin {
+@keyframes xai-post-spin {
   0% {
     transform: rotate(0deg);
   }
@@ -739,94 +966,94 @@
 }
 
 /* Post actions */
-.neo-post-actions {
+.xai-post-actions {
   margin-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--neo-border);
   padding-top: 1rem;
 }
 
-.neo-action-buttons {
+.xai-post-action-buttons {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.neo-action-button {
+.xai-post-action-button {
   display: flex;
   align-items: center;
   gap: 0.25rem;
   background: none;
   border: none;
   padding: 0.5rem 0.75rem;
-  border-radius: 6px;
+  border-radius: var(--neo-radius-sm);
   cursor: pointer;
-  color: var(--text-muted);
-  transition: all 0.3s;
+  color: var(--neo-text-secondary);
+  transition: all var(--neo-transition-normal);
   position: relative;
   overflow: hidden;
 }
 
-.neo-action-button::before {
+.xai-post-action-button::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  background: var(--neo-gradient-primary);
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity var(--neo-transition-normal);
   z-index: -1;
 }
 
-.neo-action-button:hover {
-  color: var(--text-color);
+.xai-post-action-button:hover {
+  color: var(--neo-text-primary);
 }
 
-.neo-action-button:hover::before {
+.xai-post-action-button:hover::before {
   opacity: 0.1;
 }
 
-.neo-action-button.neo-active {
-  color: var(--primary-color);
+.xai-post-action-button.xai-post-active {
+  color: var(--neo-primary);
 }
 
-.neo-action-icon {
+.xai-post-action-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s;
+  transition: transform var(--neo-transition-normal);
 }
 
-.neo-action-button:hover .neo-action-icon {
+.xai-post-action-button:hover .xai-post-action-icon {
   transform: scale(1.1);
 }
 
-.neo-action-icon svg {
+.xai-post-action-icon svg {
   width: 18px;
   height: 18px;
 }
 
-.neo-action-count {
+.xai-post-action-count {
   font-size: 0.9rem;
-  transition: color 0.3s;
+  transition: color var(--neo-transition-normal);
 }
 
-.neo-action-spacer {
+.xai-post-action-spacer {
   flex: 1;
 }
 
-.neo-upvote.neo-pulse {
-  animation: pulse 0.5s ease-in-out;
+.xai-post-upvote.xai-post-pulse {
+  animation: xai-post-pulse 0.5s ease-in-out;
 }
 
-@keyframes pulse {
+@keyframes xai-post-pulse {
   0% {
     transform: scale(1);
   }
   50% {
     transform: scale(1.5);
-    color: var(--primary-color);
+    color: var(--neo-primary);
   }
   100% {
     transform: scale(1);
@@ -834,148 +1061,148 @@
 }
 
 /* Comments Section */
-.neo-comments-section {
+.xai-post-comments-section {
   margin-top: 2rem;
   padding-top: 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--neo-border);
   position: relative;
 }
 
-.neo-comments-section::before {
+.xai-post-comments-section::before {
   content: "";
   position: absolute;
   top: -1px;
   left: 0;
   width: 100px;
   height: 1px;
-  background: linear-gradient(90deg, var(--primary-color), transparent);
+  background: var(--neo-gradient-primary);
 }
 
-.neo-comments-header {
+.xai-post-comments-header {
   display: flex;
   align-items: center;
   margin-bottom: 1.5rem;
 }
 
-.neo-comments-title {
+.xai-post-comments-title {
   margin: 0;
   font-size: 1.2rem;
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  background: var(--neo-gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.neo-comments-count {
+.xai-post-comments-count {
   margin-left: 0.5rem;
   padding: 0.25rem 0.5rem;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  background-color: var(--neo-glass-bg);
+  border-radius: var(--neo-radius-sm);
   font-size: 0.85rem;
 }
 
-.neo-comment-form {
+.xai-post-comment-form {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 2rem;
 }
 
-.neo-comment-input-container {
+.xai-post-comment-input-container {
   flex: 1;
   position: relative;
 }
 
-.neo-comment-input {
+.xai-post-comment-input {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  background-color: var(--input-bg);
-  color: var(--text-color);
+  border: 1px solid var(--neo-border);
+  border-radius: var(--neo-radius-md);
+  background-color: var(--neo-bg-input);
+  color: var(--neo-text-primary);
   font-size: 1rem;
-  transition: all 0.3s;
+  transition: all var(--neo-transition-normal);
 }
 
-.neo-comment-input:focus {
+.xai-post-comment-input:focus {
   outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+  border-color: var(--neo-primary);
+  box-shadow: var(--neo-glow-primary);
 }
 
-.neo-input-glow {
+.xai-post-input-glow {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  border-radius: 8px;
-  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+  border-radius: var(--neo-radius-md);
+  background: var(--neo-gradient-primary);
   z-index: -1;
   opacity: 0.1;
   filter: blur(4px);
-  transition: opacity 0.3s;
+  transition: opacity var(--neo-transition-normal);
 }
 
-.neo-comment-input:focus + .neo-input-glow {
+.xai-post-comment-input:focus + .xai-post-input-glow {
   opacity: 0.2;
 }
 
-.neo-comment-submit {
+.xai-post-comment-submit {
   padding: 0 1rem;
   border: none;
-  border-radius: 8px;
-  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-  color: white;
+  border-radius: var(--neo-radius-md);
+  background: var(--neo-gradient-primary);
+  color: var(--primary-foreground);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--neo-transition-normal);
   position: relative;
   overflow: hidden;
 }
 
-.neo-comment-submit::before {
+.xai-post-comment-submit::before {
   content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transition: left 0.5s;
+  background: linear-gradient(90deg, transparent, var(--neo-glass-highlight), transparent);
+  transition: left var(--neo-transition-slow);
 }
 
-.neo-comment-submit:hover::before {
+.xai-post-comment-submit:hover::before {
   left: 100%;
 }
 
-.neo-comment-submit:disabled {
+.xai-post-comment-submit:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.neo-submit-icon {
+.xai-post-submit-icon {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.neo-comments-empty {
+.xai-post-comments-empty {
   text-align: center;
   padding: 2rem;
-  color: var(--text-muted);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  color: var(--neo-text-secondary);
+  border: 1px dashed var(--neo-border);
+  border-radius: var(--neo-radius-md);
 }
 
-.neo-comments-list {
+.xai-post-comments-list {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.new-comment-added {
-  animation: listPulse 1s ease-out;
+.xai-post-new-comment-added {
+  animation: xai-post-listPulse 1s ease-out;
 }
 
-@keyframes listPulse {
+@keyframes xai-post-listPulse {
   0% {
     transform: translateY(0);
   }
@@ -987,26 +1214,26 @@
   }
 }
 
-.neo-comment {
+.xai-post-comment {
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.03);
-  transition: all 0.3s;
+  border-radius: var(--neo-radius-md);
+  background-color: var(--neo-glass-bg);
+  transition: all var(--neo-transition-normal);
   position: relative;
   overflow: hidden;
 }
 
-.neo-comment:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+.xai-post-comment:hover {
+  background-color: var(--neo-glass-highlight);
 }
 
-.neo-comment-new {
-  animation: newCommentAnimation 1s ease-out;
+.xai-post-comment-new {
+  animation: xai-post-newCommentAnimation 1s ease-out;
 }
 
-@keyframes newCommentAnimation {
+@keyframes xai-post-newCommentAnimation {
   0% {
     transform: translateY(-20px);
     opacity: 0;
@@ -1017,103 +1244,100 @@
   }
 }
 
-.neo-comment-avatar-container {
+.xai-post-comment-avatar-container {
   flex-shrink: 0;
   position: relative;
 }
 
-.neo-comment-avatar {
+.xai-post-comment-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background-color: var(--avatar-bg);
+  border-radius: var(--neo-radius-full);
+  background-color: var(--neo-bg-input);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  color: var(--avatar-text);
+  color: var(--neo-text-primary);
   overflow: hidden;
   position: relative;
   z-index: 1;
 }
 
-.neo-comment-avatar img {
+.xai-post-comment-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.neo-comment-content {
+.xai-post-comment-content {
   flex: 1;
 }
 
-.neo-comment-header {
+.xai-post-comment-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.5rem;
 }
 
-.neo-comment-author {
+.xai-post-comment-author {
   margin: 0;
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--primary-color);
+  color: var(--neo-primary);
 }
 
-.neo-comment-timestamp {
+.xai-post-comment-timestamp {
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: var(--neo-text-secondary);
 }
 
-.neo-comment-text {
+.xai-post-comment-text {
   margin: 0;
   font-size: 0.95rem;
   line-height: 1.5;
-  color: var(--text-color);
+  color: var(--neo-text-primary);
   white-space: pre-line;
 }
 
-/* Loading and Error States */
-.neo-loading-container,
-.neo-error-container,
-.neo-empty-container {
+/* Loading.ConcurrentModeSuspense and Error States */
+.xai-post-loading-container,
+.xai-post-error-container,
+.xai-post-empty-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 300px;
   text-align: center;
-  background-color: rgba(10, 10, 10, 0.8);
-  border-radius: 12px;
+  background-color: var(--neo-bg-card);
+  border-radius: var(--neo-radius-lg);
   padding: 2rem;
-  border: 1px solid rgba(255, 255, 255, 10, 10, 0.8);
-  border-radius: 12px;
-  padding: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--neo-border);
 }
 
-.neo-loading-spinner {
+.xai-post-loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(255, 255, 255, 0.1);
-  border-left-color: var(--primary-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+  border: 4px solid var(--neo-border);
+  border-left-color: var(--neo-primary);
+  border-radius: var(--neo-radius-full);
+  animation: xai-post-spin 1s linear infinite;
   margin-bottom: 1rem;
-  box-shadow: 0 0 15px rgba(0, 245, 255, 0.2);
+  box-shadow: var(--neo-glow-primary);
 }
 
-.neo-error-icon,
-.neo-empty-icon {
+.xai-post-error-icon,
+.xai-post-empty-icon {
   width: 48px;
   height: 48px;
   margin-bottom: 1rem;
-  color: var(--primary-color);
-  animation: errorPulse 2s infinite alternate;
+  color: var(--neo-primary);
+  animation: xai-post-errorPulse 2s infinite alternate;
 }
 
-@keyframes errorPulse {
+@keyframes xai-post-errorPulse {
   0% {
     transform: scale(1);
     opacity: 0.8;
@@ -1124,100 +1348,100 @@
   }
 }
 
-.neo-retry-button {
+.xai-post-retry-button {
   margin-top: 1rem;
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: 6px;
-  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-  color: white;
+  border-radius: var(--neo-radius-sm);
+  background: var(--neo-gradient-primary);
+  color: var(--primary-foreground);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--neo-transition-normal);
   position: relative;
   overflow: hidden;
 }
 
-.neo-retry-button::before {
+.xai-post-retry-button::before {
   content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transition: left 0.5s;
+  background: linear-gradient(90deg, transparent, var(--neo-glass-highlight), transparent);
+  transition: left var(--neo-transition-slow);
 }
 
-.neo-retry-button:hover::before {
+.xai-post-retry-button:hover::before {
   left: 100%;
 }
 
 /* Media Queries */
 @media (max-width: 768px) {
-  .neo-post-page {
+  .xai-post-page {
     padding: 1rem;
   }
 
-  .neo-post-card {
+  .xai-post-card {
     padding: 1.5rem;
   }
 
-  .neo-post-title {
+  .xai-post-title {
     font-size: 1.5rem;
   }
 
-  .neo-post-text {
+  .xai-post-text {
     font-size: 1rem;
   }
 
-  .neo-comment-form {
+  .xai-post-comment-form {
     flex-direction: column;
   }
 
-  .neo-comment-submit {
+  .xai-post-comment-submit {
     height: 40px;
     margin-top: 0.5rem;
   }
 
-  .neo-poll-header {
+  .xai-post-poll-header {
     flex-direction: column;
   }
 
-  .neo-poll-meta {
+  .xai-post-poll-meta {
     margin-top: 0.5rem;
   }
 }
 
 @media (max-width: 480px) {
-  .neo-post-header {
+  .xai-post-header {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .neo-avatar-container {
+  .xai-post-avatar-container {
     margin-bottom: 1rem;
   }
 
-  .neo-action-buttons {
+  .xai-post-action-buttons {
     flex-wrap: wrap;
   }
 }
 
-/* Dark mode adjustments */
-.dark .neo-post-card {
-  background-color: rgba(10, 10, 10, 0.9);
+/* Light mode adjustments */
+:root.light .xai-post-card {
+  background-color: var(--neo-bg-card);
 }
 
-.dark .neo-post-text,
-.dark .neo-comment-text {
-  color: var(--dark-text-color);
+:root.light .xai-post-text,
+:root.light .xai-post-comment-text {
+  color: var(--neo-text-primary);
 }
 
-.dark .neo-comment-input {
-  background-color: var(--dark-input-bg);
-  border-color: var(--dark-border-color);
+:root.light .xai-post-comment-input {
+  background-color: var(--neo-bg-input);
+  border-color: var(--neo-border);
 }
 
-.dark .neo-comments-section {
-  border-top-color: var(--dark-border-color);
+:root.light .xai-post-comments-section {
+  border-top-color: var(--neo-border);
 }

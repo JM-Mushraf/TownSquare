@@ -11,11 +11,6 @@ import { toast } from "react-hot-toast"
 import "react-toastify/dist/ReactToastify.css"
 import { getTimeAgo } from "../HomePage/Helpers"
 import { ImageCarousel } from "./ImageCarousel"
-// Helper function to format time ago
-
-
-// Image Carousel Component
-
 
 const PostPage = () => {
   const { id } = useParams()
@@ -49,30 +44,26 @@ const PostPage = () => {
           return
         }
 
-        const response = await axios.get(`http://localhost:3000/post/${id}`, {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         })
 
-        console.log(response)
         if (response.data.success) {
           setPost(response.data.post)
           setUpVotes(response.data.post.upVotes || 0)
           setDownVotes(response.data.post.downVotes || 0)
 
-          // Check if user has already voted on this post
           const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}")
           if (votedPosts[id]) {
             setUserVote(votedPosts[id])
           }
 
-          // Check if post is bookmarked
           const bookmarkedPosts = JSON.parse(localStorage.getItem("bookmarkedPosts") || "[]")
           setIsBookmarked(bookmarkedPosts.includes(id))
 
-          // Fetch comments
-          const commentsResponse = await axios.get(`http://localhost:3000/post/${id}/comments`, {
+          const commentsResponse = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${id}/comments`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -82,7 +73,6 @@ const PostPage = () => {
             setComments(commentsResponse.data.comments)
           }
 
-          // Check if user has voted in poll
           if (response.data.post.poll) {
             const hasVoted = response.data.post.poll.options.some(
               (option) => option.voters && option.voters.includes(userData?._id),
@@ -116,7 +106,7 @@ const PostPage = () => {
 
     try {
       const endpoint =
-        userVote === "upvote" ? `http://localhost:3000/post/remove/${id}` : `http://localhost:3000/post/up/${id}`
+        userVote === "upvote" ? `${import.meta.env.VITE_BACKEND_BASEURL}/post/remove/${id}` : `${import.meta.env.VITE_BACKEND_BASEURL}/post/up/${id}`
 
       const response = await axios.post(
         endpoint,
@@ -159,7 +149,7 @@ const PostPage = () => {
 
     try {
       const endpoint =
-        userVote === "downvote" ? `http://localhost:3000/post/remove/${id}` : `http://localhost:3000/post/down/${id}`
+        userVote === "downvote" ? `${import.meta.env.VITE_BACKEND_BASEURL}/post/remove/${id}` : `${import.meta.env.VITE_BACKEND_BASEURL}/post/down/${id}`
 
       const response = await axios.post(
         endpoint,
@@ -223,7 +213,7 @@ const PostPage = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/post/comment",
+        `${import.meta.env.VITE_BACKEND_BASEURL}/post/comment`,
         {
           postId: id,
           message: commentText,
@@ -237,8 +227,7 @@ const PostPage = () => {
 
       if (response.data.success) {
         setCommentText("")
-        // Refresh comments
-        const commentsResponse = await axios.get(`http://localhost:3000/post/${id}/comments`, {
+        const commentsResponse = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${id}/comments`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -267,10 +256,10 @@ const PostPage = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:3000/post/${id}/vote`,
+        `${import.meta.env.VITE_BACKEND_BASEURL}/post/${id}/vote`,
         {
-          option: post.poll.options[selectedOption]._id, // changed from optionId to option
-          userId: userData._id, // added userId
+          option: post.poll.options[selectedOption]._id,
+          userId: userData._id,
         },
         {
           headers: {
@@ -281,7 +270,7 @@ const PostPage = () => {
 
       if (response.data.success) {
         setHasVoted(true)
-        setPollResults(response.data.updatedPost?.poll) // might need to adjust based on your response
+        setPollResults(response.data.updatedPost?.poll)
         toast.success("Your vote has been recorded!")
       }
     } catch (error) {
@@ -294,8 +283,8 @@ const PostPage = () => {
 
   if (loading) {
     return (
-      <div className="neo-loading-container">
-        <div className="neo-loading-spinner"></div>
+      <div className="xai-post-loading-container">
+        <div className="xai-post-loading-spinner"></div>
         <p>Loading post...</p>
       </div>
     )
@@ -303,8 +292,8 @@ const PostPage = () => {
 
   if (error) {
     return (
-      <div className="neo-error-container">
-        <div className="neo-error-icon">
+      <div className="xai-post-error-container">
+        <div className="xai-post-error-icon">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -323,7 +312,7 @@ const PostPage = () => {
         </div>
         <h3>Error loading post</h3>
         <p>{error}</p>
-        <button className="neo-retry-button" onClick={() => window.location.reload()}>
+        <button className="xai-post-retry-button" onClick={() => window.location.reload()}>
           Retry
         </button>
       </div>
@@ -332,8 +321,8 @@ const PostPage = () => {
 
   if (!post) {
     return (
-      <div className="neo-empty-container">
-        <div className="neo-empty-icon">
+      <div className="xai-post-empty-container">
+        <div className="xai-post-empty-icon">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -356,89 +345,84 @@ const PostPage = () => {
     )
   }
 
-  // Calculate total votes for poll
   const totalPollVotes = post.poll?.options.reduce((sum, option) => sum + (option.votes || 0), 0) || 0
 
   return (
-    <div className={`neo-post-page ${isDarkMode ? "dark" : ""}`}>
-      <div className="cyber-grid"></div>
-      <div className="neo-post-container">
-        <div className="neo-post-card">
-          {/* Post header */}
-          <div className="neo-post-header">
-            <div className="neo-avatar-container">
+    <div className={`xai-post-page ${isDarkMode ? "dark" : ""}`}>
+      <div className="xai-post-cyber-grid"></div>
+      <div className="xai-post-container">
+        <div className="xai-post-card">
+          <div className="xai-post-header">
+            <div className="xai-post-avatar-container">
               {post.createdBy?.avatar ? (
                 <img
                   src={post.createdBy.avatar || "/placeholder.svg"}
                   alt={post.createdBy.username}
-                  className="neo-avatar"
+                  className="xai-post-avatar"
                 />
               ) : (
-                <div className="neo-avatar">
+                <div className="xai-post-avatar">
                   <span>{post.createdBy?.username?.charAt(0) || "U"}</span>
                 </div>
               )}
-              <div className="neo-avatar-glow"></div>
+              <div className="xai-post-avatar-glow"></div>
             </div>
-            <div className="neo-author-info">
-              <div className="neo-author-name-container">
-                <h3 className="neo-author-name">{post.createdBy?.username || "Anonymous"}</h3>
-                <span className={`neo-post-type neo-post-type-${post.type}`}>{post.type}</span>
+            <div className="xai-post-author-info">
+              <div className="xai-post-author-name-container">
+                <h3 className="xai-post-author-name">{post.createdBy?.username || "Anonymous"}</h3>
+                <span className={`xai-post-type xai-post-type-${post.type}`}>{post.type}</span>
               </div>
-              <div className="neo-post-meta">
-                <span className="neo-timestamp">{getTimeAgo(post.createdAt)}</span>
-                <span className="neo-post-sent-from">Post sent from Mars</span>
+              <div className="xai-post-meta">
+                <span className="xai-post-timestamp">{getTimeAgo(post.createdAt)}</span>
+                <span className="xai-post-sent-from">Post sent from Mars</span>
               </div>
             </div>
           </div>
 
-          {/* Post content */}
-          <div className="neo-post-content">
-            <h2 className="neo-post-title">{post.title}</h2>
-            <p className="neo-post-text">{post.description}</p>
+          <div className="xai-post-content">
+            <h2 className="xai-post-title">{post.title}</h2>
+            <p className="xai-post-text">{post.description}</p>
 
-            {/* Image carousel */}
             {post.attachments && post.attachments.length > 0 && (
               <ImageCarousel
                 images={post.attachments.filter((attachment) => attachment.fileType?.startsWith("image/"))}
               />
             )}
 
-            {/* Poll section */}
             {post.poll && (
-              <div className="neo-poll-section">
-                <div className="neo-poll-header">
-                  <h3 className="neo-poll-title">{post.poll.question}</h3>
-                  <div className="neo-poll-meta">
-                    <span className={`neo-poll-status ${post.poll.status === "active" ? "active" : ""}`}>
+              <div className="xai-post-poll-section">
+                <div className="xai-post-poll-header">
+                  <h3 className="xai-post-poll-title">{post.poll.question}</h3>
+                  <div className="xai-post-poll-meta">
+                    <span className={`xai-post-poll-status ${post.poll.status === "active" ? "active" : ""}`}>
                       {post.poll.status === "active" ? "Active Poll" : "Closed Poll"}
                     </span>
-                    <span className="neo-poll-votes">
-                      <Vote className="neo-poll-icon" />
+                    <span className="xai-post-poll-votes">
+                      <Vote className="xai-post-poll-icon" />
                       {totalPollVotes} votes
                     </span>
                   </div>
                 </div>
 
                 {hasVoted || post.poll.status !== "active" ? (
-                  <div className="neo-poll-results">
+                  <div className="xai-post-poll-results">
                     {post.poll.options.map((option, index) => {
                       const percentage = totalPollVotes > 0 ? Math.round((option.votes / totalPollVotes) * 100) : 0
-                      const colorClass = `neo-poll-color-${index % 4}`
+                      const colorClass = `xai-post-poll-color-${index % 4}`
 
                       return (
-                        <div key={option._id} className="neo-poll-result">
-                          <div className="neo-poll-result-header">
-                            <span className="neo-poll-result-label">{option.text}</span>
-                            <span className={`neo-poll-result-percentage ${colorClass}`}>{percentage}%</span>
+                        <div key={option._id} className="xai-post-poll-result">
+                          <div className="xai-post-poll-result-header">
+                            <span className="xai-post-poll-result-label">{option.text}</span>
+                            <span className={`xai-post-poll-result-percentage ${colorClass}`}>{percentage}%</span>
                           </div>
-                          <div className="neo-poll-result-bar">
+                          <div className="xai-post-poll-result-bar">
                             <div
-                              className={`neo-poll-result-progress ${colorClass}`}
+                              className={`xai-post-poll-result-progress ${colorClass}`}
                               style={{ width: `${percentage}%` }}
                             ></div>
                           </div>
-                          <div className="neo-poll-result-votes">
+                          <div className="xai-post-poll-result-votes">
                             <span>{option.votes || 0} votes</span>
                           </div>
                         </div>
@@ -446,43 +430,43 @@ const PostPage = () => {
                     })}
                   </div>
                 ) : (
-                  <div className="neo-poll-options">
+                  <div className="xai-post-poll-options">
                     {post.poll.options.map((option, index) => (
                       <div
                         key={option._id}
-                        className={`neo-poll-option ${selectedOption === index ? "selected" : ""}`}
+                        className={`xai-post-poll-option ${selectedOption === index ? "selected" : ""}`}
                         onClick={() => setSelectedOption(index)}
                       >
-                        <div className="neo-poll-radio-container">
+                        <div className="xai-post-poll-radio-container">
                           <input
                             type="radio"
                             id={`poll-option-${option._id}`}
                             name="poll-options"
                             checked={selectedOption === index}
                             onChange={() => setSelectedOption(index)}
-                            className="neo-poll-radio"
+                            className="xai-post-poll-radio"
                           />
-                          <span className="neo-poll-radio-checkmark"></span>
+                          <span className="xai-post-poll-radio-checkmark"></span>
                         </div>
-                        <label htmlFor={`poll-option-${option._id}`} className="neo-poll-option-label">
+                        <label htmlFor={`poll-option-${option._id}`} className="xai-post-poll-option-label">
                           {option.text}
                         </label>
                       </div>
                     ))}
 
                     <button
-                      className={`neo-poll-submit ${selectedOption === null ? "disabled" : ""}`}
+                      className={`xai-post-poll-submit ${selectedOption === null ? "disabled" : ""}`}
                       disabled={selectedOption === null || isSubmittingVote}
                       onClick={handlePollVote}
                     >
                       {isSubmittingVote ? (
                         <>
-                          <span className="neo-poll-submit-spinner"></span>
+                          <span className="xai-post-poll-submit-spinner"></span>
                           Submitting...
                         </>
                       ) : (
                         <>
-                          <Vote className="neo-poll-submit-icon" />
+                          <Vote className="xai-post-poll-submit-icon" />
                           Submit Vote
                         </>
                       )}
@@ -492,14 +476,13 @@ const PostPage = () => {
               </div>
             )}
 
-            {/* Post actions */}
-            <div className="neo-post-actions">
-              <div className="neo-action-buttons">
+            <div className="xai-post-actions">
+              <div className="xai-post-action-buttons">
                 <button
-                  className={`neo-action-button ${userVote === "upvote" ? "neo-active" : ""}`}
+                  className={`xai-post-action-button ${userVote === "upvote" ? "xai-post-active" : ""}`}
                   onClick={handleUpvote}
                 >
-                  <span className={`neo-action-icon neo-upvote ${isAnimating ? "neo-pulse" : ""}`}>
+                  <span className={`xai-post-action-icon xai-post-upvote ${isAnimating ? "xai-post-pulse" : ""}`}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -512,13 +495,13 @@ const PostPage = () => {
                       <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
                     </svg>
                   </span>
-                  <span className="neo-action-count">{upVotes}</span>
+                  <span className="xai-post-action-count">{upVotes}</span>
                 </button>
                 <button
-                  className={`neo-action-button ${userVote === "downvote" ? "neo-active" : ""}`}
+                  className={`xai-post-action-button ${userVote === "downvote" ? "xai-post-active" : ""}`}
                   onClick={handleDownvote}
                 >
-                  <span className="neo-action-icon neo-downvote">
+                  <span className="xai-post-action-icon xai-post-downvote">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -531,11 +514,11 @@ const PostPage = () => {
                       <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
                     </svg>
                   </span>
-                  <span className="neo-action-count">{downVotes}</span>
+                  <span className="xai-post-action-count">{downVotes}</span>
                 </button>
-                <div className="neo-action-spacer"></div>
-                <button className={`neo-action-button ${isBookmarked ? "neo-active" : ""}`} onClick={handleBookmark}>
-                  <span className="neo-action-icon neo-bookmark">
+                <div className="xai-post-action-spacer"></div>
+                <button className={`xai-post-action-button ${isBookmarked ? "xai-post-active" : ""}`} onClick={handleBookmark}>
+                  <span className="xai-post-action-icon xai-post-bookmark">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -553,64 +536,63 @@ const PostPage = () => {
             </div>
           </div>
 
-          {/* Comments section */}
-          <div className="neo-comments-section">
-            <div className="neo-comments-header">
-              <h4 className="neo-comments-title">Comments</h4>
-              <span className="neo-comments-count">{comments.length}</span>
+          <div className="xai-post-comments-section">
+            <div className="xai-post-comments-header">
+              <h4 className="xai-post-comments-title">Comments</h4>
+              <span className="xai-post-comments-count">{comments.length}</span>
             </div>
 
-            <form className="neo-comment-form" onSubmit={addComment}>
-              <div className="neo-comment-input-container">
+            <form className="xai-post-comment-form" onSubmit={addComment}>
+              <div className="xai-post-comment-input-container">
                 <input
                   type="text"
-                  className="neo-comment-input"
+                  className="xai-post-comment-input"
                   placeholder="Add a comment..."
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                 />
-                <div className="neo-input-glow"></div>
+                <div className="xai-post-input-glow"></div>
               </div>
-              <button type="submit" className="neo-comment-submit" disabled={!commentText.trim()}>
-                <span className="neo-submit-icon">
+              <button type="submit" className="xai-post-comment-submit" disabled={!commentText.trim()}>
+                <span className="xai-post-submit-icon">
                   <Send size={20} />
                 </span>
               </button>
             </form>
 
             {comments.length === 0 ? (
-              <div className="neo-comments-empty">
+              <div className="xai-post-comments-empty">
                 <p>No comments yet. Be the first to comment!</p>
               </div>
             ) : (
-              <div className={`neo-comments-list ${showCommentAnimation ? "new-comment-added" : ""}`}>
+              <div className={`xai-post-comments-list ${showCommentAnimation ? "xai-post-new-comment-added" : ""}`}>
                 {comments.map((comment, index) => (
                   <div
                     key={comment._id}
-                    className={`neo-comment ${index === 0 && showCommentAnimation ? "neo-comment-new" : ""}`}
+                    className={`xai-post-comment ${index === 0 && showCommentAnimation ? "xai-post-comment-new" : ""}`}
                   >
-                    <div className="neo-comment-avatar-container">
+                    <div className="xai-post-comment-avatar-container">
                       {comment.userId?.avatar ? (
                         <img
                           src={comment.userId.avatar || "/placeholder.svg"}
                           alt={comment.userId.username}
-                          className="neo-comment-avatar"
+                          className="xai-post-comment-avatar"
                         />
                       ) : (
-                        <div className="neo-comment-avatar">
+                        <div className="xai-post-comment-avatar">
                           <span>{comment.userId?.username?.charAt(0) || "U"}</span>
                         </div>
                       )}
-                      <div className="neo-comment-avatar-glow"></div>
+                      <div className="xai-post-comment-avatar-glow"></div>
                     </div>
-                    <div className="neo-comment-content">
-                      <div className="neo-comment-header">
-                        <div className="neo-comment-author-container">
-                          <h5 className="neo-comment-author">{comment.userId?.username || "Anonymous"}</h5>
+                    <div className="xai-post-comment-content">
+                      <div className="xai-post-comment-header">
+                        <div className="xai-post-comment-author-container">
+                          <h5 className="xai-post-comment-author">{comment.userId?.username || "Anonymous"}</h5>
                         </div>
-                        <span className="neo-comment-timestamp">{getTimeAgo(comment.createdAt)}</span>
+                        <span className="xai-post-comment-timestamp">{getTimeAgo(comment.createdAt)}</span>
                       </div>
-                      <p className="neo-comment-text">{comment.message}</p>
+                      <p className="xai-post-comment-text">{comment.message}</p>
                     </div>
                   </div>
                 ))}

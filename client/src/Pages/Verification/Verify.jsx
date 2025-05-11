@@ -6,8 +6,8 @@ const Verify = () => {
 
   const handleOtpSubmit=async()=>{
     const newotp={"verificationCode":otp}
-    const {data}=await axios.post('http://localhost:3000/user/register/verification',newotp)
-    console.log(data);
+    const {data}=await axios.post(`${import.meta.env.VITE_BACKEND_BASEURL}/user/register/verification`,newotp)
+    
     
   }
   return (

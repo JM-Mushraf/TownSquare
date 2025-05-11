@@ -324,8 +324,8 @@ export default function Marketplace() {
   useEffect(() => {
     const fetchMarketplacePosts = async () => {
       try {
-        const response = await fetch("http://localhost:3000/post/marketplacePosts", {
-          credentials: "include",
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_BASEURL}/post/marketplacePosts`, {
+          credentials: "include", // Include cookies in the request
         });
         if (!response.ok) {
           throw new Error("Failed to fetch marketplace posts");
@@ -344,7 +344,7 @@ export default function Marketplace() {
 
   const handleContact = async (postId, message) => {
     try {
-      const response = await fetch(`http://localhost:3000/post/marketplacePosts/${postId}/message`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_BASEURL}/post/marketplacePosts/${postId}/message`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

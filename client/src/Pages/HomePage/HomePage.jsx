@@ -45,8 +45,6 @@ function HomePage() {
         if (response.data) {
           await setPosts(response.data.posts || [])
           await setTrendingPosts(response.data.trending || [])
-          await console.log(posts)
-
           setUpcomingEvents(response.data.upcomingEvents || [])
           setCounty(response.data.county || "")
 
