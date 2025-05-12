@@ -96,7 +96,7 @@ function HomePage() {
         const code = error?.response?.status
         if (code == 401) {
           toast.error("Please login again to access this resource!")
-          navigate("/login")
+          // navigate("/login")
         }
         setPosts([])
         setTrendingPosts([])
