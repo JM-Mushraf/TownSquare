@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { toast } from "react-toastify"
 import { useSelector } from "react-redux"
+import ImageCarousel from "./ImageCarousel.jsx"
 import {
   User,
   BarChart3,
@@ -20,7 +21,7 @@ import {
   Share2,
   MoreHorizontal,
 } from "lucide-react"
-import ImageCarousel from "./ImageCarousel.jsx"
+
 
 const SurveyCard = ({ post, onVote, onViewResults }) => {
   const [selectedOption, setSelectedOption] = useState(null)
