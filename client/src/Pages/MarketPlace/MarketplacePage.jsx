@@ -1,10 +1,11 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import {
   Search,
   Filter,
   MapPin,
-  Plus,
   Tag,
   ChevronLeft,
   ChevronRight,
@@ -29,7 +30,7 @@ import {
 } from "lucide-react";
 import "./MarketplacePage.css";
 
-const ImageCarousel = ({ images }) => {
+export const ImageCarousel = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
@@ -91,10 +92,18 @@ const ImageCarousel = ({ images }) => {
 
         {images.length > 1 && (
           <>
-            <button onClick={handlePrev} className="carousel-button carousel-button-prev" aria-label="Previous image">
+            <button
+              onClick={handlePrev}
+              className="carousel-button carousel-button-prev"
+              aria-label="Previous image"
+            >
               <ChevronLeft className="carousel-icon" />
             </button>
-            <button onClick={handleNext} className="carousel-button carousel-button-next" aria-label="Next image">
+            <button
+              onClick={handleNext}
+              className="carousel-button carousel-button-next"
+              aria-label="Next image"
+            >
               <ChevronRight className="carousel-icon" />
             </button>
             <div className="carousel-indicators">
@@ -103,6 +112,8 @@ const ImageCarousel = ({ images }) => {
                   key={index}
                   className={`carousel-indicator ${index === currentIndex ? "active" : ""}`}
                   onClick={() => setCurrentIndex(index)}
+                  role="button"
+                  aria-label={`Go to image ${index + 1}`}
                 />
               ))}
             </div>
@@ -113,7 +124,7 @@ const ImageCarousel = ({ images }) => {
   );
 };
 
-const MarketplaceItem = ({ item, onContact, onSave }) => {
+export const MarketplaceItem = ({ item, onContact, onSave }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [showContact, setShowContact] = useState(false);
@@ -199,13 +210,25 @@ const MarketplaceItem = ({ item, onContact, onSave }) => {
       <div className="marketplace-item-images">
         <ImageCarousel images={item.images} />
         <div className="item-quick-actions">
-          <button className={`quick-action-button ${isSaved ? "active" : ""}`} onClick={toggleSave}>
+          <button
+            className={`quick-action-button ${isSaved ? "active" : ""}`}
+            onClick={toggleSave}
+            aria-label={isSaved ? "Unsave item" : "Save item"}
+          >
             <Bookmark className="quick-action-icon" />
           </button>
-          <button className="quick-action-button" onClick={handleShare}>
+          <button
+            className="quick-action-button"
+            onClick={handleShare}
+            aria-label="Share item"
+          >
             <Share2 className="quick-action-icon" />
           </button>
-          <button className="quick-action-button" onClick={toggleContact}>
+          <button
+            className="quick-action-button"
+            onClick={toggleContact}
+            aria-label="Contact seller"
+          >
             <MessageCircle className="quick-action-icon" />
           </button>
         </div>
@@ -244,7 +267,11 @@ const MarketplaceItem = ({ item, onContact, onSave }) => {
       </div>
 
       <div className="marketplace-item-footer">
-        <button className="contact-button" onClick={toggleContact}>
+        <button
+          className="contact-button"
+          onClick={toggleContact}
+          aria-label={`Contact ${item.itemType === "wanted" ? "buyer" : "seller"}`}
+        >
           <MessageCircle className="button-icon" />
           Contact {item.itemType === "wanted" ? "Buyer" : "Seller"}
         </button>
@@ -255,13 +282,19 @@ const MarketplaceItem = ({ item, onContact, onSave }) => {
           <div className="contact-card">
             <div className="contact-header">
               <h4>Contact {item.seller.username}</h4>
-              <button className="close-button" onClick={toggleContact}>
+              <button
+                className="close-button"
+                onClick={toggleContact}
+                aria-label="Close contact form"
+              >
                 ×
               </button>
             </div>
             <div className="contact-content">
               <div className="contact-info">
-                <div className="contact-avatar">{item.seller.username.charAt(0)}</div>
+                <div className="contact-avatar">
+                  {item.seller.username.charAt(0)}
+                </div>
                 <div className="contact-details">
                   <div className="contact-name">{item.seller.username}</div>
                   <div className="contact-rating">
@@ -279,8 +312,13 @@ const MarketplaceItem = ({ item, onContact, onSave }) => {
                 placeholder="Write your message here..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-              ></textarea>
-              <button className="send-message-button" onClick={handleSendMessage}>
+                aria-label="Message to seller"
+              />
+              <button
+                className="send-message-button"
+                onClick={handleSendMessage}
+                aria-label="Send message"
+              >
                 <MessageCircle className="button-icon" />
                 Send Message
               </button>
@@ -324,34 +362,51 @@ export default function Marketplace() {
   useEffect(() => {
     const fetchMarketplacePosts = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_BASEURL}/post/marketplacePosts`, {
-          credentials: "include", // Include cookies in the request
-        });
+        setLoading(true);
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_BASEURL}/post/marketplacePosts`,
+          {
+            credentials: "include", // Include cookies in the request
+            headers: {
+              Authorization: `Bearer ${token}`, // Include token if required by backend
+            },
+          }
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch marketplace posts");
         }
         const data = await response.json();
-        setItems(data.data);
+        setItems(data.data || []); // Ensure items is an array
+        setError(null);
       } catch (error) {
-        setError(error.message);
+        setError(error.message || "Failed to fetch marketplace posts");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMarketplacePosts();
+    if (token) {
+      fetchMarketplacePosts();
+    } else {
+      setError("Please log in to view marketplace posts");
+      setLoading(false);
+    }
   }, [token]);
 
   const handleContact = async (postId, message) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_BASEURL}/post/marketplacePosts/${postId}/message`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ message }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_BASEURL}/post/marketplacePosts/${postId}/message`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Include token if required
+          },
+          credentials: "include",
+          body: JSON.stringify({ message }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to send message");
@@ -360,12 +415,13 @@ export default function Marketplace() {
       const data = await response.json();
       alert(data.message || "Message sent successfully!");
     } catch (error) {
-      alert("Error sending message: " + error.message);
+      alert("Error sending message: " + (error.message || "Unknown error"));
     }
   };
 
   const handleSave = (item) => {
     console.log("Item saved:", item);
+    // Implement save functionality (e.g., API call to save item)
   };
 
   const handleTabChange = (tab) => {
@@ -419,19 +475,25 @@ export default function Marketplace() {
         (item) =>
           item.title.toLowerCase().includes(query) ||
           item.description.toLowerCase().includes(query) ||
-          item.location.toLowerCase().includes(query),
+          item.location.toLowerCase().includes(query)
       );
     }
 
     if (filters.minPrice) {
-      filtered = filtered.filter((item) => item.price >= Number.parseFloat(filters.minPrice));
+      filtered = filtered.filter(
+        (item) => item.price >= Number.parseFloat(filters.minPrice)
+      );
     }
     if (filters.maxPrice) {
-      filtered = filtered.filter((item) => item.price <= Number.parseFloat(filters.maxPrice));
+      filtered = filtered.filter(
+        (item) => item.price <= Number.parseFloat(filters.maxPrice)
+      );
     }
 
     if (filters.location) {
-      filtered = filtered.filter((item) => item.location.toLowerCase().includes(filters.location.toLowerCase()));
+      filtered = filtered.filter((item) =>
+        item.location.toLowerCase().includes(filters.location.toLowerCase())
+      );
     }
 
     switch (sortOption) {
@@ -471,7 +533,11 @@ export default function Marketplace() {
         <AlertTriangle className="error-icon" />
         <h3 className="marketplace-error-title">Error Loading Marketplace</h3>
         <p className="marketplace-error-message">{error}</p>
-        <button className="marketplace-error-button" onClick={() => window.location.reload()}>
+        <button
+          className="marketplace-error-button"
+          onClick={() => window.location.reload()}
+          aria-label="Try again"
+        >
           <RefreshCw className="button-icon" />
           Try Again
         </button>
@@ -485,7 +551,9 @@ export default function Marketplace() {
         <h1 className="marketplace-title">
           Community <span className="gradient-text">Marketplace</span>
         </h1>
-        <p className="marketplace-subtitle">Buy, sell, and trade with your neighbors</p>
+        <p className="marketplace-subtitle">
+          Buy, sell, and trade with your neighbors
+        </p>
         <div className="marketplace-search-container">
           <div className="marketplace-search-box">
             <Search className="search-icon" />
@@ -495,9 +563,14 @@ export default function Marketplace() {
               className="marketplace-search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search marketplace items"
             />
             {searchQuery && (
-              <button className="search-clear-button" onClick={() => setSearchQuery("")} aria-label="Clear search">
+              <button
+                className="search-clear-button"
+                onClick={() => setSearchQuery("")}
+                aria-label="Clear search"
+              >
                 ×
               </button>
             )}
@@ -538,7 +611,11 @@ export default function Marketplace() {
           <div className="filter-dropdown">
             <div className="filter-header">
               <h3>Filter Items</h3>
-              <button className="close-filter-button" onClick={() => setIsFilterOpen(false)}>
+              <button
+                className="close-filter-button"
+                onClick={() => setIsFilterOpen(false)}
+                aria-label="Close filter options"
+              >
                 ×
               </button>
             </div>
@@ -553,6 +630,7 @@ export default function Marketplace() {
                   value={filters.minPrice}
                   onChange={handleFilterChange}
                   className="filter-input"
+                  aria-label="Minimum price"
                 />
               </div>
               <div className="filter-group">
@@ -565,6 +643,7 @@ export default function Marketplace() {
                   value={filters.maxPrice}
                   onChange={handleFilterChange}
                   className="filter-input"
+                  aria-label="Maximum price"
                 />
               </div>
               <div className="filter-group">
@@ -577,6 +656,7 @@ export default function Marketplace() {
                   value={filters.location}
                   onChange={handleFilterChange}
                   className="filter-input"
+                  aria-label="Location"
                 />
               </div>
               <div className="filter-group">
@@ -587,6 +667,7 @@ export default function Marketplace() {
                   value={filters.condition}
                   onChange={handleFilterChange}
                   className="filter-select"
+                  aria-label="Item condition"
                 >
                   <option value="all">All Conditions</option>
                   <option value="new">New</option>
@@ -596,7 +677,11 @@ export default function Marketplace() {
                   <option value="poor">Poor</option>
                 </select>
               </div>
-              <button className="apply-filters-button" onClick={applyFilters}>
+              <button
+                className="apply-filters-button"
+                onClick={applyFilters}
+                aria-label="Apply filters"
+              >
                 Apply Filters
               </button>
             </div>
@@ -607,7 +692,11 @@ export default function Marketplace() {
           <div className="sort-dropdown">
             <div className="sort-header">
               <h3>Sort By</h3>
-              <button className="close-sort-button" onClick={() => setIsSortOpen(false)}>
+              <button
+                className="close-sort-button"
+                onClick={() => setIsSortOpen(false)}
+                aria-label="Close sort options"
+              >
                 ×
               </button>
             </div>
@@ -615,6 +704,7 @@ export default function Marketplace() {
               <button
                 className={`sort-option ${sortOption === "newest" ? "active" : ""}`}
                 onClick={() => handleSortChange("newest")}
+                aria-label="Sort by newest first"
               >
                 <Clock className="sort-option-icon" />
                 Newest First
@@ -622,6 +712,7 @@ export default function Marketplace() {
               <button
                 className={`sort-option ${sortOption === "oldest" ? "active" : ""}`}
                 onClick={() => handleSortChange("oldest")}
+                aria-label="Sort by oldest first"
               >
                 <Clock className="sort-option-icon" />
                 Oldest First
@@ -629,6 +720,7 @@ export default function Marketplace() {
               <button
                 className={`sort-option ${sortOption === "priceAsc" ? "active" : ""}`}
                 onClick={() => handleSortChange("priceAsc")}
+                aria-label="Sort by price low to high"
               >
                 <DollarSign className="sort-option-icon" />
                 Price: Low to High
@@ -636,6 +728,7 @@ export default function Marketplace() {
               <button
                 className={`sort-option ${sortOption === "priceDesc" ? "active" : ""}`}
                 onClick={() => handleSortChange("priceDesc")}
+                aria-label="Sort by price high to low"
               >
                 <DollarSign className="sort-option-icon" />
                 Price: High to Low
@@ -650,6 +743,7 @@ export default function Marketplace() {
           <button
             className={`marketplace-tab ${activeTab === "all" ? "active" : ""}`}
             onClick={() => handleTabChange("all")}
+            aria-label="View all items"
           >
             <ShoppingBag className="tab-icon" />
             All Items
@@ -657,6 +751,7 @@ export default function Marketplace() {
           <button
             className={`marketplace-tab ${activeTab === "sale" ? "active" : ""}`}
             onClick={() => handleTabChange("sale")}
+            aria-label="View items for sale"
           >
             <DollarSign className="tab-icon" />
             For Sale
@@ -664,6 +759,7 @@ export default function Marketplace() {
           <button
             className={`marketplace-tab ${activeTab === "free" ? "active" : ""}`}
             onClick={() => handleTabChange("free")}
+            aria-label="View free items"
           >
             <Gift className="tab-icon" />
             Free
@@ -671,17 +767,27 @@ export default function Marketplace() {
           <button
             className={`marketplace-tab ${activeTab === "wanted" ? "active" : ""}`}
             onClick={() => handleTabChange("wanted")}
+            aria-label="View wanted items"
           >
             <Search className="tab-icon" />
             Wanted
           </button>
         </div>
 
-        <div className={`marketplace-tab-content ${tabTransitioning ? "tab-transitioning" : ""}`}>
+        <div
+          className={`marketplace-tab-content ${tabTransitioning ? "tab-transitioning" : ""}`}
+        >
           {filteredItems.length > 0 ? (
-            <div className={`marketplace-items ${viewMode === "list" ? "list-view" : "grid-view"}`}>
+            <div
+              className={`marketplace-items ${viewMode === "list" ? "list-view" : "grid-view"}`}
+            >
               {filteredItems.map((item) => (
-                <MarketplaceItem key={item.id} item={item} onContact={handleContact} onSave={handleSave} />
+                <MarketplaceItem
+                  key={item.id}
+                  item={item}
+                  onContact={handleContact}
+                  onSave={handleSave}
+                />
               ))}
             </div>
           ) : (
@@ -690,11 +796,15 @@ export default function Marketplace() {
                 <ShoppingBag className="empty-icon" />
               </div>
               <p>
-                No {activeTab !== "all" ? activeTab : ""} items {searchQuery ? "matching your search" : "at the moment"}
-                .
+                No {activeTab !== "all" ? activeTab : ""} items{" "}
+                {searchQuery ? "matching your search" : "at the moment"}.
               </p>
               {searchQuery && (
-                <button className="clear-search-button" onClick={() => setSearchQuery("")}>
+                <button
+                  className="clear-search-button"
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Clear search query"
+                >
                   Clear Search
                 </button>
               )}
@@ -715,7 +825,9 @@ export default function Marketplace() {
           <div className="stat-item">
             <Award className="stat-icon" />
             <div className="stat-content">
-              <span className="stat-value">{items.filter((item) => item.itemType === "sale").length}</span>
+              <span className="stat-value">
+                {items.filter((item) => item.itemType === "sale").length}
+              </span>
               <span className="stat-label">For Sale</span>
             </div>
           </div>
