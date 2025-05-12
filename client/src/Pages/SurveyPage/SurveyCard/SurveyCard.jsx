@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { toast } from "react-toastify"
 import { useSelector } from "react-redux"
-import ImageCarousel from "../ImageCarousel.jsx"
+import ImageCarousel from "./ImageCarousel.jsx"
 import {
   User,
   BarChart3,
