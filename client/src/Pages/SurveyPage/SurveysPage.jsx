@@ -18,9 +18,9 @@ import {
   Search,
   ClipboardList,
 } from "lucide-react"
-import SurveyCard from "./SurveyCard"
+import SurveyCard from "./SurveyCard.jsx"
 import "./SurveysPage.css"
-import { useTheme } from "../../components/ThemeProvider"
+import { useTheme } from "../../components/ThemeProvider.jsx"
 
 function SurveysPage() {
   const [activeTab, setActiveTab] = useState("active")

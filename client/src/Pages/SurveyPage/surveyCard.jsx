@@ -20,7 +20,7 @@ import {
   Share2,
   MoreHorizontal,
 } from "lucide-react"
-import ImageCarousel from "./ImageCarousel"
+import ImageCarousel from "./ImageCarousel.jsx"
 
 const SurveyCard = ({ post, onVote, onViewResults }) => {
   const [selectedOption, setSelectedOption] = useState(null)
