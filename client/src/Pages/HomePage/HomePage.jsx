@@ -22,6 +22,7 @@ function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [contactStates, setContactStates] = useState({})
   const { isDarkMode, toggleDarkMode } = useTheme()
+  const [isTokenLoading, setIsTokenLoading] = useState(true);
   const [communities, setCommunities] = useState([])
   const { userData } = useSelector((state) => state.user)
   const { token } = useSelector((state) => state.user) // Access token from Redux store
@@ -31,10 +32,19 @@ function HomePage() {
   }
 
   useEffect(() => {
+  if (token) {
+    setIsTokenLoading(false);
+  }
+}, [token]);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
-
+         if (!token) {
+      setLoading(false);
+      return;
+    }
         // Fetch posts and other data
         const response = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/getFeed`, {
           headers: {
@@ -304,6 +314,10 @@ function HomePage() {
       document.head.removeChild(styleElement)
     }
   }, [])
+
+  if (isTokenLoading) {
+  return <div>Loading authentication...</div>;
+}
 
   return (
     <div className="ts-home-container">
