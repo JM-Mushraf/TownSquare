@@ -18,7 +18,7 @@ import {
   Search,
   ClipboardList,
 } from "lucide-react"
-import SurveyCard from "./SurveyCard.jsx"
+import SurveyCard from "./SurveyCard/SurveyCard.jsx"
 import "./SurveysPage.css"
 import { useTheme } from "../../components/ThemeProvider.jsx"
 
