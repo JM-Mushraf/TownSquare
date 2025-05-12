@@ -11,6 +11,12 @@ import { HeroCarousel } from "./HeroCarousel";
 import { PostCard } from "./PostCard/PostCard";
 import { toast } from "react-hot-toast";
 
+// Create axios instance with interceptor
+const api = axios.create({
+  baseURL: import.meta.env.VITE_BACKEND_BASEURL,
+  withCredentials: true,
+});
+
 function HomePage() {
   const [activeTab, setActiveTab] = useState("all");
   const [posts, setPosts] = useState([]);
@@ -24,7 +30,41 @@ function HomePage() {
   const [isTokenLoading, setIsTokenLoading] = useState(true);
   const [communities, setCommunities] = useState([]);
   const { userData } = useSelector((state) => state.user);
-  const { token } = useSelector((state) => state.user); // Access token from Redux store
+  const { token } = useSelector((state) => state.user);
+
+  // Add request interceptor
+  useEffect(() => {
+    const requestInterceptor = api.interceptors.request.use(
+      (config) => {
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    // Add response interceptor
+    const responseInterceptor = api.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          console.error("Authentication error - token might be invalid:", token);
+          toast.error("Please login again to access this resource!");
+          // Optionally redirect to login here
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      // Cleanup interceptors when component unmounts
+      api.interceptors.request.eject(requestInterceptor);
+      api.interceptors.response.eject(responseInterceptor);
+    };
+  }, [token]);
 
   const navigate = (path) => {
     window.location.href = path;
@@ -45,27 +85,17 @@ function HomePage() {
           setLoading(false);
           return;
         }
-        // Fetch posts and other data
-        const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_BASEURL}/post/getFeed`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            withCredentials: true,
-          }
-        );
+
+        // Use the api instance instead of axios directly
+        const response = await api.get("/post/getFeed");
 
         if (response.data) {
           console.log(response);
-          
           await setPosts(response.data.posts || []);
           await setTrendingPosts(response.data.trending || []);
           setUpcomingEvents(response.data.upcomingEvents || []);
           setCounty(response.data.county || "");
 
-          // Find trending post only if we don't have trending data from the API
           if (!response.data.trending && response.data.posts?.length > 0) {
             const postWithHighestUpvotes = response.data.posts.reduce(
               (prev, current) => {
@@ -77,7 +107,6 @@ function HomePage() {
           }
         }
 
-        // Fetch community data if user has communitiesJoined
         if (userData?.communitiesJoined?.length > 0) {
           try {
             const queryParams = new URLSearchParams();
@@ -85,15 +114,8 @@ function HomePage() {
               queryParams.append("names", name);
             });
 
-            const communityResponse = await axios.get(
-              `${
-                import.meta.env.VITE_BACKEND_BASEURL
-              }/user/chat/getCommunities?${queryParams.toString()}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
+            const communityResponse = await api.get(
+              `/user/chat/getCommunities?${queryParams.toString()}`
             );
 
             setCommunities(communityResponse.data?.communities || []);
@@ -104,7 +126,6 @@ function HomePage() {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-        // More detailed error logging
         if (error.response) {
           console.error("Error response data:", error.response.data);
           console.error("Error status:", error.response.status);
@@ -115,15 +136,6 @@ function HomePage() {
           console.error("Error message:", error.message);
         }
 
-        const code = error?.response?.status;
-        if (code === 401) {
-          console.error(
-            "Authentication error - token might be invalid:",
-            token
-          );
-          toast.error("Please login again to access this resource!");
-          // Consider redirecting to login or refreshing token here
-        }
         setPosts([]);
         setTrendingPosts([]);
         setUpcomingEvents([]);
