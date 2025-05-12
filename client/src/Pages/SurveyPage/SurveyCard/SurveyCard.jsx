@@ -5,7 +5,7 @@ import ImageCarousel from "../ImageCarousel.jsx"
 import {
   User,
   BarChart3,
-  Calendar,
+  Calendar, 
   CheckCircle,
   Clock,
   History,
