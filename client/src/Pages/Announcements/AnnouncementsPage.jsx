@@ -23,7 +23,7 @@ import {
   FiZap,
 } from "react-icons/fi"
 import { motion, AnimatePresence } from "framer-motion"
-import ImageCarousel from "../SurveyPage/ImageCarousel.jsx"
+import { ImageCarousel } from "../HomePage/ImageCarousel.jsx"
 
 function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState([])
