@@ -11,7 +11,7 @@ import {
   History,
   Star,
   FileText,
-  MessageSquare,
+  MessageSquare, 
   Vote,
   Lightbulb,
   Bell,
