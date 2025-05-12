@@ -42,9 +42,10 @@ function HomePage() {
       try {
         setLoading(true)
          if (!token) {
-      setLoading(false);
-      return;
-    }
+        console.log("No token available, skipping fetch");
+        setLoading(false);
+        return;
+      }
         // Fetch posts and other data
         const response = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/getFeed`, {
           headers: {
@@ -91,24 +92,37 @@ function HomePage() {
           }
         }
       } catch (error) {
-        console.error("Error fetching data:", error)
-        // Set default values on error
-        const code = error?.response?.status
-        if (code == 401) {
-          toast.error("Please login again to access this resource!")
-          // navigate("/login")
-        }
-        setPosts([])
-        setTrendingPosts([])
-        setUpcomingEvents([])
-        setCounty("")
-        setCommunities([])
+        console.error("Error fetching data:", error);
+      // More detailed error logging
+      if (error.response) {
+        console.error("Error response data:", error.response.data);
+        console.error("Error status:", error.response.status);
+        console.error("Error headers:", error.response.headers);
+      } else if (error.request) {
+        console.error("Error request:", error.request);
+      } else {
+        console.error("Error message:", error.message);
+      }
+
+      const code = error?.response?.status;
+      if (code === 401) {
+        console.error("Authentication error - token might be invalid:", token);
+        toast.error("Please login again to access this resource!");
+        // Consider redirecting to login or refreshing token here
+      }
+      setPosts([]);
+      setTrendingPosts([]);
+      setUpcomingEvents([]);
+      setCounty("");
+      setCommunities([]);
       } finally {
         setLoading(false)
       }
     }
 
-    fetchData()
+    if (token) {
+    fetchData();
+  }
   }, [token, userData])
 
   useEffect(() => {
