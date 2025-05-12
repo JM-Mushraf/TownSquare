@@ -1,171 +1,187 @@
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { useTheme } from "../../components/ThemeProvider";
+import ThemeToggle from "../../components/ThemeToggle";
+import { useSelector } from "react-redux";
+import "./HomePage.css";
 
-import { useState, useEffect } from "react"
-import axios from "axios"
-import { useTheme } from "../../components/ThemeProvider"
-import ThemeToggle from "../../components/ThemeToggle"
-import { useSelector } from "react-redux"
-import "./HomePage.css"
-
-import "react-toastify/dist/ReactToastify.css"
-import { getTimeAgo, formatDate } from "./Helpers"
-import { HeroCarousel } from "./HeroCarousel"
-import { PostCard } from "./PostCard/PostCard"
-import { toast } from "react-hot-toast"
+import "react-toastify/dist/ReactToastify.css";
+import { getTimeAgo, formatDate } from "./Helpers";
+import { HeroCarousel } from "./HeroCarousel";
+import { PostCard } from "./PostCard/PostCard";
+import { toast } from "react-hot-toast";
 
 function HomePage() {
-  const [activeTab, setActiveTab] = useState("all")
-  const [posts, setPosts] = useState([])
-  const [trendingPosts, setTrendingPosts] = useState([])
-  const [upcomingEvents, setUpcomingEvents] = useState([])
-  const [county, setCounty] = useState("")
-  const [loading, setLoading] = useState(true)
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [contactStates, setContactStates] = useState({})
-  const { isDarkMode, toggleDarkMode } = useTheme()
+  const [activeTab, setActiveTab] = useState("all");
+  const [posts, setPosts] = useState([]);
+  const [trendingPosts, setTrendingPosts] = useState([]);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [county, setCounty] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [contactStates, setContactStates] = useState({});
+  const { isDarkMode, toggleDarkMode } = useTheme();
   const [isTokenLoading, setIsTokenLoading] = useState(true);
-  const [communities, setCommunities] = useState([])
-  const { userData } = useSelector((state) => state.user)
-  const { token } = useSelector((state) => state.user) // Access token from Redux store
+  const [communities, setCommunities] = useState([]);
+  const { userData } = useSelector((state) => state.user);
+  const { token } = useSelector((state) => state.user); // Access token from Redux store
 
   const navigate = (path) => {
-    window.location.href = path
-  }
+    window.location.href = path;
+  };
 
   useEffect(() => {
-  if (token) {
-    setIsTokenLoading(false);
-  }
-}, [token]);
+    if (token) {
+      setIsTokenLoading(false);
+    }
+  }, [token]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true)
-         if (!token) {
-        console.log("No token available, skipping fetch");
-        setLoading(false);
-        return;
-      }
+        setLoading(true);
+        if (!token) {
+          console.log("No token available, skipping fetch");
+          setLoading(false);
+          return;
+        }
         // Fetch posts and other data
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/getFeed`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_BASEURL}/post/getFeed`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }
+        );
 
         if (response.data) {
-          await setPosts(response.data.posts || [])
-          await setTrendingPosts(response.data.trending || [])
-          setUpcomingEvents(response.data.upcomingEvents || [])
-          setCounty(response.data.county || "")
+          console.log(response);
+          
+          await setPosts(response.data.posts || []);
+          await setTrendingPosts(response.data.trending || []);
+          setUpcomingEvents(response.data.upcomingEvents || []);
+          setCounty(response.data.county || "");
 
           // Find trending post only if we don't have trending data from the API
           if (!response.data.trending && response.data.posts?.length > 0) {
-            const postWithHighestUpvotes = response.data.posts.reduce((prev, current) => {
-              return prev.upVotes > current.upVotes ? prev : current
-            }, {})
-            setTrendingPosts(postWithHighestUpvotes)
+            const postWithHighestUpvotes = response.data.posts.reduce(
+              (prev, current) => {
+                return prev.upVotes > current.upVotes ? prev : current;
+              },
+              {}
+            );
+            setTrendingPosts(postWithHighestUpvotes);
           }
         }
 
         // Fetch community data if user has communitiesJoined
         if (userData?.communitiesJoined?.length > 0) {
           try {
-            const queryParams = new URLSearchParams()
+            const queryParams = new URLSearchParams();
             userData.communitiesJoined.forEach((name) => {
-              queryParams.append("names", name)
-            })
+              queryParams.append("names", name);
+            });
 
             const communityResponse = await axios.get(
-              `${import.meta.env.VITE_BACKEND_BASEURL}/user/chat/getCommunities?${queryParams.toString()}`,
+              `${
+                import.meta.env.VITE_BACKEND_BASEURL
+              }/user/chat/getCommunities?${queryParams.toString()}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
                 },
-              },
-            )
+              }
+            );
 
-            setCommunities(communityResponse.data?.communities || [])
+            setCommunities(communityResponse.data?.communities || []);
           } catch (error) {
-            console.error("Error fetching communities:", error)
-            setCommunities([])
+            console.error("Error fetching communities:", error);
+            setCommunities([]);
           }
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-      // More detailed error logging
-      if (error.response) {
-        console.error("Error response data:", error.response.data);
-        console.error("Error status:", error.response.status);
-        console.error("Error headers:", error.response.headers);
-      } else if (error.request) {
-        console.error("Error request:", error.request);
-      } else {
-        console.error("Error message:", error.message);
-      }
+        // More detailed error logging
+        if (error.response) {
+          console.error("Error response data:", error.response.data);
+          console.error("Error status:", error.response.status);
+          console.error("Error headers:", error.response.headers);
+        } else if (error.request) {
+          console.error("Error request:", error.request);
+        } else {
+          console.error("Error message:", error.message);
+        }
 
-      const code = error?.response?.status;
-      if (code === 401) {
-        console.error("Authentication error - token might be invalid:", token);
-        toast.error("Please login again to access this resource!");
-        // Consider redirecting to login or refreshing token here
-      }
-      setPosts([]);
-      setTrendingPosts([]);
-      setUpcomingEvents([]);
-      setCounty("");
-      setCommunities([]);
+        const code = error?.response?.status;
+        if (code === 401) {
+          console.error(
+            "Authentication error - token might be invalid:",
+            token
+          );
+          toast.error("Please login again to access this resource!");
+          // Consider redirecting to login or refreshing token here
+        }
+        setPosts([]);
+        setTrendingPosts([]);
+        setUpcomingEvents([]);
+        setCounty("");
+        setCommunities([]);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
     if (token) {
-    fetchData();
-  }
-  }, [token, userData])
+      fetchData();
+    }
+  }, [token, userData]);
 
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 50) {
-        setIsScrolled(true)
+        setIsScrolled(true);
       } else {
-        setIsScrolled(false)
+        setIsScrolled(false);
       }
-    }
+    };
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Filter posts based on active tab
   const filteredPosts = posts.filter((post) => {
-    if (activeTab === "all") return true
-    if (activeTab === "polls") return post.type === "poll" && post.poll?.isActive !== false
-    if (activeTab === "announcements") return post.type === "announcements"
-    if (activeTab === "suggestions") return post.type === "suggestion"
-    if (activeTab === "marketplace") return post.type === "marketplace"
-    if (activeTab === "events") return post.type === "announcements" && post.event
-    if (activeTab === "issues") return post.type === "issue"
-    return true
-  })
+    if (activeTab === "all") return true;
+    if (activeTab === "polls")
+      return post.type === "poll" && post.poll?.isActive !== false;
+    if (activeTab === "announcements") return post.type === "announcements";
+    if (activeTab === "suggestions") return post.type === "suggestion";
+    if (activeTab === "marketplace") return post.type === "marketplace";
+    if (activeTab === "events")
+      return post.type === "announcements" && post.event;
+    if (activeTab === "issues") return post.type === "issue";
+    return true;
+  });
 
   const handleContactSeller = (postId) => (e) => {
-    e.stopPropagation()
+    e.stopPropagation();
     setContactStates((prev) => ({
       ...prev,
       [postId]: {
         ...prev[postId],
         showContactForm: !prev[postId]?.showContactForm,
       },
-    }))
-  }
+    }));
+  };
 
   const handleSendMessage = (postId) => (e) => {
-    e.stopPropagation()
+    e.stopPropagation();
     if (contactStates[postId]?.contactMessage?.trim()) {
       // In a real app, you would send this message to the seller
-      alert(`Message sent to seller: ${contactStates[postId].contactMessage}`)
+      alert(`Message sent to seller: ${contactStates[postId].contactMessage}`);
       setContactStates((prev) => ({
         ...prev,
         [postId]: {
@@ -173,9 +189,9 @@ function HomePage() {
           contactMessage: "",
           showContactForm: false,
         },
-      }))
+      }));
     }
-  }
+  };
 
   const handleContactMessageChange = (postId) => (e) => {
     setContactStates((prev) => ({
@@ -184,11 +200,11 @@ function HomePage() {
         ...prev[postId],
         contactMessage: e.target.value,
       },
-    }))
-  }
+    }));
+  };
 
   useEffect(() => {
-    const styleElement = document.createElement("style")
+    const styleElement = document.createElement("style");
     const commentStyles = `
     .ts-comments-section {
       margin-top: 1rem;
@@ -320,18 +336,18 @@ function HomePage() {
     .dark .ts-comment-content {
       background-color: var(--dark-comment-bg);
     }
-    `
-    styleElement.textContent = commentStyles
-    document.head.appendChild(styleElement)
+    `;
+    styleElement.textContent = commentStyles;
+    document.head.appendChild(styleElement);
 
     return () => {
-      document.head.removeChild(styleElement)
-    }
-  }, [])
+      document.head.removeChild(styleElement);
+    };
+  }, []);
 
   if (isTokenLoading) {
-  return <div>Loading authentication...</div>;
-}
+    return <div>Loading authentication...</div>;
+  }
 
   return (
     <div className="ts-home-container">
@@ -343,11 +359,17 @@ function HomePage() {
               Welcome to <span className="ts-gradient-text">TownSquare</span>
             </h1>
             <div className="ts-title-underline"></div>
-            <p className="ts-home-subtitle">Your community platform for {county || "your local area"}</p>
+            <p className="ts-home-subtitle">
+              Your community platform for {county || "your local area"}
+            </p>
           </div>
           <div className="ts-header-actions">
             <ThemeToggle />
-            <button className="ts-create-button" onClick={() => navigate("/createPost")} id="create-post-button">
+            <button
+              className="ts-create-button"
+              onClick={() => navigate("/createPost")}
+              id="create-post-button"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -381,14 +403,22 @@ function HomePage() {
             {/* Hero Carousel */}
             {posts.length > 0 && (
               <HeroCarousel
-                items={posts.filter((post) => post.attachments && post.attachments.length > 0).slice(0, 5)}
+                items={posts
+                  .filter(
+                    (post) => post.attachments && post.attachments.length > 0
+                  )
+                  .slice(0, 5)}
                 navigate={navigate}
               />
             )}
 
             {/* Quick Links */}
             <div className="ts-quick-links">
-              <div className="ts-quick-link" onClick={() => setActiveTab("all")} id="quick-link-all">
+              <div
+                className="ts-quick-link"
+                onClick={() => setActiveTab("all")}
+                id="quick-link-all"
+              >
                 <div className="ts-quick-link-icon">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -407,7 +437,11 @@ function HomePage() {
                 </div>
                 <span>All</span>
               </div>
-              <div className="ts-quick-link" onClick={() => setActiveTab("marketplace")} id="quick-link-marketplace">
+              <div
+                className="ts-quick-link"
+                onClick={() => setActiveTab("marketplace")}
+                id="quick-link-marketplace"
+              >
                 <div className="ts-quick-link-icon">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -427,7 +461,11 @@ function HomePage() {
                 </div>
                 <span>Marketplace</span>
               </div>
-              <div className="ts-quick-link" onClick={() => setActiveTab("polls")} id="quick-link-polls">
+              <div
+                className="ts-quick-link"
+                onClick={() => setActiveTab("polls")}
+                id="quick-link-polls"
+              >
                 <div className="ts-quick-link-icon">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -470,7 +508,11 @@ function HomePage() {
                 </div>
                 <span>Announcements</span>
               </div>
-              <div className="ts-quick-link" onClick={() => setActiveTab("issues")} id="quick-link-issues">
+              <div
+                className="ts-quick-link"
+                onClick={() => setActiveTab("issues")}
+                id="quick-link-issues"
+              >
                 <div className="ts-quick-link-icon">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -517,8 +559,14 @@ function HomePage() {
                       </svg>
                     </div>
                     <h3>No posts found</h3>
-                    <p>Be the first to create a post in {county || "your area"}!</p>
-                    <button className="ts-create-button" onClick={() => navigate("/createPost")} id="create-post-empty">
+                    <p>
+                      Be the first to create a post in {county || "your area"}!
+                    </p>
+                    <button
+                      className="ts-create-button"
+                      onClick={() => navigate("/createPost")}
+                      id="create-post-empty"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
@@ -540,22 +588,25 @@ function HomePage() {
                 ) : (
                   <div className="ts-posts-container">
                     {filteredPosts.map((post) => {
-                      const postId = post._id
+                      const postId = post._id;
                       return (
                         <PostCard
                           key={`post-card-${postId}`}
                           post={{
                             ...post,
-                            showContactForm: contactStates[postId]?.showContactForm || false,
-                            contactMessage: contactStates[postId]?.contactMessage || "",
+                            showContactForm:
+                              contactStates[postId]?.showContactForm || false,
+                            contactMessage:
+                              contactStates[postId]?.contactMessage || "",
                             handleContactSeller: handleContactSeller(postId),
                             handleSendMessage: handleSendMessage(postId),
-                            handleContactMessageChange: handleContactMessageChange(postId),
+                            handleContactMessageChange:
+                              handleContactMessageChange(postId),
                           }}
                           navigate={navigate}
                           token={token}
                         />
-                      )
+                      );
                     })}
                   </div>
                 )}
@@ -592,7 +643,9 @@ function HomePage() {
                         <div className="ts-loading-spinner"></div>
                       </div>
                     ) : !trendingPosts || trendingPosts.length === 0 ? (
-                      <div className="ts-empty-section">No trending posts yet</div>
+                      <div className="ts-empty-section">
+                        No trending posts yet
+                      </div>
                     ) : (
                       <div className="ts-trending-list">
                         {Array.isArray(trendingPosts) ? (
@@ -602,7 +655,9 @@ function HomePage() {
                               className="ts-trending-item"
                               onClick={() => navigate(`/post/${post._id}`)}
                             >
-                              <h4 className="ts-trending-title">{post.title}</h4>
+                              <h4 className="ts-trending-title">
+                                {post.title}
+                              </h4>
                               <div className="ts-trending-meta">
                                 <span>{post.upVotes || 0} upvotes</span>
                                 <span>{getTimeAgo(post.createdAt)}</span>
@@ -610,8 +665,15 @@ function HomePage() {
                             </div>
                           ))
                         ) : (
-                          <div className="ts-trending-item" onClick={() => navigate(`/post/${trendingPosts._id}`)}>
-                            <h4 className="ts-trending-title">{trendingPosts.title}</h4>
+                          <div
+                            className="ts-trending-item"
+                            onClick={() =>
+                              navigate(`/post/${trendingPosts._id}`)
+                            }
+                          >
+                            <h4 className="ts-trending-title">
+                              {trendingPosts.title}
+                            </h4>
                             <div className="ts-trending-meta">
                               <span>{trendingPosts.upVotes || 0} upvotes</span>
                               <span>{getTimeAgo(trendingPosts.createdAt)}</span>
@@ -639,14 +701,25 @@ function HomePage() {
                         strokeLinejoin="round"
                         className="ts-section-icon"
                       >
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <rect
+                          x="3"
+                          y="4"
+                          width="18"
+                          height="18"
+                          rx="2"
+                          ry="2"
+                        ></rect>
                         <line x1="16" y1="2" x2="16" y2="6"></line>
                         <line x1="8" y1="2" x2="8" y2="6"></line>
                         <line x1="3" y1="10" x2="21" y2="10"></line>
                       </svg>
                       Upcoming Events
                     </h2>
-                    <button className="ts-view-all-button" onClick={() => navigate("/events")} id="view-all-events">
+                    <button
+                      className="ts-view-all-button"
+                      onClick={() => navigate("/events")}
+                      id="view-all-events"
+                    >
                       View All
                     </button>
                   </div>
@@ -659,7 +732,9 @@ function HomePage() {
                           <div
                             key={`event-${event._id}`}
                             className="ts-event-item"
-                            onClick={() => navigate(`/announcements/${event._id}`)}
+                            onClick={() =>
+                              navigate(`/announcements/${event._id}`)
+                            }
                           >
                             <div className="ts-event-content">
                               <h3 className="ts-event-title">{event.title}</h3>
@@ -677,7 +752,14 @@ function HomePage() {
                                     strokeLinejoin="round"
                                     className="ts-meta-icon"
                                   >
-                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <rect
+                                      x="3"
+                                      y="4"
+                                      width="18"
+                                      height="18"
+                                      rx="2"
+                                      ry="2"
+                                    ></rect>
                                     <line x1="16" y1="2" x2="16" y2="6"></line>
                                     <line x1="8" y1="2" x2="8" y2="6"></line>
                                     <line x1="3" y1="10" x2="21" y2="10"></line>
@@ -736,7 +818,8 @@ function HomePage() {
                   <div className="ts-alert-content">
                     <h3 className="ts-alert-title">Community Updates</h3>
                     <p className="ts-alert-message">
-                      Stay tuned for important announcements and updates from your community.
+                      Stay tuned for important announcements and updates from
+                      your community.
                     </p>
                   </div>
                 </div>
@@ -745,7 +828,11 @@ function HomePage() {
                 <div className="ts-stats-card">
                   <div className="ts-stats-header">
                     <h3 className="ts-stats-title">Community Stats</h3>
-                    {communities[0] && <span className="ts-community-name">{communities[0].name}</span>}
+                    {communities[0] && (
+                      <span className="ts-community-name">
+                        {communities[0].name}
+                      </span>
+                    )}
                   </div>
                   <div className="ts-stats-content">
                     <div className="ts-stat-item" id="stat-members">
@@ -769,7 +856,9 @@ function HomePage() {
                         </svg>
                       </div>
                       <div className="ts-stat-info">
-                        <span className="ts-stat-value">{communities[0]?.members?.length || 0}</span>
+                        <span className="ts-stat-value">
+                          {communities[0]?.members?.length || 0}
+                        </span>
                         <span className="ts-stat-label">Members</span>
                       </div>
                     </div>
@@ -792,7 +881,13 @@ function HomePage() {
                       </div>
                       <div className="ts-stat-info">
                         <span className="ts-stat-value">
-                          {posts.filter((post) => post.community?._id === userData?.communitiesJoined?.[0]?._id).length}
+                          {
+                            posts.filter(
+                              (post) =>
+                                post.community?._id ===
+                                userData?.communitiesJoined?.[0]?._id
+                            ).length
+                          }
                         </span>
                         <span className="ts-stat-label">Posts</span>
                       </div>
@@ -847,7 +942,10 @@ function HomePage() {
                   </div>
                   <div className="ts-support-content">
                     <h3 className="ts-support-title">Support Your Community</h3>
-                    <p className="ts-support-message">Help us keep TownSquare running and improving for everyone.</p>
+                    <p className="ts-support-message">
+                      Help us keep TownSquare running and improving for
+                      everyone.
+                    </p>
                     <button className="ts-support-button" id="donate-button">
                       Donate Now
                     </button>
@@ -859,7 +957,7 @@ function HomePage() {
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default HomePage
+export default HomePage;
