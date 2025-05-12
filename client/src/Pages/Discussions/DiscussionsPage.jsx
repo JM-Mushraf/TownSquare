@@ -33,10 +33,11 @@ function DiscussionsPage() {
   const { userData,token } = useSelector((state) => state.user);
 const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_BASEURL,
+  withCredentials:true,
   headers: {
-    Authorization: `Bearer ${token}`,
+    
     "Content-Type": "application/json",
-  },withCredentials:true,
+  }
 });
 
 api.interceptors.response.use(
@@ -62,7 +63,7 @@ api.interceptors.response.use(
     // Connect to the Socket.IO server
     socket.current = io(`${import.meta.env.VITE_BACKEND_BASEURL}`, {
       withCredentials: true,
-    auth: { token },
+    
     });
 
     // Listen for new group messages
