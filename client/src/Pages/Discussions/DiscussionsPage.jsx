@@ -44,7 +44,7 @@ api.interceptors.response.use(
   response => response,
   error => {
     if (error.response?.status === 401) {
-      navigate(`${import.meta.env.VITE_BACKEND_BASEURL}/login`)
+      navigate(`/login`)
     }
     return Promise.reject(error);
   }

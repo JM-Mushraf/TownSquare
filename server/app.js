@@ -11,6 +11,10 @@ import { MessageRouter } from "./routes/messageRouter.js";
 
 export const app = express();
 dotenv.config()
+
+app.use(express.json());
+app.use(cookieParser());
+app.use(express.static("public"));
 // app.use(Error)
 app.use(
   cors({
@@ -37,9 +41,7 @@ app.use(session({
   },
 }));
 app.set("trust proxy", 1);
-app.use(express.json());
-app.use(cookieParser());
-app.use(express.static("public"));
+
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
