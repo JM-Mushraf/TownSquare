@@ -24,7 +24,7 @@ import {
 } from "react-icons/fi"
 import { motion, AnimatePresence } from "framer-motion"
 import { ImageCarousel } from "../HomePage/ImageCarousel.jsx"
-
+import { useSelector } from "react-redux"
 function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -32,12 +32,12 @@ function AnnouncementsPage() {
   const [filterActive, setFilterActive] = useState(false)
   const [filter, setFilter] = useState("all")
   const [viewMode, setViewMode] = useState("grid")
-
+  const {token}=useSelector((state)=>state.user);
   useEffect(() => {
     const getAnnouncements = async () => {
       setIsLoading(true)
       try {
-        const data = await fetchAnnouncements()
+        const data = await fetchAnnouncements(token)
         const processedData = data.map((announcement) => ({
           ...announcement,
           showDescription: false,
