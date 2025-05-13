@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-import "./AnnouncementsPage.css";
-import { fetchAnnouncements } from "../../Apis/postApi.jsx";
+
+
+import { useState, useEffect } from "react"
+import "./AnnouncementsPage.css"
+import { fetchAnnouncements } from "../../Apis/postApi.jsx"
 import {
   FiBell,
   FiCalendar,
@@ -20,118 +21,85 @@ import {
   FiX,
   FiRefreshCw,
   FiZap,
-} from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
-import { ImageCarousel } from "../HomePage/ImageCarousel.jsx";
+} from "react-icons/fi"
+import { motion, AnimatePresence } from "framer-motion"
+import { ImageCarousel } from "../HomePage/ImageCarousel.jsx"
 
 function AnnouncementsPage() {
-  const { token } = useSelector((state) => state.user);
-  const [announcements, setAnnouncements] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterActive, setFilterActive] = useState(false);
-  const [filter, setFilter] = useState("all");
-  const [viewMode, setViewMode] = useState("grid");
+  const [announcements, setAnnouncements] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filterActive, setFilterActive] = useState(false)
+  const [filter, setFilter] = useState("all")
+  const [viewMode, setViewMode] = useState("grid")
 
   useEffect(() => {
     const getAnnouncements = async () => {
-      setIsLoading(true);
-      setError(null);
+      setIsLoading(true)
       try {
-        const data = await fetchAnnouncements(token);
-        const processedData = (data.data || []).map((announcement) => ({
+        const data = await fetchAnnouncements()
+        const processedData = data.map((announcement) => ({
           ...announcement,
           showDescription: false,
-        }));
-        setAnnouncements(processedData);
+        }))
+        setAnnouncements(processedData)
       } catch (error) {
-        console.error("Failed to fetch announcements:", error);
-        setError(error.message || "Failed to fetch announcements");
+        console.error("Failed to fetch announcements:", error)
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
-
-    if (token) {
-      getAnnouncements();
-    } else {
-      setError("Please log in to view announcements");
-      setIsLoading(false);
     }
-  }, [token]);
+    getAnnouncements()
+  }, [])
 
   const toggleDescription = (id, event) => {
     if (event.target.closest("button")) {
-      event.stopPropagation();
-      return;
+      event.stopPropagation()
+      return
     }
 
     setAnnouncements((prevAnnouncements) =>
       prevAnnouncements.map((announcement) =>
-        announcement._id === id
-          ? { ...announcement, showDescription: !announcement.showDescription }
-          : announcement
-      )
-    );
-  };
+        announcement._id === id ? { ...announcement, showDescription: !announcement.showDescription } : announcement,
+      ),
+    )
+  }
 
   const filteredAnnouncements = announcements.filter((announcement) => {
     const matchesSearch =
       searchQuery === "" ||
       announcement.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (announcement.description &&
-        announcement.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      (announcement.description && announcement.description.toLowerCase().includes(searchQuery.toLowerCase()))
 
-    if (filter === "all") return matchesSearch;
-    if (filter === "important") return matchesSearch && announcement.important;
-    if (filter === "events") return matchesSearch && announcement.event;
+    if (filter === "all") return matchesSearch
+    if (filter === "important") return matchesSearch && announcement.important
+    if (filter === "events") return matchesSearch && announcement.event
 
-    return matchesSearch;
-  });
+    return matchesSearch
+  })
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
+    const date = new Date(dateString)
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    });
-  };
+    })
+  }
 
   const getTimeAgo = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - date) / 1000);
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInSeconds = Math.floor((now - date) / 1000)
 
-    if (diffInSeconds < 60) return `${diffInSeconds} seconds ago`;
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    if (diffInSeconds < 60) return `${diffInSeconds} seconds ago`
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`
 
-    return formatDate(dateString);
-  };
-
-  if (error) {
-    return (
-      <div className="gov-announcements-error">
-        <FiAlertTriangle className="error-icon" />
-        <h3 className="gov-announcements-error-title">Error Loading Announcements</h3>
-        <p className="gov-announcements-error-message">{error}</p>
-        <motion.button
-          className="gov-announcements-error-button"
-          onClick={() => window.location.reload()}
-          aria-label="Try again"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <FiRefreshCw className="button-icon" />
-          Try Again
-        </motion.button>
-      </div>
-    );
+    return formatDate(dateString)
   }
 
   return (
@@ -148,9 +116,7 @@ function AnnouncementsPage() {
             Government <span className="gov-gradient-text">Announcements</span>
           </h1>
           <div className="gov-title-underline"></div>
-          <p className="gov-announcements-subtitle">
-            Stay informed with official updates from your local government
-          </p>
+          <p className="gov-announcements-subtitle">Stay informed with official updates from your local government</p>
         </div>
         <motion.button
           className="gov-announcements-subscribe-button"
@@ -176,7 +142,6 @@ function AnnouncementsPage() {
             className="gov-announcements-search-input"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            aria-label="Search announcements"
           />
           {searchQuery && (
             <motion.button
@@ -245,30 +210,30 @@ function AnnouncementsPage() {
                 <motion.button
                   className={`gov-filter-option ${filter === "all" ? "selected" : ""}`}
                   onClick={() => {
-                    setFilter("all");
-                    setFilterActive(false);
+                    setFilter("all")
+                    setFilterActive(false)
                   }}
                   whileHover={{ x: 5 }}
                 >
-                  <FiInfo className="gov-filter-option-icon" />
+                  <FiEye className="gov-filter-option-icon" />
                   All Announcements
                 </motion.button>
                 <motion.button
                   className={`gov-filter-option ${filter === "important" ? "selected" : ""}`}
                   onClick={() => {
-                    setFilter("important");
-                    setFilterActive(false);
+                    setFilter("important")
+                    setFilterActive(false)
                   }}
                   whileHover={{ x: 5 }}
                 >
                   <FiAlertTriangle className="gov-filter-option-icon" />
                   Important Only
-                </motion.button>
+CUL                </motion.button>
                 <motion.button
                   className={`gov-filter-option ${filter === "events" ? "selected" : ""}`}
                   onClick={() => {
-                    setFilter("events");
-                    setFilterActive(false);
+                    setFilter("events")
+                    setFilterActive(false)
                   }}
                   whileHover={{ x: 5 }}
                 >
@@ -288,7 +253,7 @@ function AnnouncementsPage() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="gov-ann announcements-loader"></div>
+          <div className="gov-announcements-loader"></div>
           <p>Loading announcements...</p>
         </motion.div>
       ) : filteredAnnouncements.length === 0 ? (
@@ -306,8 +271,8 @@ function AnnouncementsPage() {
           <motion.button
             className="gov-clear-search-button"
             onClick={() => {
-              setSearchQuery("");
-              setFilter("all");
+              setSearchQuery("")
+              setFilter("all")
             }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -340,7 +305,6 @@ function AnnouncementsPage() {
                       className="gov-announcement-avatar"
                       src={announcement.createdBy.avatar || "/default-avatar.png"}
                       alt={announcement.createdBy.username}
-                      onError={(e) => (e.target.src = "/default-avatar.png")}
                     />
                   </div>
                   <div className="gov-announcement-author-info">
@@ -389,12 +353,9 @@ function AnnouncementsPage() {
                               src={announcement.attachments[0].url || "/placeholder.svg"}
                               alt="Announcement attachment"
                               className="gov-announcement-attachment"
-                              onError={(e) => (e.target.src = "/placeholder.svg")}
                             />
                           ) : (
-                            <ImageCarousel
-                              images={announcement.attachments.map((attachment) => attachment.url)}
-                            />
+                            <ImageCarousel images={announcement.attachments.map((attachment) => attachment.url)} />
                           )}
                         </div>
                       )}
@@ -439,9 +400,7 @@ function AnnouncementsPage() {
                   ) : (
                     <FiChevronDown className="gov-toggle-icon" size={16} />
                   )}
-                  <span className="gov-toggle-text">
-                    {announcement.showDescription ? "Show less" : "Show more"}
-                  </span>
+                  <span className="gov-toggle-text">{announcement.showDescription ? "Show less" : "Show more"}</span>
                 </div>
               </div>
             </motion.div>
@@ -480,7 +439,7 @@ function AnnouncementsPage() {
         </div>
       </motion.div>
     </div>
-  );
+  )
 }
 
-export default AnnouncementsPage;
+export default AnnouncementsPage
