@@ -2,14 +2,14 @@ import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import "./DiscussionsPage.css";
 import { useSelector } from "react-redux";
-import { formatDate } from '../utils/formatDate.jsx';
+import { formatDate } from "../utils/formatDate.jsx";
 import { renderIcon } from "../utils/renderIcon.jsx";
 import { io } from "socket.io-client";
 import EmojiPicker from "emoji-picker-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../../components/ThemeProvider.jsx";
 function DiscussionsPage() {
-  const {theme}=useTheme()
+  const { theme } = useTheme();
   const [activeChannel, setActiveChannel] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -23,168 +23,162 @@ function DiscussionsPage() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showMembersPopup, setShowMembersPopup] = useState(false);
   const [currentGroupMembers, setCurrentGroupMembers] = useState([]);
-  const [isTyping,setIsTyping]=useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const emojiPickerRef = useRef(null);
-  const messagesContainerRef=useRef(null);
-  const typingTimeoutRef=useRef(null);
-  const navigate=useNavigate();
-  const { userData,token } = useSelector((state) => state.user);
-const api = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_BASEURL,
-  withCredentials:true,
-  headers: {
-    
-    "Content-Type": "application/json",
-  }
-});
+  const messagesContainerRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const navigate = useNavigate();
+  const { userData, token } = useSelector((state) => state.user);
+  const api = axios.create({
+    baseURL: import.meta.env.VITE_BACKEND_BASEURL,
+    withCredentials: true,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token?.trim() || ""}`,
+    },
+  });
 
-api.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response?.status === 401) {
-      navigate(`/login`)
-    }
-    return Promise.reject(error);
-  }
-);
   // Initialize Socket.IO client
-  const socket = useRef(null)
+  const socket = useRef(null);
 
   const handleShowMembers = (channel) => {
     if (channel && channel.members) {
-      setCurrentGroupMembers(channel.members)
-      setShowMembersPopup(true)
+      setCurrentGroupMembers(channel.members);
+      setShowMembersPopup(true);
     }
-  }
+  };
 
   useEffect(() => {
     // Connect to the Socket.IO server
     socket.current = io(`${import.meta.env.VITE_BACKEND_BASEURL}`, {
       withCredentials: true,
-    
+      auth: {
+        token: `Bearer ${token?.trim() || ""}`,
+      },
     });
 
     // Listen for new group messages
     socket.current.on("receive-group-message", (newMessage) => {
-      
       setMessages((prevMessages) => {
         // Check if message already exists to prevent duplicates
         if (!prevMessages.some((msg) => msg._id === newMessage._id)) {
-          return [...prevMessages, newMessage]
+          return [...prevMessages, newMessage];
         }
-        return prevMessages
-      })
-    })
+        return prevMessages;
+      });
+    });
 
     // Listen for typing events
     socket.current.on("typing", ({ chatId, username }) => {
       if (activeChannel && activeChannel._id === chatId) {
-        setIsTyping(true)
+        setIsTyping(true);
 
         // Clear previous timeout
         if (typingTimeoutRef.current) {
-          clearTimeout(typingTimeoutRef.current)
+          clearTimeout(typingTimeoutRef.current);
         }
 
         // Set new timeout
         typingTimeoutRef.current = setTimeout(() => {
-          setIsTyping(false)
-        }, 3000)
+          setIsTyping(false);
+        }, 3000);
       }
-    })
+    });
 
     // Cleanup on component unmount
     return () => {
-      socket.current.disconnect()
+      socket.current.disconnect();
       if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current)
+        clearTimeout(typingTimeoutRef.current);
       }
-    }
-  }, [activeChannel])
+    };
+  }, [activeChannel]);
 
   useEffect(() => {
     if (userData?._id) {
-      socket.current.emit("new-user-add", userData._id)
+      socket.current.emit("new-user-add", userData._id);
     }
-  }, [userData])
+  }, [userData]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
-        setShowEmojiPicker(false)
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target)
+      ) {
+        setShowEmojiPicker(false);
       }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
+    };
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Handle file selection
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files)
+    const files = Array.from(e.target.files);
     if (files.length > 5) {
-      alert("You can only upload up to 5 files at once")
-      return
+      alert("You can only upload up to 5 files at once");
+      return;
     }
 
-    setSelectedFiles(files)
+    setSelectedFiles(files);
 
     // Create preview URLs for images
     const urls = files.map((file) => {
       if (file.type.startsWith("image/")) {
-        return URL.createObjectURL(file)
+        return URL.createObjectURL(file);
       }
-      return null
-    })
-    setPreviewUrls(urls)
-  }
+      return null;
+    });
+    setPreviewUrls(urls);
+  };
 
   // Clear preview URLs when component unmounts
   useEffect(() => {
     return () => {
       previewUrls.forEach((url) => {
-        if (url) URL.revokeObjectURL(url)
-      })
-    }
-  }, [previewUrls])
+        if (url) URL.revokeObjectURL(url);
+      });
+    };
+  }, [previewUrls]);
 
   // Remove a file from selection
   const removeFile = (index) => {
-    const newFiles = [...selectedFiles]
-    newFiles.splice(index, 1)
-    setSelectedFiles(newFiles)
+    const newFiles = [...selectedFiles];
+    newFiles.splice(index, 1);
+    setSelectedFiles(newFiles);
 
-    const newUrls = [...previewUrls]
-    if (newUrls[index]) URL.revokeObjectURL(newUrls[index])
-    newUrls.splice(index, 1)
-    setPreviewUrls(newUrls)
-  }
+    const newUrls = [...previewUrls];
+    if (newUrls[index]) URL.revokeObjectURL(newUrls[index]);
+    newUrls.splice(index, 1);
+    setPreviewUrls(newUrls);
+  };
 
   // Fetch user chats on component mount
   useEffect(() => {
     const fetchUserChats = async () => {
       try {
         setIsLoadingChannels(true);
-        const { data } = await api.get('/user/chats');
+        const { data } = await api.get("/user/chats");
         await setChannels(data.chats);
-        
 
         if (data.chats.length > 0) {
-          setActiveChannel(data.chats[0])
-          fetchMessages(data.chats[0]._id)
+          setActiveChannel(data.chats[0]);
+          fetchMessages(data.chats[0]._id);
         }
       } catch (error) {
-        console.error("Error fetching user chats:", error)
+        console.error("Error fetching user chats:", error);
       } finally {
-        setIsLoadingChannels(false)
+        setIsLoadingChannels(false);
       }
-    }
+    };
 
-    fetchUserChats()
-  }, [])
+    fetchUserChats();
+  }, []);
 
   // Fetch messages for a specific chat
   const fetchMessages = async (chatId) => {
@@ -197,13 +191,13 @@ api.interceptors.response.use(
       setMessages(sortedMessages);
 
       // Join the group room
-      socket.current.emit("join-group", chatId)
+      socket.current.emit("join-group", chatId);
     } catch (error) {
-      console.error("Error fetching messages:", error)
+      console.error("Error fetching messages:", error);
     } finally {
-      setIsLoadingMessages(false)
+      setIsLoadingMessages(false);
     }
-  }
+  };
 
   // Handle typing notification
   const handleTyping = () => {
@@ -211,89 +205,89 @@ api.interceptors.response.use(
       socket.current.emit("typing", {
         chatId: activeChannel._id,
         username: userData.username,
-      })
+      });
     }
-  }
+  };
 
   // Send a new message with attachments
   const handleSendMessage = async (e) => {
-    e.preventDefault()
-    if (!newMessage.trim() && !selectedFiles.length && !activeChannel) return
+    e.preventDefault();
+    if (!newMessage.trim() && !selectedFiles.length && !activeChannel) return;
 
     try {
-      const formData = new FormData()
-      formData.append("chatId", activeChannel._id)
+      const formData = new FormData();
+      formData.append("chatId", activeChannel._id);
       // Always include content, even if empty
-      formData.append("content", newMessage.trim() ? newMessage : "")
+      formData.append("content", newMessage.trim() ? newMessage : "");
 
       // Append all selected files
       selectedFiles.forEach((file) => {
-        formData.append("attachments", file)
-      })
+        formData.append("attachments", file);
+      });
 
-      const response = await api.post(
-        `/message/send`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
+      const response = await api.post(`/message/send`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       const newMessageWithSender = {
         ...response.data.newMessage,
         sender: userData,
-      }
+      };
 
       socket.current.emit("send-group-message", {
         chatId: activeChannel._id,
         message: newMessageWithSender,
-      })
+      });
 
-      setMessages((prevMessages) => [...prevMessages, newMessageWithSender])
-      setNewMessage("")
-      setSelectedFiles([])
-      setPreviewUrls([])
-      setShowEmojiPicker(false)
+      setMessages((prevMessages) => [...prevMessages, newMessageWithSender]);
+      setNewMessage("");
+      setSelectedFiles([]);
+      setPreviewUrls([]);
+      setShowEmojiPicker(false);
     } catch (error) {
-      console.error("Error sending message:", error)
+      console.error("Error sending message:", error);
     }
-  }
+  };
 
   // Toggle channels sidebar on mobile
   const toggleChannels = () => {
-    setIsChannelsOpen(!isChannelsOpen)
-  }
+    setIsChannelsOpen(!isChannelsOpen);
+  };
 
   // Filter channels based on search query
   const filteredChannels = channels.filter(
     (channel) =>
       channel.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      channel.description.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      channel.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Scroll to bottom of messages
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    scrollToBottom();
+  }, [messages]);
 
   const onEmojiClick = (emojiData) => {
-    setNewMessage((prev) => prev + emojiData.emoji)
-  }
+    setNewMessage((prev) => prev + emojiData.emoji);
+  };
 
   // Render file preview or icon based on file type
   const renderAttachment = (attachment) => {
     if (attachment.fileType === "image") {
       return (
         <div className="attachment-image-container">
-          <img src={attachment.url || "/placeholder.svg"} alt={attachment.fileName} className="attachment-image" />
+          <img
+            src={attachment.url || "/placeholder.svg"}
+            alt={attachment.fileName}
+            className="attachment-image"
+          />
         </div>
-      )
+      );
     } else {
       return (
         <div className="attachment-file">
@@ -332,9 +326,9 @@ api.interceptors.response.use(
           </div>
           <div className="attachment-name">{attachment.fileName}</div>
         </div>
-      )
+      );
     }
-  }
+  };
 
   return (
     <div className={`discussions-content ${theme}`}>
@@ -352,7 +346,6 @@ api.interceptors.response.use(
       {/* Channels sidebar */}
       <div className={`discussions-channels ${isChannelsOpen ? "open" : ""}`}>
         <div className="discussions-channels-header">
-
           {/* <div className="discussions-search">
             <div className="discussions-search-icon">
               <svg
@@ -420,19 +413,29 @@ api.interceptors.response.use(
             filteredChannels.map((channel) => (
               <div
                 key={channel._id}
-                className={`discussions-channel ${activeChannel?._id === channel._id ? "active" : ""}`}
+                className={`discussions-channel ${
+                  activeChannel?._id === channel._id ? "active" : ""
+                }`}
                 onClick={() => {
-                  setActiveChannel(channel)
-                  fetchMessages(channel._id)
-                  setIsChannelsOpen(false)
+                  setActiveChannel(channel);
+                  fetchMessages(channel._id);
+                  setIsChannelsOpen(false);
                 }}
               >
-                <div className="discussions-channel-icon">{renderIcon(channel.icon)}</div>
+                <div className="discussions-channel-icon">
+                  {renderIcon(channel.icon)}
+                </div>
                 <div className="discussions-channel-info">
                   <div className="discussions-channel-name">{channel.name}</div>
-                  <div className="discussions-channel-description">{channel.description}</div>
+                  <div className="discussions-channel-description">
+                    {channel.description}
+                  </div>
                 </div>
-                {channel.unread > 0 && <div className="discussions-channel-badge">{channel.unread}</div>}
+                {channel.unread > 0 && (
+                  <div className="discussions-channel-badge">
+                    {channel.unread}
+                  </div>
+                )}
                 <div className="channel-hover-effect"></div>
               </div>
             ))
@@ -449,7 +452,10 @@ api.interceptors.response.use(
       {/* Chat area */}
       <div className="discussions-chat">
         <div className="discussions-chat-header">
-          <button className="discussions-channels-toggle" onClick={toggleChannels}>
+          <button
+            className="discussions-channels-toggle"
+            onClick={toggleChannels}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -468,9 +474,13 @@ api.interceptors.response.use(
           </button>
           {activeChannel && (
             <div className="discussions-chat-info">
-              <div className="discussions-chat-avatar">{renderIcon(activeChannel.icon)}</div>
+              <div className="discussions-chat-avatar">
+                {renderIcon(activeChannel.icon)}
+              </div>
               <div className="discussions-chat-details">
-                <div className="discussions-chat-name">{activeChannel.name}</div>
+                <div className="discussions-chat-name">
+                  {activeChannel.name}
+                </div>
                 <div className="discussions-chat-status">
                   <span className="status-dot"></span>
                   {activeChannel.members.length} members
@@ -501,9 +511,11 @@ api.interceptors.response.use(
             </div>
           ) : (
             messages.map((message, index) => {
-              const isCurrentUser = message.sender._id === userData._id
-              const uniqueKey = `${message._id}-${message.createdAt}`
-              const showAvatar = index === 0 || messages[index - 1].sender._id !== message.sender._id
+              const isCurrentUser = message.sender._id === userData._id;
+              const uniqueKey = `${message._id}-${message.createdAt}`;
+              const showAvatar =
+                index === 0 ||
+                messages[index - 1].sender._id !== message.sender._id;
 
               return (
                 <div
@@ -524,23 +536,34 @@ api.interceptors.response.use(
                   )}
                   <div className="discussions-message-content">
                     <div className="discussions-message-bubble">
-                      {showAvatar && <div className="discussions-message-author">{message.sender.username}</div>}
-                      <div className="message-text">{message.content}</div>
-                      {message.attachments && message.attachments.length > 0 && (
-                        <div className="message-attachments">
-                          {message.attachments.map((attachment, index) => (
-                            <div key={index} className="message-attachment">
-                              {renderAttachment(attachment)}
-                            </div>
-                          ))}
+                      {showAvatar && (
+                        <div className="discussions-message-author">
+                          {message.sender.username}
                         </div>
                       )}
+                      <div className="message-text">{message.content}</div>
+                      {message.attachments &&
+                        message.attachments.length > 0 && (
+                          <div className="message-attachments">
+                            {message.attachments.map((attachment, index) => (
+                              <div key={index} className="message-attachment">
+                                {renderAttachment(attachment)}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       <div className="holographic-effect"></div>
                     </div>
                     <div className="discussions-message-meta">
-                      <div className="discussions-message-time">{formatDate(message.createdAt)}</div>
+                      <div className="discussions-message-time">
+                        {formatDate(message.createdAt)}
+                      </div>
                       {isCurrentUser && (
-                        <div className={`discussions-message-status ${message.read ? "read" : ""}`}>
+                        <div
+                          className={`discussions-message-status ${
+                            message.read ? "read" : ""
+                          }`}
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="14"
@@ -559,7 +582,7 @@ api.interceptors.response.use(
                     </div>
                   </div>
                 </div>
-              )
+              );
             })
           )}
           {isTyping && (
@@ -579,15 +602,25 @@ api.interceptors.response.use(
               <div key={index} className="file-preview">
                 {url ? (
                   <>
-                    <img src={url || "/placeholder.svg"} alt="Preview" className="image-preview" />
-                    <button className="remove-file-btn" onClick={() => removeFile(index)}>
+                    <img
+                      src={url || "/placeholder.svg"}
+                      alt="Preview"
+                      className="image-preview"
+                    />
+                    <button
+                      className="remove-file-btn"
+                      onClick={() => removeFile(index)}
+                    >
                       ×
                     </button>
                   </>
                 ) : (
                   <div className="file-preview-info">
                     <span>{selectedFiles[index].name}</span>
-                    <button className="remove-file-btn" onClick={() => removeFile(index)}>
+                    <button
+                      className="remove-file-btn"
+                      onClick={() => removeFile(index)}
+                    >
                       ×
                     </button>
                   </div>
@@ -600,7 +633,11 @@ api.interceptors.response.use(
         <form className="discussions-input" onSubmit={handleSendMessage}>
           <div className="discussions-input-container">
             <div className="discussions-input-actions">
-              <button type="button" className="discussions-input-button" onClick={() => fileInputRef.current.click()}>
+              <button
+                type="button"
+                className="discussions-input-button"
+                onClick={() => fileInputRef.current.click()}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="18"
@@ -655,8 +692,8 @@ api.interceptors.response.use(
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSendMessage(e)
+                    e.preventDefault();
+                    handleSendMessage(e);
                   }
                 }}
                 onInput={handleTyping}
@@ -695,18 +732,28 @@ api.interceptors.response.use(
       </div>
 
       {showMembersPopup && (
-        <div className="members-popup-overlay" onClick={() => setShowMembersPopup(false)}>
+        <div
+          className="members-popup-overlay"
+          onClick={() => setShowMembersPopup(false)}
+        >
           <div className="members-popup" onClick={(e) => e.stopPropagation()}>
             <div className="members-popup-header">
               <h3>Group Members</h3>
-              <button className="close-popup" onClick={() => setShowMembersPopup(false)}>
+              <button
+                className="close-popup"
+                onClick={() => setShowMembersPopup(false)}
+              >
                 ×
               </button>
             </div>
             <div className="members-list">
               {currentGroupMembers.map((member) => (
                 <div key={member._id} className="member-item">
-                  <img src={member.avatar || "/placeholder.svg"} alt={member.username} className="member-avatar" />
+                  <img
+                    src={member.avatar || "/placeholder.svg"}
+                    alt={member.username}
+                    className="member-avatar"
+                  />
                   <div className="member-info">
                     <span className="member-username">{member.username}</span>
                     <span className="member-email">{member.email}</span>
@@ -719,7 +766,7 @@ api.interceptors.response.use(
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default DiscussionsPage
+export default DiscussionsPage;
