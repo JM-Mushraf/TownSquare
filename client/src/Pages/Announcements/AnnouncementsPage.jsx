@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import "./AnnouncementsPage.css";
+import { fetchAnnouncements } from "../../Apis/postApi.jsx";
 import {
   FiBell,
   FiCalendar,
@@ -38,19 +39,7 @@ function AnnouncementsPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_BASEURL}/post/announcements`,
-          {
-            credentials: "include", // Include cookies for authentication
-            headers: {
-              Authorization: `Bearer ${token}`, // Include token if required
-            },
-          }
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch announcements");
-        }
-        const data = await response.json();
+        const data = await fetchAnnouncements(token);
         const processedData = (data.data || []).map((announcement) => ({
           ...announcement,
           showDescription: false,
@@ -299,7 +288,7 @@ function AnnouncementsPage() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="gov-announcements-loader"></div>
+          <div className="gov-ann announcements-loader"></div>
           <p>Loading announcements...</p>
         </motion.div>
       ) : filteredAnnouncements.length === 0 ? (
@@ -351,6 +340,7 @@ function AnnouncementsPage() {
                       className="gov-announcement-avatar"
                       src={announcement.createdBy.avatar || "/default-avatar.png"}
                       alt={announcement.createdBy.username}
+                      onError={(e) => (e.target.src = "/default-avatar.png")}
                     />
                   </div>
                   <div className="gov-announcement-author-info">
@@ -399,6 +389,7 @@ function AnnouncementsPage() {
                               src={announcement.attachments[0].url || "/placeholder.svg"}
                               alt="Announcement attachment"
                               className="gov-announcement-attachment"
+                              onError={(e) => (e.target.src = "/placeholder.svg")}
                             />
                           ) : (
                             <ImageCarousel
