@@ -2,7 +2,9 @@
 import axios from 'axios'
 export const fetchAnnouncements = async () => {
     try {
-      const {data} = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/announcements/all`); // Replace with your backend endpoint
+      const {data} = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/announcements/all`,{
+        withCredentials:true,
+      })
       
       
       
