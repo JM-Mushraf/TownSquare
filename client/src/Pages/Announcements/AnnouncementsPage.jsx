@@ -1,4 +1,4 @@
-
+"use client"
 
 import { useState, useEffect } from "react"
 import "./AnnouncementsPage.css"
@@ -21,6 +21,7 @@ import {
   FiX,
   FiRefreshCw,
   FiZap,
+  FiEye,
 } from "react-icons/fi"
 import { motion, AnimatePresence } from "framer-motion"
 import { ImageCarousel } from "../HomePage/ImageCarousel.jsx"
@@ -32,12 +33,23 @@ function AnnouncementsPage() {
   const [filterActive, setFilterActive] = useState(false)
   const [filter, setFilter] = useState("all")
   const [viewMode, setViewMode] = useState("grid")
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     const getAnnouncements = async () => {
       setIsLoading(true)
+      setError(null)
       try {
         const data = await fetchAnnouncements()
+
+        // Check if data is valid
+        if (!data || !Array.isArray(data)) {
+          console.error("Invalid data format received:", data)
+          setError("Invalid data received from server")
+          setAnnouncements([])
+          return
+        }
+
         const processedData = data.map((announcement) => ({
           ...announcement,
           showDescription: false,
@@ -45,6 +57,7 @@ function AnnouncementsPage() {
         setAnnouncements(processedData)
       } catch (error) {
         console.error("Failed to fetch announcements:", error)
+        setError("Failed to load announcements. Please try again later.")
       } finally {
         setIsLoading(false)
       }
@@ -228,7 +241,7 @@ function AnnouncementsPage() {
                 >
                   <FiAlertTriangle className="gov-filter-option-icon" />
                   Important Only
-CUL                </motion.button>
+                </motion.button>
                 <motion.button
                   className={`gov-filter-option ${filter === "events" ? "selected" : ""}`}
                   onClick={() => {
@@ -255,6 +268,28 @@ CUL                </motion.button>
         >
           <div className="gov-announcements-loader"></div>
           <p>Loading announcements...</p>
+        </motion.div>
+      ) : error ? (
+        <motion.div
+          className="gov-announcements-error"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="gov-error-icon-container">
+            <FiAlertTriangle className="gov-error-icon" />
+          </div>
+          <h3>Error Loading Announcements</h3>
+          <p>{error}</p>
+          <motion.button
+            className="gov-retry-button"
+            onClick={() => window.location.reload()}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <FiRefreshCw size={16} className="gov-button-icon" />
+            Retry
+          </motion.button>
         </motion.div>
       ) : filteredAnnouncements.length === 0 ? (
         <motion.div
@@ -303,12 +338,15 @@ CUL                </motion.button>
                   <div className="gov-announcement-avatar-container">
                     <img
                       className="gov-announcement-avatar"
-                      src={announcement.createdBy.avatar || "/default-avatar.png"}
-                      alt={announcement.createdBy.username}
+                      src={announcement.createdBy?.avatar || "/default-avatar.png"}
+                      alt={announcement.createdBy?.username || "User"}
+                      onError={(e) => {
+                        e.target.src = "/default-avatar.png"
+                      }}
                     />
                   </div>
                   <div className="gov-announcement-author-info">
-                    <div className="gov-announcement-name">{announcement.createdBy.username}</div>
+                    <div className="gov-announcement-name">{announcement.createdBy?.username || "Anonymous"}</div>
                     <div className="gov-announcement-time">
                       <FiClock className="gov-time-icon" size={14} />
                       {getTimeAgo(announcement.createdAt)}
@@ -353,6 +391,9 @@ CUL                </motion.button>
                               src={announcement.attachments[0].url || "/placeholder.svg"}
                               alt="Announcement attachment"
                               className="gov-announcement-attachment"
+                              onError={(e) => {
+                                e.target.src = "/placeholder.svg"
+                              }}
                             />
                           ) : (
                             <ImageCarousel images={announcement.attachments.map((attachment) => attachment.url)} />
