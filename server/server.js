@@ -15,11 +15,43 @@ connection()
     console.log("DATABASE CONNECTION ESTABLISHED");
   })
   .catch((e) => {
-    console.log(e);
+    console.error("DATABASE CONNECTION FAILED:", e);
   });
 
-// Schedule the task to run daily at midnight
-cron.schedule("0 0 * * *", updatePostStatus); // Runs every day at 00:00
+// Schedule the task to run every minute for testing
+console.log("Setting up cron job...");
+cron.schedule("* * * * *", async () => {
+  const now = new Date().toISOString();
+  console.log(`Cron job triggered at ${now}`);
+  try {
+    console.log("Executing updatePostStatus...");
+    await updatePostStatus();
+    console.log("updatePostStatus completed successfully.");
+  } catch (error) {
+    console.error("Error in updatePostStatus:", error.message);
+    console.error("Stack trace:", error.stack);
+  }
+}, {
+  timezone: "UTC" // Explicitly set timezone to avoid discrepancies
+});
+
+// Optional: Uncomment to revert to daily midnight schedule after testing
+/*
+cron.schedule("0 0 * * *", async () => {
+  const now = new Date().toISOString();
+  console.log(`Cron job triggered at ${now}`);
+  try {
+    console.log("Executing updatePostStatus...");
+    await updatePostStatus();
+    console.log("updatePostStatus completed successfully.");
+  } catch (error) {
+    console.error("Error in updatePostStatus:", error.message);
+    console.error("Stack trace:", error.stack);
+  }
+}, {
+  timezone: "UTC"
+});
+*/
 
 // Create an HTTP server
 const server = http.createServer(app);
@@ -38,48 +70,30 @@ let activeUsers = [];
 
 // Handle Socket.IO connections
 io.on("connection", (socket) => {
-
   // Add new user to activeUsers
   socket.on("new-user-add", (newUserId) => {
-
-    // Check if the user is already in the activeUsers array
     if (!activeUsers.some((user) => user.userId === newUserId)) {
       activeUsers.push({ userId: newUserId, socketId: socket.id });
     }
-
-    // Emit the list of active users to all clients
     io.emit("get-users", activeUsers);
   });
 
   // Handle joining a group
   socket.on("join-group", (chatId) => {
-    socket.join(chatId); // Join the group room
+    socket.join(chatId);
   });
 
   // Handle sending a group message
   socket.on("send-group-message", (data) => {
     const { chatId, message } = data;
-
-    // Broadcast the message to all members of the group
     io.to(chatId).emit("receive-group-message", message);
   });
 
   // Handle user disconnection
   socket.on("disconnect", () => {
-
-    // Remove the disconnected user from activeUsers
     activeUsers = activeUsers.filter((user) => user.socketId !== socket.id);
-
-    // Emit the updated list of active users to all clients
     io.emit("get-users", activeUsers);
   });
-});
-cron.schedule("* * * * *", async () => {
-  try {
-    await updatePostStatus();
-  } catch (error) {
-    console.error("Cron job failed:", error);
-  }
 });
 
 // Start the server
@@ -87,15 +101,19 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log("SERVER IS RUNNING ON PORT ", PORT);
 });
+
+// Handle uncaught exceptions
 process.on("uncaughtException", (err) => {
-  console.log("!!! ERROR !!! ", err);
-  console.log("SHUTTING DOWN THE SERVER!!!"); 
+  console.error("UNCAUGHT EXCEPTION:", err.message);
+  console.error("Stack trace:", err.stack);
+  console.log("SHUTTING DOWN THE SERVER!!!");
   process.exit(1);
 });
 
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (err) => {
-  console.log(err);
+  console.error("UNHANDLED REJECTION:", err.message);
+  console.error("Stack trace:", err.stack);
   console.log("SHUTTING DOWN THE SERVER!!!");
   server.close(() => {
     process.exit(1);
