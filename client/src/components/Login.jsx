@@ -59,6 +59,7 @@ export default function AuthPage() {
   const handleTestUserLogin = async () => {
   setIsSubmitting(true);
   setError(null);
+  toast("Waking up the server... This could take up to 40 seconds. Thanks for your patience!",{duration:6000,position:'top-center'})
 
   try {
     const testUserData = {
