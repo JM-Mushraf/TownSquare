@@ -607,6 +607,7 @@ button {
   width: 16px;
   height: 16px;
   color: var(--neo-text-secondary);
+  z-index: 100;
 }
 
 .neo-search-input {

@@ -1,6 +1,6 @@
+"use client"
 
-
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useSelector } from "react-redux"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
@@ -35,7 +35,6 @@ function SurveysPage() {
     surveysOnly: false,
     participatedOnly: false,
   })
-
   const { theme } = useTheme()
   const { token } = useSelector((state) => state.user)
 
@@ -46,28 +45,29 @@ function SurveysPage() {
         if (!response.ok) throw new Error("Failed to fetch posts")
         const data = await response.json()
         setPosts(data.posts)
-        setLoading(false)
       } catch (error) {
         setError(error.message)
-        setLoading(false)
         toast.error("Failed to load surveys and polls. Please try again later.")
+      } finally {
+        setLoading(false)
       }
     }
-
     fetchPosts()
   }, [])
 
-  const handleTabChange = (tab) => {
-    if (tab === activeTab || tabTransitioning) return
+  const handleTabChange = useCallback(
+    (tab) => {
+      if (tab === activeTab || tabTransitioning) return
+      setTabTransitioning(true)
+      setTimeout(() => {
+        setActiveTab(tab)
+        setTabTransitioning(false)
+      }, 300)
+    },
+    [activeTab, tabTransitioning],
+  )
 
-    setTabTransitioning(true)
-    setTimeout(() => {
-      setActiveTab(tab)
-      setTabTransitioning(false)
-    }, 300)
-  }
-
-  const getFilteredPosts = () => {
+  const filteredPosts = useMemo(() => {
     let filtered = posts.filter((post) => {
       const status = post.poll ? post.poll.status : post.survey.status
       return status === activeTab
@@ -76,20 +76,15 @@ function SurveysPage() {
     if (filters.pollsOnly) {
       filtered = filtered.filter((post) => post.type === "poll")
     }
-
     if (filters.surveysOnly) {
       filtered = filtered.filter((post) => post.type === "survey")
     }
-
     if (filters.participatedOnly) {
       filtered = filtered.filter((post) => {
         if (post.poll) {
-          return post.poll.options && post.poll.options.some((opt) => opt.voters && opt.voters.includes(token.userId))
+          return post.poll.options?.some((opt) => opt.voters?.includes(token?.userId))
         } else if (post.survey) {
-          return (
-            post.survey.questions &&
-            post.survey.questions.some((q) => q.responses && q.responses.some((r) => r.userId === token.userId))
-          )
+          return post.survey.questions?.some((q) => q.responses?.some((r) => r.userId === token?.userId))
         }
         return false
       })
@@ -98,136 +93,130 @@ function SurveysPage() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
       filtered = filtered.filter(
-        (post) => post.title.toLowerCase().includes(query) || post.description.toLowerCase().includes(query),
+        (post) => post.title.toLowerCase().includes(query) || post.description?.toLowerCase().includes(query),
       )
     }
 
     return filtered
-  }
+  }, [posts, activeTab, filters, searchQuery, token?.userId])
 
-  const handleVote = async (postId, voteData) => {
-    try {
-      if (!token) {
-        toast.error("You must be logged in to vote.")
-        return
-      }
+  const handleVote = useCallback(
+    async (postId, voteData) => {
+      try {
+        if (!token) {
+          toast.error("You must be logged in to vote.")
+          return
+        }
 
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${postId}/vote`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include",
-        body: JSON.stringify(voteData),
-      })
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${postId}/vote`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+          body: JSON.stringify(voteData),
+        })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to submit vote")
-      }
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.message || "Failed to submit vote")
+        }
 
-      const updatedPosts = posts.map((post) => {
-        if (post._id === postId) {
-          if (post.poll) {
-            const updatedOptions = post.poll.options.map((opt) =>
-              opt._id === voteData.option ? { ...opt, votes: opt.votes + 1 } : opt,
-            )
-            return { ...post, poll: { ...post.poll, options: updatedOptions } }
-          } else if (post.survey) {
-            const surveyQuestion = post.survey.questions[0]
+        setPosts((prevPosts) =>
+          prevPosts.map((post) => {
+            if (post._id !== postId) return post
 
-            if (surveyQuestion.type === "multiple-choice") {
-              const updatedVotes = [...surveyQuestion.votes, { optionIndex: voteData.option, userId: voteData.userId }]
-              return {
-                ...post,
-                survey: {
-                  ...post.survey,
-                  questions: [
-                    {
-                      ...surveyQuestion,
-                      votes: updatedVotes,
-                    },
-                  ],
-                },
-              }
-            } else if (surveyQuestion.type === "open-ended") {
-              const updatedResponses = [
-                ...surveyQuestion.responses,
-                { response: voteData.response, userId: voteData.userId },
-              ]
-              return {
-                ...post,
-                survey: {
-                  ...post.survey,
-                  questions: [
-                    {
-                      ...surveyQuestion,
-                      responses: updatedResponses,
-                    },
-                  ],
-                },
-              }
-            } else if (surveyQuestion.type === "rating") {
-              const updatedRatings = [...surveyQuestion.ratings, { rating: voteData.rating, userId: voteData.userId }]
-              return {
-                ...post,
-                survey: {
-                  ...post.survey,
-                  questions: [
-                    {
-                      ...surveyQuestion,
-                      ratings: updatedRatings,
-                    },
-                  ],
-                },
+            if (post.poll) {
+              const updatedOptions = post.poll.options.map((opt) =>
+                opt._id === voteData.option ? { ...opt, votes: opt.votes + 1 } : opt,
+              )
+              return { ...post, poll: { ...post.poll, options: updatedOptions } }
+            } else if (post.survey) {
+              const surveyQuestion = post.survey.questions[0]
+              if (surveyQuestion.type === "multiple-choice") {
+                const updatedVotes = [
+                  ...surveyQuestion.votes,
+                  { optionIndex: voteData.option, userId: voteData.userId },
+                ]
+                return {
+                  ...post,
+                  survey: {
+                    ...post.survey,
+                    questions: [{ ...surveyQuestion, votes: updatedVotes }],
+                  },
+                }
+              } else if (surveyQuestion.type === "open-ended") {
+                const updatedResponses = [
+                  ...surveyQuestion.responses,
+                  { response: voteData.response, userId: voteData.userId },
+                ]
+                return {
+                  ...post,
+                  survey: {
+                    ...post.survey,
+                    questions: [{ ...surveyQuestion, responses: updatedResponses }],
+                  },
+                }
+              } else if (surveyQuestion.type === "rating") {
+                const updatedRatings = [...surveyQuestion.ratings, { rating: voteData.rating, userId: voteData.userId }]
+                return {
+                  ...post,
+                  survey: {
+                    ...post.survey,
+                    questions: [{ ...surveyQuestion, ratings: updatedRatings }],
+                  },
+                }
               }
             }
-          }
-        }
-        return post
-      })
+            return post
+          }),
+        )
 
-      setPosts(updatedPosts)
-      toast.success("Your vote has been submitted successfully!")
-    } catch (error) {
-      toast.error(error.message || "An error occurred while submitting your vote.")
-    }
-  }
+        toast.success("Your vote has been submitted successfully!")
+      } catch (error) {
+        toast.error(error.message || "An error occurred while submitting your vote.")
+      }
+    },
+    [token],
+  )
 
-  const handleViewResults = async (postId) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${postId}/results`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include",
-      })
+  const handleViewResults = useCallback(
+    async (postId) => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${postId}/results`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        })
 
-      if (!response.ok) throw new Error("Failed to fetch results")
-      const data = await response.json()
-      return data.results
-    } catch (error) {
-      toast.error(error.message || "An error occurred while fetching results.")
-      return null
-    }
-  }
+        if (!response.ok) throw new Error("Failed to fetch results")
+        const data = await response.json()
+        return data.results
+      } catch (error) {
+        toast.error(error.message || "An error occurred while fetching results.")
+        return null
+      }
+    },
+    [token],
+  )
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = useCallback((e) => {
     setSearchQuery(e.target.value)
-  }
+  }, [])
 
-  const toggleFilter = () => {
-    setIsFilterOpen(!isFilterOpen)
-  }
+  const toggleFilter = useCallback(() => {
+    setIsFilterOpen((prev) => !prev)
+  }, [])
 
-  const handleFilterChange = (filter) => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      [filter]: !prevFilters[filter],
+  const handleFilterChange = useCallback((filter) => {
+    setFilters((prev) => ({
+      ...prev,
+      [filter]: !prev[filter],
     }))
-  }
+  }, [])
 
   if (loading) {
     return (
@@ -252,8 +241,6 @@ function SurveysPage() {
     )
   }
 
-  const filteredPosts = getFilteredPosts()
-
   return (
     <div className={`surveys-container ${theme}`}>
       <div className="surveys-header">
@@ -261,7 +248,6 @@ function SurveysPage() {
           Surveys & <span className="surveys-gradient-text">Polls</span>
         </h1>
         <p className="surveys-subtitle">Share your opinion on community matters</p>
-
         <div className="surveys-search-container">
           <div className="surveys-search-box">
             <Search className="surveys-search-icon" />
@@ -290,7 +276,6 @@ function SurveysPage() {
             <Filter className="surveys-filter-icon" />
           </button>
         </div>
-
         {isFilterOpen && (
           <div className="surveys-filter-dropdown">
             <div className="surveys-filter-option">
@@ -361,7 +346,6 @@ function SurveysPage() {
             Past
           </button>
         </div>
-
         <div className={`surveys-tab-content ${tabTransitioning ? "surveys-tab-transitioning" : ""}`}>
           {filteredPosts.length > 0 ? (
             <div className="surveys-grid">
@@ -413,7 +397,6 @@ function SurveysPage() {
             </div>
           </div>
         </div>
-
         <div className="surveys-help">
           <HelpCircle className="surveys-help-icon" />
           <p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { useSelector } from "react-redux";
 import {
   Search,
@@ -30,42 +30,145 @@ import {
 } from "lucide-react";
 import "./MarketplacePage.css";
 
-export const ImageCarousel = ({ images }) => {
+// Custom Hook for fetching marketplace items
+const useMarketplaceItems = (token) => {
+  const [state, setState] = useState({ 
+    items: [], 
+    loading: true, 
+    error: null 
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_BASEURL}/post/marketplacePosts`,
+          {
+            credentials: "include",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        
+        if (!response.ok) throw new Error("Failed to fetch marketplace posts");
+        
+        const data = await response.json();
+        setState({ items: data.data || [], loading: false, error: null });
+      } catch (error) {
+        setState({ 
+          items: [], 
+          loading: false, 
+          error: error.message || "Failed to fetch marketplace posts" 
+        });
+      }
+    };
+
+    token ? fetchData() : setState({ 
+      items: [], 
+      loading: false, 
+      error: "Please log in to view marketplace posts" 
+    });
+  }, [token]);
+
+  return state;
+};
+
+// Custom Hook for filtering/sorting
+const useMarketplaceFilters = (
+  items,
+  activeTab,
+  searchQuery,
+  filters,
+  sortOption
+) => {
+  return useMemo(() => {
+    let filtered = [...items];
+
+    if (activeTab !== "all") {
+      filtered = filtered.filter((item) => item.itemType === activeTab);
+    }
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (item) =>
+          item.title.toLowerCase().includes(query) ||
+          item.description.toLowerCase().includes(query) ||
+          item.location.toLowerCase().includes(query)
+      );
+    }
+
+    if (filters.minPrice) {
+      filtered = filtered.filter(
+        (item) => item.price >= Number.parseFloat(filters.minPrice)
+      );
+    }
+    if (filters.maxPrice) {
+      filtered = filtered.filter(
+        (item) => item.price <= Number.parseFloat(filters.maxPrice)
+      );
+    }
+
+    if (filters.location) {
+      filtered = filtered.filter((item) =>
+        item.location.toLowerCase().includes(filters.location.toLowerCase())
+      );
+    }
+
+    switch (sortOption) {
+      case "newest":
+        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+      case "oldest":
+        filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        break;
+      case "priceAsc":
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case "priceDesc":
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      default:
+        break;
+    }
+
+    return filtered;
+  }, [items, activeTab, searchQuery, filters, sortOption]);
+};
+
+const ImageCarousel = memo(({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (isTransitioning) return;
     setIsTransitioning(true);
     setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
     setTimeout(() => setIsTransitioning(false), 500);
-  };
+  }, [isTransitioning, images.length]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (isTransitioning) return;
     setIsTransitioning(true);
     setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
     setTimeout(() => setIsTransitioning(false), 500);
-  };
+  }, [isTransitioning, images.length]);
 
-  const handleTouchStart = (e) => {
+  const handleTouchStart = useCallback((e) => {
     setTouchStart(e.targetTouches[0].clientX);
-  };
+  }, []);
 
-  const handleTouchMove = (e) => {
+  const handleTouchMove = useCallback((e) => {
     setTouchEnd(e.targetTouches[0].clientX);
-  };
+  }, []);
 
-  const handleTouchEnd = () => {
-    if (touchStart - touchEnd > 100) {
-      handleNext();
-    }
-    if (touchEnd - touchStart > 100) {
-      handlePrev();
-    }
-  };
+  const handleTouchEnd = useCallback(() => {
+    if (touchStart - touchEnd > 100) handleNext();
+    if (touchEnd - touchStart > 100) handlePrev();
+  }, [touchStart, touchEnd, handleNext, handlePrev]);
 
   return (
     <div className="image-carousel">
@@ -80,11 +183,12 @@ export const ImageCarousel = ({ images }) => {
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {images.map((image, index) => (
-            <div key={index} className="carousel-slide">
+            <div key={`${image}-${index}`} className="carousel-slide">
               <img
                 src={image || "/placeholder.svg?height=300&width=400"}
                 alt={`Image ${index + 1}`}
                 className="carousel-image"
+                loading="lazy"
               />
             </div>
           ))}
@@ -122,31 +226,31 @@ export const ImageCarousel = ({ images }) => {
       </div>
     </div>
   );
-};
+});
 
-export const MarketplaceItem = ({ item, onContact, onSave }) => {
+const MarketplaceItem = memo(({ item, onContact, onSave }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [message, setMessage] = useState("");
 
-  const toggleSave = (e) => {
+  const toggleSave = useCallback((e) => {
     e.stopPropagation();
-    setIsSaved(!isSaved);
+    setIsSaved(prev => !prev);
     onSave(item);
-  };
+  }, [onSave, item]);
 
-  const toggleContact = (e) => {
+  const toggleContact = useCallback((e) => {
     e.stopPropagation();
-    setShowContact(!showContact);
-  };
+    setShowContact(prev => !prev);
+  }, []);
 
-  const handleShare = (e) => {
+  const handleShare = useCallback((e) => {
     e.stopPropagation();
     alert("Sharing options coming soon!");
-  };
+  }, []);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = useCallback(() => {
     if (!message.trim()) {
       alert("Please enter a message.");
       return;
@@ -154,9 +258,9 @@ export const MarketplaceItem = ({ item, onContact, onSave }) => {
     onContact(item.id, message);
     setShowContact(false);
     setMessage("");
-  };
+  }, [message, onContact, item.id]);
 
-  const getStatusBadge = () => {
+  const getStatusBadge = useMemo(() => {
     switch (item.itemType) {
       case "sale":
         return (
@@ -182,7 +286,64 @@ export const MarketplaceItem = ({ item, onContact, onSave }) => {
       default:
         return null;
     }
-  };
+  }, [item.itemType]);
+
+  const itemMeta = useMemo(() => ({
+    date: new Date(item.createdAt).toLocaleDateString(),
+    seller: item.seller.username
+  }), [item.createdAt, item.seller.username]);
+
+  const contactOverlay = useMemo(() => (
+    showContact && (
+      <div className="contact-overlay">
+        <div className="contact-card">
+          <div className="contact-header">
+            <h4>Contact {item.seller.username}</h4>
+            <button
+              className="close-button"
+              onClick={toggleContact}
+              aria-label="Close contact form"
+            >
+              ×
+            </button>
+          </div>
+          <div className="contact-content">
+            <div className="contact-info">
+              <div className="contact-avatar">
+                {item.seller.username.charAt(0)}
+              </div>
+              <div className="contact-details">
+                <div className="contact-name">{item.seller.username}</div>
+                <div className="contact-rating">
+                  <Star className="rating-icon filled" />
+                  <Star className="rating-icon filled" />
+                  <Star className="rating-icon filled" />
+                  <Star className="rating-icon filled" />
+                  <Star className="rating-icon" />
+                  <span className="rating-text">4.0</span>
+                </div>
+              </div>
+            </div>
+            <textarea
+              className="contact-message"
+              placeholder="Write your message here..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              aria-label="Message to seller"
+            />
+            <button
+              className="send-message-button"
+              onClick={handleSendMessage}
+              aria-label="Send message"
+            >
+              <MessageCircle className="button-icon" />
+              Send Message
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  ), [showContact, message, item.seller, toggleContact, handleSendMessage]);
 
   return (
     <div
@@ -196,15 +357,15 @@ export const MarketplaceItem = ({ item, onContact, onSave }) => {
           <div className="item-meta">
             <span className="item-date">
               <Clock className="meta-icon" />
-              {new Date(item.createdAt).toLocaleDateString()}
+              {itemMeta.date}
             </span>
             <span className="item-seller">
               <User className="meta-icon" />
-              {item.seller.username}
+              {itemMeta.seller}
             </span>
           </div>
         </div>
-        {getStatusBadge()}
+        {getStatusBadge}
       </div>
 
       <div className="marketplace-item-images">
@@ -277,69 +438,29 @@ export const MarketplaceItem = ({ item, onContact, onSave }) => {
         </button>
       </div>
 
-      {showContact && (
-        <div className="contact-overlay">
-          <div className="contact-card">
-            <div className="contact-header">
-              <h4>Contact {item.seller.username}</h4>
-              <button
-                className="close-button"
-                onClick={toggleContact}
-                aria-label="Close contact form"
-              >
-                ×
-              </button>
-            </div>
-            <div className="contact-content">
-              <div className="contact-info">
-                <div className="contact-avatar">
-                  {item.seller.username.charAt(0)}
-                </div>
-                <div className="contact-details">
-                  <div className="contact-name">{item.seller.username}</div>
-                  <div className="contact-rating">
-                    <Star className="rating-icon filled" />
-                    <Star className="rating-icon filled" />
-                    <Star className="rating-icon filled" />
-                    <Star className="rating-icon filled" />
-                    <Star className="rating-icon" />
-                    <span className="rating-text">4.0</span>
-                  </div>
-                </div>
-              </div>
-              <textarea
-                className="contact-message"
-                placeholder="Write your message here..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                aria-label="Message to seller"
-              />
-              <button
-                className="send-message-button"
-                onClick={handleSendMessage}
-                aria-label="Send message"
-              >
-                <MessageCircle className="button-icon" />
-                Send Message
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {contactOverlay}
     </div>
   );
-};
+});
 
-export default function Marketplace() {
+const TabButton = memo(({ active, onClick, icon: Icon, label }) => (
+  <button
+    className={`marketplace-tab ${active ? "active" : ""}`}
+    onClick={onClick}
+    aria-label={`View ${label}`}
+  >
+    <Icon className="tab-icon" />
+    {label}
+  </button>
+));
+
+const Marketplace = () => {
   const { token } = useSelector((state) => state.user);
   const [activeTab, setActiveTab] = useState("all");
   const [viewMode, setViewMode] = useState("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [tabTransitioning, setTabTransitioning] = useState(false);
   const [filters, setFilters] = useState({
     minPrice: "",
@@ -350,50 +471,21 @@ export default function Marketplace() {
   const [sortOption, setSortOption] = useState("newest");
   const [theme, setTheme] = useState("light");
 
-  // Load and apply saved theme
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "light";
-    setTheme(savedTheme);
-    document.documentElement.setAttribute("data-theme", savedTheme);
-    document.documentElement.classList.add(savedTheme);
-  }, []);
+  const { items, loading, error } = useMarketplaceItems(token);
+  const filteredItems = useMarketplaceFilters(
+    items,
+    activeTab,
+    searchQuery,
+    filters,
+    sortOption
+  );
 
-  // Fetch marketplace posts
-  useEffect(() => {
-    const fetchMarketplacePosts = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_BASEURL}/post/marketplacePosts`,
-          {
-            credentials: "include", // Include cookies in the request
-            headers: {
-              Authorization: `Bearer ${token}`, // Include token if required by backend
-            },
-          }
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch marketplace posts");
-        }
-        const data = await response.json();
-        setItems(data.data || []); // Ensure items is an array
-        setError(null);
-      } catch (error) {
-        setError(error.message || "Failed to fetch marketplace posts");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const stats = useMemo(() => ({
+    totalItems: items.length,
+    forSale: items.filter((item) => item.itemType === "sale").length,
+  }), [items]);
 
-    if (token) {
-      fetchMarketplacePosts();
-    } else {
-      setError("Please log in to view marketplace posts");
-      setLoading(false);
-    }
-  }, [token]);
-
-  const handleContact = async (postId, message) => {
+  const handleContact = useCallback(async (postId, message) => {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_BASEURL}/post/marketplacePosts/${postId}/message`,
@@ -401,30 +493,25 @@ export default function Marketplace() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Include token if required
+            Authorization: `Bearer ${token}`,
           },
           credentials: "include",
           body: JSON.stringify({ message }),
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to send message");
-      }
-
-      const data = await response.json();
-      alert(data.message || "Message sent successfully!");
+      if (!response.ok) throw new Error("Failed to send message");
+      alert((await response.json()).message || "Message sent successfully!");
     } catch (error) {
       alert("Error sending message: " + (error.message || "Unknown error"));
     }
-  };
+  }, [token]);
 
-  const handleSave = (item) => {
+  const handleSave = useCallback((item) => {
     console.log("Item saved:", item);
-    // Implement save functionality (e.g., API call to save item)
-  };
+  }, []);
 
-  const handleTabChange = (tab) => {
+  const handleTabChange = useCallback((tab) => {
     if (tab === activeTab || tabTransitioning) return;
 
     setTabTransitioning(true);
@@ -432,91 +519,34 @@ export default function Marketplace() {
       setActiveTab(tab);
       setTabTransitioning(false);
     }, 300);
-  };
+  }, [activeTab, tabTransitioning]);
 
-  const toggleFilter = () => {
-    setIsFilterOpen(!isFilterOpen);
-    if (isSortOpen) setIsSortOpen(false);
-  };
+  const toggleUI = useCallback((type) => {
+    setIsFilterOpen(prev => type === 'filter' ? !prev : false);
+    setIsSortOpen(prev => type === 'sort' ? !prev : false);
+  }, []);
 
-  const toggleSort = () => {
-    setIsSortOpen(!isSortOpen);
-    if (isFilterOpen) setIsFilterOpen(false);
-  };
-
-  const handleFilterChange = (e) => {
+  const handleFilterChange = useCallback((e) => {
     const { name, value } = e.target;
-    setFilters((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+    setFilters(prev => ({ ...prev, [name]: value }));
+  }, []);
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     setIsFilterOpen(false);
-    alert("Filters applied successfully!");
-  };
+  }, []);
 
-  const handleSortChange = (option) => {
+  const handleSortChange = useCallback((option) => {
     setSortOption(option);
     setIsSortOpen(false);
-  };
+  }, []);
 
-  const getFilteredItems = () => {
-    let filtered = [...items];
-
-    if (activeTab !== "all") {
-      filtered = filtered.filter((item) => item.itemType === activeTab);
-    }
-
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (item) =>
-          item.title.toLowerCase().includes(query) ||
-          item.description.toLowerCase().includes(query) ||
-          item.location.toLowerCase().includes(query)
-      );
-    }
-
-    if (filters.minPrice) {
-      filtered = filtered.filter(
-        (item) => item.price >= Number.parseFloat(filters.minPrice)
-      );
-    }
-    if (filters.maxPrice) {
-      filtered = filtered.filter(
-        (item) => item.price <= Number.parseFloat(filters.maxPrice)
-      );
-    }
-
-    if (filters.location) {
-      filtered = filtered.filter((item) =>
-        item.location.toLowerCase().includes(filters.location.toLowerCase())
-      );
-    }
-
-    switch (sortOption) {
-      case "newest":
-        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        break;
-      case "oldest":
-        filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-        break;
-      case "priceAsc":
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case "priceDesc":
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      default:
-        break;
-    }
-
-    return filtered;
-  };
-
-  const filteredItems = getFilteredItems();
+  // Load and apply saved theme
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") || "light";
+    setTheme(savedTheme);
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    document.documentElement.classList.add(savedTheme);
+  }, []);
 
   if (loading) {
     return (
@@ -578,14 +608,14 @@ export default function Marketplace() {
           <div className="marketplace-action-buttons">
             <button
               className={`filter-button ${isFilterOpen ? "active" : ""}`}
-              onClick={toggleFilter}
+              onClick={() => toggleUI('filter')}
               aria-label="Filter options"
             >
               <Filter className="filter-icon" />
             </button>
             <button
               className={`sort-button ${isSortOpen ? "active" : ""}`}
-              onClick={toggleSort}
+              onClick={() => toggleUI('sort')}
               aria-label="Sort options"
             >
               <ArrowUpDown className="sort-icon" />
@@ -740,47 +770,35 @@ export default function Marketplace() {
 
       <div className="marketplace-tabs">
         <div className="marketplace-tabs-list">
-          <button
-            className={`marketplace-tab ${activeTab === "all" ? "active" : ""}`}
+          <TabButton
+            active={activeTab === "all"}
             onClick={() => handleTabChange("all")}
-            aria-label="View all items"
-          >
-            <ShoppingBag className="tab-icon" />
-            All Items
-          </button>
-          <button
-            className={`marketplace-tab ${activeTab === "sale" ? "active" : ""}`}
+            icon={ShoppingBag}
+            label="All Items"
+          />
+          <TabButton
+            active={activeTab === "sale"}
             onClick={() => handleTabChange("sale")}
-            aria-label="View items for sale"
-          >
-            <DollarSign className="tab-icon" />
-            For Sale
-          </button>
-          <button
-            className={`marketplace-tab ${activeTab === "free" ? "active" : ""}`}
+            icon={DollarSign}
+            label="For Sale"
+          />
+          <TabButton
+            active={activeTab === "free"}
             onClick={() => handleTabChange("free")}
-            aria-label="View free items"
-          >
-            <Gift className="tab-icon" />
-            Free
-          </button>
-          <button
-            className={`marketplace-tab ${activeTab === "wanted" ? "active" : ""}`}
+            icon={Gift}
+            label="Free"
+          />
+          <TabButton
+            active={activeTab === "wanted"}
             onClick={() => handleTabChange("wanted")}
-            aria-label="View wanted items"
-          >
-            <Search className="tab-icon" />
-            Wanted
-          </button>
+            icon={Search}
+            label="Wanted"
+          />
         </div>
 
-        <div
-          className={`marketplace-tab-content ${tabTransitioning ? "tab-transitioning" : ""}`}
-        >
+        <div className={`marketplace-tab-content ${tabTransitioning ? "tab-transitioning" : ""}`}>
           {filteredItems.length > 0 ? (
-            <div
-              className={`marketplace-items ${viewMode === "list" ? "list-view" : "grid-view"}`}
-            >
+            <div className={`marketplace-items ${viewMode === "list" ? "list-view" : "grid-view"}`}>
               {filteredItems.map((item) => (
                 <MarketplaceItem
                   key={item.id}
@@ -818,16 +836,14 @@ export default function Marketplace() {
           <div className="stat-item">
             <TrendingUp className="stat-icon" />
             <div className="stat-content">
-              <span className="stat-value">{items.length}</span>
+              <span className="stat-value">{stats.totalItems}</span>
               <span className="stat-label">Total Items</span>
             </div>
           </div>
           <div className="stat-item">
             <Award className="stat-icon" />
             <div className="stat-content">
-              <span className="stat-value">
-                {items.filter((item) => item.itemType === "sale").length}
-              </span>
+              <span className="stat-value">{stats.forSale}</span>
               <span className="stat-label">For Sale</span>
             </div>
           </div>
@@ -852,4 +868,6 @@ export default function Marketplace() {
       </div>
     </div>
   );
-}
+};
+
+export default Marketplace;
