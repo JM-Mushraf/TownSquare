@@ -20,6 +20,7 @@
     "axios": "^1.8.1",
     "emoji-picker-react": "^4.12.2",
     "framer-motion": "^12.5.0",
+    "lodash": "^4.17.21",
     "lucide-react": "0.482.0",
     "moment-timezone": "^0.5.47",
     "node-cron": "^3.0.3",

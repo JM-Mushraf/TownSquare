@@ -1,321 +1,352 @@
+import { useReducer, useEffect, useRef, useMemo, useCallback } from "react";
+import { useSelector } from "react-redux";
+import { getTimeAgo, formatDate } from "../Helpers";
+import { ImageCarousel } from "../ImageCarousel";
+import axios from "axios";
+import { toast } from "react-toastify";
+import "./PostCard.css";
 
+const BASE_URL = import.meta.env.VITE_BACKEND_BASEURL;
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_BASEURL;
 
-import { useState, useEffect, useRef } from "react"
-import { useSelector } from "react-redux"
-import { getTimeAgo, formatDate } from "../Helpers"
-import { ImageCarousel } from "../ImageCarousel"
-import axios from "axios"
-import { toast } from "react-toastify"
-import "./PostCard.css"
+const initialState = {
+  isAnimating: false,
+  isBookmarked: false,
+  comments: [],
+  showComments: false,
+  commentText: "",
+  isLoadingComments: false,
+  userVote: null,
+  upVotes: 0,
+  downVotes: 0,
+  placeholderIndex: 0,
+  selectedPollOption: null,
+  syncAnimation: false,
+  visualState: 0,
+  showContactForm: false,
+  contactMessage: "",
+};
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "SET_ANIMATING":
+      return { ...state, isAnimating: action.payload };
+    case "SET_BOOKMARK":
+      return { ...state, isBookmarked: action.payload, syncAnimation: true };
+    case "SET_COMMENTS":
+      return { ...state, comments: action.payload };
+    case "TOGGLE_COMMENTS":
+      return { ...state, showComments: !state.showComments, syncAnimation: !state.showComments };
+    case "SET_COMMENT_TEXT":
+      return { ...state, commentText: action.payload };
+    case "SET_LOADING_COMMENTS":
+      return { ...state, isLoadingComments: action.payload };
+    case "SET_VOTE":
+      return {
+        ...state,
+        userVote: action.payload.userVote,
+        upVotes: action.payload.upVotes,
+        downVotes: action.payload.downVotes,
+        isAnimating: action.payload.isAnimating || false,
+        syncAnimation: action.payload.userVote !== null,
+      };
+    case "SET_PLACEHOLDER_INDEX":
+      return { ...state, placeholderIndex: action.payload };
+    case "SET_POLL_OPTION":
+      return { ...state, selectedPollOption: action.payload, syncAnimation: true };
+    case "SET_VISUAL_STATE":
+      return { ...state, visualState: action.payload };
+    case "TOGGLE_CONTACT_FORM":
+      return { ...state, showContactForm: !state.showContactForm };
+    case "SET_CONTACT_MESSAGE":
+      return { ...state, contactMessage: action.payload };
+    case "RESET_CONTACT_FORM":
+      return { ...state, showContactForm: false, contactMessage: "", syncAnimation: true };
+    default:
+      return state;
+  }
+};
+
+const apiCall = async ({ method, endpoint, data = {}, headers = {}, withCredentials = false }) => {
+  try {
+    const response = await axios({
+      method,
+      url: `${BASE_URL}${endpoint}`,
+      data,
+      headers: {
+        Authorization: `Bearer ${data.token}`,
+        "Content-Type": "application/json",
+        ...headers,
+      },
+      withCredentials,
+    });
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Request failed");
+    }
+    return response.data;
+  } catch (error) {
+    toast.error(error.response?.data?.message || error.message);
+    throw error;
+  }
+};
 
 export const PostCard = ({ post, navigate }) => {
-  const { token, userData } = useSelector((state) => state.user)
-  const user = userData
-  const [isAnimating, setIsAnimating] = useState(false)
-  const [isBookmarked, setIsBookmarked] = useState(user?.bookmarks?.includes(post._id) || false)
-  const [comments, setComments] = useState([])
-  const [showComments, setShowComments] = useState(false)
-  const [commentText, setCommentText] = useState("")
-  const [isLoadingComments, setIsLoadingComments] = useState(false)
-  const [userVote, setUserVote] = useState(null)
-  const [upVotes, setUpVotes] = useState(post.upVotes || 0)
-  const [downVotes, setDownVotes] = useState(post.downVotes || 0)
-  const [placeholderIndex, setPlaceholderIndex] = useState(0)
-  const [selectedPollOption, setSelectedPollOption] = useState(null)
-  const [syncAnimation, setSyncAnimation] = useState(false)
-  const [visualState, setVisualState] = useState(0)
-  const [showContactForm, setShowContactForm] = useState(false)
-  const [contactMessage, setContactMessage] = useState("")
-  const cardRef = useRef(null)
+  const { token, userData } = useSelector((state) => state.user);
+  const user = userData;
+  const [state, dispatch] = useReducer(reducer, {
+    ...initialState,
+    isBookmarked: user?.bookmarks?.includes(post._id) || false,
+    upVotes: post.upVotes || 0,
+    downVotes: post.downVotes || 0,
+  });
+  const cardRef = useRef(null);
 
-  // Visual state effect - changes visual state randomly
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setVisualState(Math.floor(Math.random() * 4))
-    }, 8000)
-    return () => clearInterval(interval)
-  }, [])
+  const placeholders = useMemo(() => [
+    "Share your thoughts...",
+    "Add a comment...",
+    "Join the discussion...",
+    "Post your message...",
+  ], []);
 
-  // Sync animation effect
+  const filteredImages = useMemo(() => {
+    return post.attachments?.filter((attachment) => attachment.fileType?.startsWith("image/")) || [];
+  }, [post.attachments]);
+
+  // Consolidated animation effects
   useEffect(() => {
-    if (syncAnimation) {
-      const timeout = setTimeout(() => {
-        setSyncAnimation(false)
-      }, 3000)
-      return () => clearTimeout(timeout)
+    const intervals = [];
+    if (state.showComments) {
+      intervals.push(
+        setInterval(() => {
+          dispatch({
+            type: "SET_PLACEHOLDER_INDEX",
+            payload: (state.placeholderIndex + 1) % placeholders.length,
+          });
+        }, 3000)
+      );
     }
-  }, [syncAnimation])
+    intervals.push(
+      setInterval(() => {
+        dispatch({ type: "SET_VISUAL_STATE", payload: Math.floor(Math.random() * 4) });
+      }, 8000)
+    );
+    if (state.syncAnimation) {
+      intervals.push(
+        setTimeout(() => {
+          dispatch({ type: "SET_ANIMATING", payload: false });
+        }, 3000)
+      );
+    }
+    return () => intervals.forEach((interval) => clearInterval(interval) || clearTimeout(interval));
+  }, [state.showComments, state.syncAnimation, placeholders.length]);
 
-  // Function to toggle bookmark
-  const toggleBookmark = async (e) => {
-    e.stopPropagation()
+  // Load user vote from localStorage
+  useEffect(() => {
+    const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}");
+    if (votedPosts[post._id]) {
+      dispatch({ type: "SET_VOTE", payload: { userVote: votedPosts[post._id], upVotes: state.upVotes, downVotes: state.downVotes } });
+    }
+  }, [post._id, state.upVotes, state.downVotes]);
+
+  const toggleBookmark = useCallback(async (e) => {
+    e.stopPropagation();
 
     if (!token) {
-      toast.error("Authentication required to save")
-      return
+      toast.error("Authentication required to save");
+      return;
     }
 
     try {
-      const endpoint = isBookmarked
-        ? `${import.meta.env.VITE_BACKEND_BASEURL}/user/bookmark-del`
-        : `${import.meta.env.VITE_BACKEND_BASEURL}/user/bookmark`;
-
-      const response = await axios({
-        method: isBookmarked ? "DELETE" : "POST",
-        url: endpoint,
-        data: { postId: post._id },
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      })
-
-      if (response.data.success) {
-        setIsBookmarked(!isBookmarked)
-        setSyncAnimation(true)
-        toast.success(isBookmarked ? "Bookmark removed" : "Bookmark added")
-      }
+      const endpoint = state.isBookmarked ? "/user/bookmark-del" : "/user/bookmark";
+      await apiCall({
+        method: state.isBookmarked ? "DELETE" : "POST",
+        endpoint,
+        data: { postId: post._id, token },
+      });
+      dispatch({ type: "SET_BOOKMARK", payload: !state.isBookmarked });
+      toast.success(state.isBookmarked ? "Bookmark removed" : "Bookmark added");
     } catch (error) {
-      toast.error("Error: " + (error.response?.data?.message || error.message))
+      // Error handled in apiCall
     }
-  }
+  }, [state.isBookmarked, post._id, token]);
 
-  const placeholders = ["Share your thoughts...", "Add a comment...", "Join the discussion...", "Post your message..."]
-
-  const handleShareClick = (id) => async (e) => {
-    e.stopPropagation()
+  const handleShareClick = useCallback((id) => async (e) => {
+    e.stopPropagation();
 
     if (navigator.share) {
       try {
         await navigator.share({
           title: post?.title || "Check out this post",
-          url: `${import.meta.env.VITE_FRONTEND_BASEURL}/post/${id}`,
+          url: `${FRONTEND_URL}/post/${id}`,
         });
       } catch (err) {
-        console.error("Share failed:", err)
+        console.error("Share failed:", err);
       }
     } else {
       try {
-        const postUrl = `${import.meta.env.VITE_FRONTEND_BASEURL}/post/${id}`;
+        const postUrl = `${FRONTEND_URL}/post/${id}`;
         await navigator.clipboard.writeText(postUrl);
         toast.success("Link copied to clipboard!");
       } catch (err) {
-        console.error("Copy failed: ", err)
-        toast.error("Copy failed")
+        console.error("Copy failed: ", err);
+        toast.error("Copy failed");
       }
     }
-  }
+  }, [post?.title]);
 
-  useEffect(() => {
-    const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}")
-    if (votedPosts[post._id]) {
-      setUserVote(votedPosts[post._id])
-    }
-  }, [post._id])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPlaceholderIndex((prevIndex) => (prevIndex + 1) % placeholders.length)
-    }, 3000)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  const handleUpvote = async (e) => {
-    e.stopPropagation()
+  const handleUpvote = useCallback(async (e) => {
+    e.stopPropagation();
 
     if (!token) {
-      toast.error("Authentication required to vote")
-      return
+      toast.error("Authentication required to vote");
+      return;
     }
 
     try {
-      const endpoint =
-        userVote === "upvote"
-          ? `${import.meta.env.VITE_BACKEND_BASEURL}/post/remove/${post._id}`
-          : `${import.meta.env.VITE_BACKEND_BASEURL}/post/up/${post._id}`;
-
-      const response = await axios.post(
+      const endpoint = state.userVote === "upvote" ? `/post/remove/${post._id}` : `/post/up/${post._id}`;
+      const response = await apiCall({
+        method: "POST",
         endpoint,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        data: { token },
+      });
+
+      const newVote = state.userVote === "upvote" ? null : "upvote";
+      dispatch({
+        type: "SET_VOTE",
+        payload: {
+          userVote: newVote,
+          upVotes: response.upVotes,
+          downVotes: response.downVotes,
+          isAnimating: newVote === "upvote",
         },
-      )
+      });
 
-      if (response.data.success) {
-        setUpVotes(response.data.upVotes)
-        setDownVotes(response.data.downVotes)
+      const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}");
+      votedPosts[post._id] = newVote;
+      localStorage.setItem("votedPosts", JSON.stringify(votedPosts));
 
-        const newVote = userVote === "upvote" ? null : "upvote"
-        setUserVote(newVote)
-
-        const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}")
-        votedPosts[post._id] = newVote
-        localStorage.setItem("votedPosts", JSON.stringify(votedPosts))
-
-        if (newVote === "upvote") {
-          setIsAnimating(true)
-          setTimeout(() => setIsAnimating(false), 1000)
-          setSyncAnimation(true)
-
-          const soundEnabled = localStorage.getItem("soundEnabled") === "true"
-          if (soundEnabled) {
-            const upvoteSound = new Audio("/upvote-sound.mp3")
-            upvoteSound.volume = 0.3
-            upvoteSound.play().catch((e) => console.log("Audio failed:", e))
-          }
+      if (newVote === "upvote") {
+        setTimeout(() => dispatch({ type: "SET_ANIMATING", payload: false }), 1000);
+        const soundEnabled = localStorage.getItem("soundEnabled") === "true";
+        if (soundEnabled) {
+          const upvoteSound = new Audio("/upvote-sound.mp3");
+          upvoteSound.volume = 0.3;
+          upvoteSound.play().catch((e) => console.log("Audio failed:", e));
         }
-      } else {
-        toast.error(response.data.message)
       }
     } catch (error) {
-      console.error("Vote failed:", error)
-      toast.error(error.response?.data?.message || "Vote failed")
+      // Error handled in apiCall
     }
-  }
+  }, [post._id, token, state.userVote]);
 
-  const handleDownvote = async (e) => {
-    e.stopPropagation()
+  const handleDownvote = useCallback(async (e) => {
+    e.stopPropagation();
 
     if (!token) {
-      toast.error("Authentication required to vote")
-      return
+      toast.error("Authentication required to vote");
+      return;
     }
 
     try {
-      const endpoint =
-        userVote === "downvote"
-          ? `${import.meta.env.VITE_BACKEND_BASEURL}/post/remove/${post._id}`
-          : `${import.meta.env.VITE_BACKEND_BASEURL}/post/down/${post._id}`;
-
-      const response = await axios.post(
+      const endpoint = state.userVote === "downvote" ? `/post/remove/${post._id}` : `/post/down/${post._id}`;
+      const response = await apiCall({
+        method: "POST",
         endpoint,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        data: { token },
+      });
+
+      const newVote = state.userVote === "downvote" ? null : "downvote";
+      dispatch({
+        type: "SET_VOTE",
+        payload: {
+          userVote: newVote,
+          upVotes: response.upVotes,
+          downVotes: response.downVotes,
         },
-      )
+      });
 
-      if (response.data.success) {
-        setUpVotes(response.data.upVotes)
-        setDownVotes(response.data.downVotes)
+      const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}");
+      votedPosts[post._id] = newVote;
+      localStorage.setItem("votedPosts", JSON.stringify(votedPosts));
 
-        const newVote = userVote === "downvote" ? null : "downvote"
-        setUserVote(newVote)
-
-        const votedPosts = JSON.parse(localStorage.getItem("votedPosts") || "{}")
-        votedPosts[post._id] = newVote
-        localStorage.setItem("votedPosts", JSON.stringify(votedPosts))
-
-        if (newVote === "downvote") {
-          setSyncAnimation(true)
-          const soundEnabled = localStorage.getItem("soundEnabled") === "true"
-          if (soundEnabled) {
-            const downvoteSound = new Audio("/downvote-sound.mp3")
-            downvoteSound.volume = 0.3
-            downvoteSound.play().catch((e) => console.log("Audio failed:", e))
-          }
+      if (newVote === "downvote") {
+        const soundEnabled = localStorage.getItem("soundEnabled") === "true";
+        if (soundEnabled) {
+          const downvoteSound = new Audio("/downvote-sound.mp3");
+          downvoteSound.volume = 0.3;
+          downvoteSound.play().catch((e) => console.log("Audio failed:", e));
         }
-      } else {
-        toast.error(response.data.message)
       }
     } catch (error) {
-      console.error("Vote failed:", error)
-      toast.error(error.response?.data?.message || "Vote failed")
+      // Error handled in apiCall
     }
-  }
+  }, [post._id, token, state.userVote]);
 
-  const fetchComments = async () => {
-    if (!showComments) {
-      setIsLoadingComments(true)
+  const fetchComments = useCallback(async () => {
+    if (!state.showComments) {
+      dispatch({ type: "SET_LOADING_COMMENTS", payload: true });
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${post._id}/comments`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-
-        if (response.data.success) {
-          setComments(response.data.comments)
-        }
+        const response = await apiCall({
+          method: "GET",
+          endpoint: `/post/${post._id}/comments`,
+          data: { token },
+        });
+        dispatch({ type: "SET_COMMENTS", payload: response.comments });
       } catch (error) {
-        console.error("Failed to fetch comments:", error)
-        toast.error("Failed to retrieve comments")
+        console.error("Failed to fetch comments:", error);
       } finally {
-        setIsLoadingComments(false)
+        dispatch({ type: "SET_LOADING_COMMENTS", payload: false });
       }
     }
-    setShowComments(!showComments)
+    dispatch({ type: "TOGGLE_COMMENTS" });
 
-    if (!showComments) {
-      setSyncAnimation(true)
-      const soundEnabled = localStorage.getItem("soundEnabled") === "true"
+    if (!state.showComments) {
+      const soundEnabled = localStorage.getItem("soundEnabled") === "true";
       if (soundEnabled) {
-        const commentSound = new Audio("/comment-sound.mp3")
-        commentSound.volume = 0.3
-        commentSound.play().catch((e) => console.log("Audio failed:", e))
+        const commentSound = new Audio("/comment-sound.mp3");
+        commentSound.volume = 0.3;
+        commentSound.play().catch((e) => console.log("Audio failed:", e));
       }
     }
-  }
+  }, [post._id, state.showComments, token]);
 
-  const addComment = async (e) => {
-    e.preventDefault()
+  const addComment = useCallback(async (e) => {
+    e.preventDefault();
 
     if (!token) {
-      toast.error("Authentication required to comment")
-      return
+      toast.error("Authentication required to comment");
+      return;
     }
 
-    if (!commentText.trim()) {
-      return
+    if (!state.commentText.trim()) {
+      return;
     }
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_BASEURL}/post/comment`,
-        {
-          postId: post._id,
-          message: commentText,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      )
-
-      if (response.data.success) {
-        setCommentText("")
-        setSyncAnimation(true)
-        toast.success("Comment posted successfully")
-        setCommentText("");
-        const commentsResponse = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${post._id}/comments`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-
-        if (commentsResponse.data.success) {
-          setComments(commentsResponse.data.comments)
-        }
-      }
+      await apiCall({
+        method: "POST",
+        endpoint: "/post/comment",
+        data: { postId: post._id, message: state.commentText, token },
+      });
+      dispatch({ type: "SET_COMMENT_TEXT", payload: "" });
+      toast.success("Comment posted successfully");
+      const commentsResponse = await apiCall({
+        method: "GET",
+        endpoint: `/post/${post._id}/comments`,
+        data: { token },
+      });
+      dispatch({ type: "SET_COMMENTS", payload: commentsResponse.comments });
     } catch (error) {
-      console.error("Failed to post comment:", error)
-      toast.error(error.response?.data?.message || "Failed to post comment")
+      console.error("Failed to post comment:", error);
     }
-  }
+  }, [state.commentText, post._id, token]);
 
-  const renderPostHeader = () => {
+  const renderPostHeader = useCallback(() => {
     return (
       <div className="post-header">
         <div className="avatar-container">
           {post.createdBy?.avatar ? (
-            <img src={post.createdBy.avatar || "/placeholder.svg"} alt={post.createdBy.username} className="avatar" />
+            <img src={post.createdBy.avatar || "/placeholder.svg"} alt={post.createdBy.username || "Anonymous user"} className="avatar" />
           ) : (
             <div className="avatar">
               <span>{post.createdBy?.username?.charAt(0) || "U"}</span>
@@ -335,7 +366,7 @@ export const PostCard = ({ post, navigate }) => {
               <span className="post-type-text">{post.type}</span>
             </span>
             <div className="verification-badge" title="Verified">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <path
                   d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 22 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
                   stroke="currentColor"
@@ -353,78 +384,86 @@ export const PostCard = ({ post, navigate }) => {
           </div>
           <div className="post-meta">
             <span className="timestamp">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="meta-icon">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="meta-icon" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
                 <path d="M12 6V12L16 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
               {getTimeAgo(post.createdAt)}
             </span>
             <div className="sync-indicator" title="Sync Status">
-              <div className={`sync-dot ${syncAnimation ? "active" : ""}`}></div>
+              <div className={`sync-dot ${state.syncAnimation ? "active" : ""}`}></div>
               <span>Sync</span>
             </div>
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  }, [post.createdBy, post.type, post.createdAt, state.syncAnimation]);
 
-  const renderPostActions = () => {
+  const renderPostActions = useCallback(() => {
     return (
       <div className="post-actions">
         <div className="action-buttons">
           <button
-            className={`action-button neo-action ${userVote === "upvote" ? "active" : ""}`}
+            className={`action-button neo-action ${state.userVote === "upvote" ? "active" : ""}`}
             id={`upvote-${post._id}`}
             onClick={handleUpvote}
+            aria-label={`Upvote post, current votes: ${state.upVotes}`}
+            aria-pressed={state.userVote === "upvote"}
           >
-            <span className={`action-icon upvote ${isAnimating ? "pulse" : ""}`}>
+            <span className={`action-icon upvote ${state.isAnimating ? "pulse" : ""}`}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
-                fill={userVote === "upvote" ? "currentColor" : "none"}
+                fill={state.userVote === "upvote" ? "currentColor" : "none"}
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                aria-hidden="true"
               >
                 <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
               </svg>
             </span>
             <div className="action-data">
-              <span className="action-count">{upVotes}</span>
+              <span className="action-count">{state.upVotes}</span>
             </div>
             <div className="action-particles"></div>
           </button>
           <button
-            className={`action-button neo-action ${userVote === "downvote" ? "active" : ""}`}
+            className={`action-button neo-action ${state.userVote === "downvote" ? "active" : ""}`}
             id={`downvote-${post._id}`}
             onClick={handleDownvote}
+            aria-label={`Downvote post, current votes: ${state.downVotes}`}
+            aria-pressed={state.userVote === "downvote"}
           >
             <span className="action-icon downvote">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
-                fill={userVote === "downvote" ? "currentColor" : "none"}
+                fill={state.userVote === "downvote" ? "currentColor" : "none"}
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                aria-hidden="true"
               >
                 <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
               </svg>
             </span>
             <div className="action-data">
-              <span className="action-count">{downVotes}</span>
+              <span className="action-count">{state.downVotes}</span>
             </div>
           </button>
           <button
-            className={`action-button neo-action ${showComments ? "active" : ""}`}
+            className={`action-button neo-action ${state.showComments ? "active" : ""}`}
             id={`comment-${post._id}`}
             onClick={(e) => {
-              e.stopPropagation()
-              fetchComments()
+              e.stopPropagation();
+              fetchComments();
             }}
+            aria-label={`Toggle comments, current count: ${post.commentCount || state.comments.length || 0}`}
+            aria-expanded={state.showComments}
           >
             <span className="action-icon comment">
               <svg
@@ -435,28 +474,32 @@ export const PostCard = ({ post, navigate }) => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                aria-hidden="true"
               >
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
               </svg>
             </span>
             <div className="action-data">
-              <span className="action-count">{post.commentCount || comments.length || 0}</span>
+              <span className="action-count">{post.commentCount || state.comments.length || 0}</span>
             </div>
           </button>
           <button
-            className={`action-button neo-action ${isBookmarked ? "active" : ""}`}
+            className={`action-button neo-action ${state.isBookmarked ? "active" : ""}`}
             id={`bookmark-${post._id}`}
             onClick={toggleBookmark}
+            aria-label={state.isBookmarked ? "Remove bookmark" : "Add bookmark"}
+            aria-pressed={state.isBookmarked}
           >
             <span className="action-icon bookmark">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
-                fill={isBookmarked ? "currentColor" : "none"}
+                fill={state.isBookmarked ? "currentColor" : "none"}
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                aria-hidden="true"
               >
                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
               </svg>
@@ -464,7 +507,12 @@ export const PostCard = ({ post, navigate }) => {
             <div className="action-data"></div>
           </button>
           <div className="action-spacer"></div>
-          <button className="action-button neo-action" id={`share-${post._id}`} onClick={handleShareClick(post._id)}>
+          <button
+            className="action-button neo-action"
+            id={`share-${post._id}`}
+            onClick={handleShareClick(post._id)}
+            aria-label="Share post"
+          >
             <span className="action-icon share">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -474,6 +522,7 @@ export const PostCard = ({ post, navigate }) => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                aria-hidden="true"
               >
                 <circle cx="18" cy="5" r="3"></circle>
                 <circle cx="6" cy="12" r="3"></circle>
@@ -486,48 +535,36 @@ export const PostCard = ({ post, navigate }) => {
           </button>
         </div>
       </div>
-    )
-  }
+    );
+  }, [
+    state.userVote,
+    state.upVotes,
+    state.downVotes,
+    state.showComments,
+    state.isBookmarked,
+    post._id,
+    post.commentCount,
+    state.comments.length,
+    handleUpvote,
+    handleDownvote,
+    fetchComments,
+    toggleBookmark,
+    handleShareClick,
+    state.isAnimating,
+  ]);
 
-  const renderAttachments = () => {
-    if (post.attachments && post.attachments.length > 0) {
+  const renderAttachments = useCallback(() => {
+    if (filteredImages.length > 0) {
       return (
         <div className="post-images">
-          <ImageCarousel images={post.attachments.filter((attachment) => attachment.fileType?.startsWith("image/"))} />
+          <ImageCarousel images={filteredImages} />
         </div>
-      )
+      );
     }
-    return null
-  }
+    return null;
+  }, [filteredImages]);
 
-  const renderPostContent = () => {
-    let content
-    switch (post.type) {
-      case "issue":
-        content = renderIssuePost()
-        break
-      case "poll":
-        content = renderPollPost()
-        break
-      case "marketplace":
-        content = renderMarketplacePost()
-        break
-      case "announcements":
-        content = renderAnnouncementPost()
-        break
-      default:
-        content = renderGeneralPost()
-    }
-
-    return (
-      <>
-        {content}
-        {renderCommentSection()}
-      </>
-    )
-  }
-
-  const renderIssuePost = () => {
+  const renderIssuePost = useCallback(() => {
     return (
       <div className="post-content">
         {renderPostHeader()}
@@ -552,6 +589,7 @@ export const PostCard = ({ post, navigate }) => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 className="issue-icon"
+                aria-hidden="true"
               >
                 <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
                 <path d="M12 6v6l4 2"></path>
@@ -570,6 +608,7 @@ export const PostCard = ({ post, navigate }) => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 className="issue-icon"
+                aria-hidden="true"
               >
                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
@@ -580,55 +619,40 @@ export const PostCard = ({ post, navigate }) => {
         </div>
         {renderPostActions()}
       </div>
-    )
-  }
+    );
+  }, [post.title, post.description, renderPostHeader, renderAttachments, renderPostActions]);
 
-  const renderPollPost = () => {
-    const isPollActive = post.poll?.status !== "closed"
-    const hasVoted = selectedPollOption !== null || post.poll?.options?.some((opt) => opt.voters?.includes(user?._id))
+  const renderPollPost = useCallback(() => {
+    const isPollActive = post.poll?.status !== "closed";
+    const hasVoted = state.selectedPollOption !== null || post.poll?.options?.some((opt) => opt.voters?.includes(user?._id));
 
     const handlePollVote = async (optionId) => {
       if (!token) {
-        toast.error("Authentication required to vote")
-        return
+        toast.error("Authentication required to vote");
+        return;
       }
 
       try {
-        const response = await axios.post(
-          `${import.meta.env.VITE_BACKEND_BASEURL}/post/vote`,
-          {
-            postId: post._id,
-            optionId: optionId,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        )
+        await apiCall({
+          method: "POST",
+          endpoint: "/post/vote",
+          data: { postId: post._id, optionId, token },
+        });
+        dispatch({ type: "SET_POLL_OPTION", payload: optionId });
+        toast.success("Vote registered");
 
-        if (response.data.success) {
-          setSelectedPollOption(optionId)
-          setSyncAnimation(true)
-          toast.success("Vote registered")
-
-          const postResponse = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${post._id}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          })
-
-          if (postResponse.data.success) {
-            window.location.reload()
-          }
-        } else {
-          toast.error(response.data.message)
+        const postResponse = await apiCall({
+          method: "GET",
+          endpoint: `/post/${post._id}`,
+          data: { token },
+        });
+        if (postResponse.success) {
+          window.location.reload();
         }
       } catch (error) {
-        console.error("Vote failed:", error)
-        toast.error(error.response?.data?.message || "Vote failed")
+        console.error("Vote failed:", error);
       }
-    }
+    };
 
     return (
       <div className="post-content">
@@ -650,7 +674,7 @@ export const PostCard = ({ post, navigate }) => {
               )}
               {post.poll.endDate && (
                 <span className="poll-time-remaining">
-                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="poll-icon">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="poll-icon" aria-hidden="true">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
                     <path d="M12 6V12L16 14" stroke="currentColor" strokeWidth="1.5" strokeacronym="round" />
                   </svg>
@@ -663,9 +687,9 @@ export const PostCard = ({ post, navigate }) => {
 
             <div className="poll-options">
               {post.poll.options?.map((option, index) => {
-                const totalVotes = post.poll.options?.reduce((sum, opt) => sum + (opt.votes || 0), 0)
-                const percentage = totalVotes > 0 ? Math.round((option.votes / totalVotes) * 100) : 0
-                const isSelected = selectedPollOption === option._id || option.voters?.includes(user?._id)
+                const totalVotes = post.poll.options?.reduce((sum, opt) => sum + (opt.votes || 0), 0);
+                const percentage = totalVotes > 0 ? Math.round((option.votes / totalVotes) * 100) : 0;
+                const isSelected = state.selectedPollOption === option._id || option.voters?.includes(user?._id);
 
                 return (
                   <div
@@ -696,12 +720,13 @@ export const PostCard = ({ post, navigate }) => {
                       <button
                         className="poll-vote-button"
                         onClick={(e) => {
-                          e.stopPropagation()
-                          handlePollVote(option._id)
+                          e.stopPropagation();
+                          handlePollVote(option._id);
                         }}
+                        aria-label={`Vote for ${option.text}`}
                       >
                         <span className="vote-icon">
-                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                             <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                             <path d="M12 5V19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                           </svg>
@@ -710,7 +735,7 @@ export const PostCard = ({ post, navigate }) => {
                       </button>
                     )}
                   </div>
-                )
+                );
               })}
             </div>
 
@@ -727,6 +752,7 @@ export const PostCard = ({ post, navigate }) => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   className="poll-icon"
+                  aria-hidden="true"
                 >
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                 </svg>
@@ -744,6 +770,7 @@ export const PostCard = ({ post, navigate }) => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   className="poll-icon"
+                  aria-hidden="true"
                 >
                   <circle cx="12" cy="12" r="10"></circle>
                   <polyline points="12 6 12 12 16 14"></polyline>
@@ -755,60 +782,48 @@ export const PostCard = ({ post, navigate }) => {
         )}
         {renderPostActions()}
       </div>
-    )
-  }
+    );
+  }, [post, state.selectedPollOption, user?._id, token, renderPostHeader, renderAttachments, renderPostActions]);
 
-  const renderMarketplacePost = () => {
+  const renderMarketplacePost = useCallback(() => {
     const handleContactSeller = (e) => {
-      e.stopPropagation()
-      setShowContactForm(!showContactForm)
-    }
+      e.stopPropagation();
+      dispatch({ type: "TOGGLE_CONTACT_FORM" });
+    };
 
     const handleSendMessage = async (e) => {
-      e.stopPropagation()
-      
+      e.stopPropagation();
+
       if (!token) {
-        toast.error("Authentication required to send message")
-        return
+        toast.error("Authentication required to send message");
+        return;
       }
 
-      if (!contactMessage.trim()) {
-        toast.error("Please enter a message")
-        return
+      if (!state.contactMessage.trim()) {
+        toast.error("Please enter a message");
+        return;
       }
 
       try {
-        const response = await axios.post(
-          `${import.meta.env.VITE_BACKEND_BASEURL}/post/marketplacePosts/${post._id}/message`,
-          { message: contactMessage },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            withCredentials: true,
-          }
-        )
-
-        if (response.data.success) {
-          toast.success("Completed")
-          setContactMessage("")
-          setShowContactForm(false)
-          setSyncAnimation(true)
-        } else {
-          toast.error(response.data.message || "Failed to send message")
-        }
+        await apiCall({
+          method: "POST",
+          endpoint: `/post/marketplacePosts/${post._id}/message`,
+          data: { message: state.contactMessage, token },
+          withCredentials: true,
+        });
+        toast.success("Completed");
+        dispatch({ type: "RESET_CONTACT_FORM" });
       } catch (error) {
-        toast.error(error.response?.data?.message || "Error sending message")
+        // Error handled in apiCall
       }
-    }
+    };
 
     return (
       <div className="post-content">
         {renderPostHeader()}
         <h4 className="post-title">{post.title}</h4>
 
-        {renderAttachments()} 
+        {renderAttachments()}
 
         <div className="marketplace-details">
           {post.marketplace && (
@@ -825,6 +840,7 @@ export const PostCard = ({ post, navigate }) => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   className="price-icon"
+                  aria-hidden="true"
                 >
                   <line x1="12" y1="1" x2="12" y2="23"></line>
                   <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
@@ -851,6 +867,7 @@ export const PostCard = ({ post, navigate }) => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     className="location-icon"
+                    aria-hidden="true"
                   >
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                     <circle cx="12" cy="10" r="3"></circle>
@@ -869,7 +886,7 @@ export const PostCard = ({ post, navigate }) => {
                 </div>
               )}
 
-              <button className="marketplace-contact-button" onClick={handleContactSeller}>
+              <button className="marketplace-contact-button" onClick={handleContactSeller} aria-label="Contact seller">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -881,29 +898,31 @@ export const PostCard = ({ post, navigate }) => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   className="contact-icon"
+                  aria-hidden="true"
                 >
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
                 Contact Seller
               </button>
 
-              {showContactForm && (
+              {state.showContactForm && (
                 <div className="marketplace-contact-form" onClick={(e) => e.stopPropagation()}>
                   <textarea
                     className="marketplace-message"
                     placeholder="Compose message..."
-                    value={contactMessage}
-                    onChange={(e) => setContactMessage(e.target.value)}
+                    value={state.contactMessage}
+                    onChange={(e) => dispatch({ type: "SET_CONTACT_MESSAGE", payload: e.target.value })}
                     onClick={(e) => e.stopPropagation()}
                     rows={4}
+                    aria-label="Message to seller"
                   ></textarea>
                   <div className="marketplace-form-actions">
-                    <button className="marketplace-cancel-button" onClick={handleContactSeller}>
+                    <button className="marketplace-cancel-button" onClick={handleContactSeller} aria-label="Cancel message">
                       Cancel
                     </button>
-                    <button className="marketplace-send-button" onClick={handleSendMessage}>
+                    <button className="marketplace-send-button" onClick={handleSendMessage} aria-label="Send message">
                       <span className="send-icon">
-                        <svg viewBox="0 0 24  Regards,24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                           <path
                             d="M22 2L11 13"
                             stroke="currentColor"
@@ -930,10 +949,10 @@ export const PostCard = ({ post, navigate }) => {
         </div>
         {renderPostActions()}
       </div>
-    )
-  }
+    );
+  }, [post, state.showContactForm, state.contactMessage, token, renderPostHeader, renderAttachments, renderPostActions]);
 
-  const renderAnnouncementPost = () => {
+  const renderAnnouncementPost = useCallback(() => {
     return (
       <div className="post-content">
         {renderPostHeader()}
@@ -953,6 +972,7 @@ export const PostCard = ({ post, navigate }) => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   className="announcement-icon"
+                  aria-hidden="true"
                 >
                   <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                   <line x1="12" y1="9" x2="12" y2="13"></line>
@@ -989,6 +1009,7 @@ export const PostCard = ({ post, navigate }) => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     className="event-icon"
+                    aria-hidden="true"
                   >
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -1010,6 +1031,7 @@ export const PostCard = ({ post, navigate }) => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       className="event-icon"
+                      aria-hidden="true"
                     >
                       <circle cx="12" cy="12" r="10"></circle>
                       <polyline points="12 6 12 12 16 14"></polyline>
@@ -1030,6 +1052,7 @@ export const PostCard = ({ post, navigate }) => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       className="event-icon"
+                      aria-hidden="true"
                     >
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                       <circle cx="12" cy="10" r="3"></circle>
@@ -1049,6 +1072,7 @@ export const PostCard = ({ post, navigate }) => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     className="event-icon"
+                    aria-hidden="true"
                   >
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 00-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
@@ -1059,7 +1083,7 @@ export const PostCard = ({ post, navigate }) => {
                 </div>
               </div>
               <div className="event-rsvp-actions">
-                <button className="event-rsvp-button event-rsvp-yes">
+                <button className="event-rsvp-button event-rsvp-yes" aria-label="RSVP as going">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -1071,14 +1095,15 @@ export const PostCard = ({ post, navigate }) => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     className="rsvp-icon"
+                    aria-hidden="true"
                   >
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                     <polyline points="22 4 12 14.01 9 11.01"></polyline>
                   </svg>
                   Going
                 </button>
-                <button className="event-rsvp-button event-rsvp-maybe">Maybe</button>
-                <button className="event-rsvp-button event-rsvp-no">
+                <button className="event-rsvp-button event-rsvp-maybe" aria-label="RSVP as maybe">Maybe</button>
+                <button className="event-rsvp-button event-rsvp-no" aria-label="RSVP as not going">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -1090,6 +1115,7 @@ export const PostCard = ({ post, navigate }) => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     className="rsvp-icon"
+                    aria-hidden="true"
                   >
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -1102,10 +1128,10 @@ export const PostCard = ({ post, navigate }) => {
         </div>
         {renderPostActions()}
       </div>
-    )
-  }
+    );
+  }, [post, renderPostHeader, renderAttachments, renderPostActions]);
 
-  const renderGeneralPost = () => {
+  const renderGeneralPost = useCallback(() => {
     return (
       <div className="post-content">
         {renderPostHeader()}
@@ -1114,17 +1140,17 @@ export const PostCard = ({ post, navigate }) => {
         {renderAttachments()}
         {renderPostActions()}
       </div>
-    )
-  }
+    );
+  }, [post.title, post.description, renderPostHeader, renderAttachments, renderPostActions]);
 
-  const renderCommentSection = () => {
-    if (!showComments) return null
+  const renderCommentSection = useCallback(() => {
+    if (!state.showComments) return null;
 
     return (
       <div className="comments-section" onClick={(e) => e.stopPropagation()}>
         <div className="comments-header">
           <h4 className="comments-title">Comments</h4>
-          <span className="comments-count">{comments.length}</span>
+          <span className="comments-count">{state.comments.length}</span>
         </div>
 
         <form className="comment-form" onSubmit={addComment}>
@@ -1132,13 +1158,14 @@ export const PostCard = ({ post, navigate }) => {
             <input
               type="text"
               className="comment-input"
-              placeholder={placeholders[placeholderIndex]}
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
+              placeholder={placeholders[state.placeholderIndex]}
+              value={state.commentText}
+              onChange={(e) => dispatch({ type: "SET_COMMENT_TEXT", payload: e.target.value })}
+              aria-label="Add a comment"
             />
             <div className="input-glow"></div>
           </div>
-          <button type="submit" className="comment-submit" disabled={!commentText.trim()}>
+          <button type="submit" className="comment-submit" disabled={!state.commentText.trim()} aria-label="Submit comment">
             <span className="submit-icon">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -1148,6 +1175,7 @@ export const PostCard = ({ post, navigate }) => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                aria-hidden="true"
               >
                 <line x1="22" y1="2" x2="11" y2="13" />
                 <polygon points="22 2 15 22 11 13 2 9 22 2" />
@@ -1156,24 +1184,24 @@ export const PostCard = ({ post, navigate }) => {
           </button>
         </form>
 
-        {isLoadingComments ? (
+        {state.isLoadingComments ? (
           <div className="comments-loading">
             <div className="loading-spinner"></div>
             <p>Loading comments...</p>
           </div>
-        ) : comments.length === 0 ? (
+        ) : state.comments.length === 0 ? (
           <div className="comments-empty">
             <p>No comments yet. Be the first to comment!</p>
           </div>
         ) : (
           <div className="comments-list">
-            {comments.map((comment) => (
+            {state.comments.map((comment) => (
               <div key={comment._id} className="comment">
                 <div className="comment-avatar-container">
                   {comment.userId?.avatar ? (
                     <img
                       src={comment.userId.avatar || "/placeholder.svg"}
-                      alt={comment.userId.username}
+                      alt={comment.userId.username || "Anonymous user"}
                       className="comment-avatar"
                     />
                   ) : (
@@ -1195,7 +1223,7 @@ export const PostCard = ({ post, navigate }) => {
                   </div>
                   <p className="comment-text">{comment.message}</p>
                   <div className="comment-actions">
-                    <button className="comment-action">
+                    <button className="comment-action" aria-label="Like comment">
                       <span className="comment-action-icon upvote">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -1205,13 +1233,14 @@ export const PostCard = ({ post, navigate }) => {
                           strokeWidth="2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
+                          aria-hidden="true"
                         >
                           <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
                         </svg>
                       </span>
                       <span>Like</span>
                     </button>
-                    <button className="comment-action">
+                    <button className="comment-action" aria-label="Reply to comment">
                       <span className="comment-action-icon reply">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -1221,6 +1250,7 @@ export const PostCard = ({ post, navigate }) => {
                           strokeWidth="2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
+                          aria-hidden="true"
                         >
                           <polyline points="9 17 4 12 9 7" />
                           <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
@@ -1236,55 +1266,45 @@ export const PostCard = ({ post, navigate }) => {
         )}
       </div>
     );
-  };
+  }, [state.showComments, state.comments, state.isLoadingComments, state.commentText, state.placeholderIndex, placeholders, addComment]);
 
-  const handlePollVote = async (optionId) => {
-    if (!token) {
-      alert("Please log in to vote");
-      return;
+  const renderPostContent = useCallback(() => {
+    let content;
+    switch (post.type) {
+      case "issue":
+        content = renderIssuePost();
+        break;
+      case "poll":
+        content = renderPollPost();
+        break;
+      case "marketplace":
+        content = renderMarketplacePost();
+        break;
+      case "announcements":
+        content = renderAnnouncementPost();
+        break;
+      default:
+        content = renderGeneralPost();
     }
 
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_BASEURL}/post/vote`,
-        {
-          postId: post._id,
-          optionId: optionId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.data.success) {
-        const postResponse = await axios.get(`${import.meta.env.VITE_BACKEND_BASEURL}/post/${post._id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (postResponse.data.success) {
-          window.location.reload();
-        }
-      } else {
-        alert(response.data.message);
-      }
-    } catch (error) {
-      console.error("Error voting on poll:", error);
-      alert(error.response?.data?.message || "Error voting on poll");
-    }
-  };
+    return (
+      <>
+        {content}
+        {renderCommentSection()}
+      </>
+    );
+  }, [post.type, renderIssuePost, renderPollPost, renderMarketplacePost, renderAnnouncementPost, renderGeneralPost, renderCommentSection]);
 
   return (
     <div
       ref={cardRef}
-      className={`post-card post-card-${post.type} state-${visualState} futuristic-card`}
+      className={`post-card post-card-${post.type} state-${state.visualState} futuristic-card`}
       onClick={() => {
-        navigate(`/post/${post._id}`)
+        navigate(`/post/${post._id}`);
       }}
       id={`post-${post._id}`}
+      role="article"
+      aria-label={`Post by ${post.createdBy?.username || "Anonymous"}`}
     >
       <div className="card-background"></div>
       <div className="card-glow"></div>
@@ -1302,5 +1322,5 @@ export const PostCard = ({ post, navigate }) => {
         <span className="circuit-line line-3"></span>
       </div>
     </div>
-  )
-}
+  );
+};
