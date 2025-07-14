@@ -1,15 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,lazy,Suspense } from "react";
 import axios from "axios";
 import { useTheme } from "../../components/ThemeProvider";
 import ThemeToggle from "../../components/ThemeToggle";
 import { useSelector } from "react-redux";
 import "./HomePage.css";
+import {throttle} from 'lodash'
 
 import "react-toastify/dist/ReactToastify.css";
 import { getTimeAgo, formatDate } from "./Helpers";
-import { HeroCarousel } from "./HeroCarousel";
-import { PostCard } from "./PostCard/PostCard";
+const HeroCarousel = lazy(() => import("./HeroCarousel").then(module => ({ default: module.HeroCarousel })));
+const PostCard = lazy(() => import("./PostCard/PostCard").then(module => ({ default: module.PostCard })));
 import { toast } from "react-hot-toast";
+import { useCallback } from "react";
+import { useMemo } from "react";
 
 // Create axios instance with interceptor
 const api = axios.create({
@@ -19,16 +22,21 @@ const api = axios.create({
 
 function HomePage() {
   const [activeTab, setActiveTab] = useState("all");
-  const [posts, setPosts] = useState([]);
-  const [trendingPosts, setTrendingPosts] = useState([]);
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
-  const [county, setCounty] = useState("");
+const [pageData, setPageData] = useState({
+  posts: [],
+  trendingPosts: [],
+  upcomingEvents: [],
+  county: "",
+  communities: []
+});
+
+
   const [loading, setLoading] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
   const [contactStates, setContactStates] = useState({});
   const { isDarkMode, toggleDarkMode } = useTheme();
   const [isTokenLoading, setIsTokenLoading] = useState(true);
-  const [communities, setCommunities] = useState([]);
+
   const { userData } = useSelector((state) => state.user);
   const { token } = useSelector((state) => state.user);
 
@@ -91,10 +99,13 @@ function HomePage() {
 
         if (response.data) {
           console.log(response);
-          await setPosts(response.data.posts || []);
-          await setTrendingPosts(response.data.trending || []);
-          setUpcomingEvents(response.data.upcomingEvents || []);
-          setCounty(response.data.county || "");
+          setPageData(prev => ({
+  ...prev,
+  posts: response.data.posts || [],
+  trendingPosts: response.data.trending || [],
+  upcomingEvents: response.data.upcomingEvents || [],
+  county: response.data.county || ""
+}));
 
           if (!response.data.trending && response.data.posts?.length > 0) {
             const postWithHighestUpvotes = response.data.posts.reduce(
@@ -118,7 +129,10 @@ function HomePage() {
               `/user/chat/getCommunities?${queryParams.toString()}`
             );
 
-            setCommunities(communityResponse.data?.communities || []);
+            setPageData(prev => ({
+  ...prev,
+  communities: communityResponse.data?.communities || []
+}));
           } catch (error) {
             console.error("Error fetching communities:", error);
             setCommunities([]);
@@ -151,50 +165,62 @@ function HomePage() {
     }
   }, [token, userData]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+useEffect(() => {
+  const handleScroll = () => {
+    setIsScrolled(window.scrollY > 50);
+  };
+  
+  const throttledScroll = throttle(handleScroll, 100);
+  window.addEventListener('scroll', throttledScroll);
+  
+  return () => window.removeEventListener('scroll', throttledScroll);
+}, []);
 
   // Filter posts based on active tab
-  const filteredPosts = posts.filter((post) => {
-    if (activeTab === "all") return true;
-    if (activeTab === "polls")
-      return post.type === "poll" && post.poll?.isActive !== false;
-    if (activeTab === "announcements") return post.type === "announcements";
-    if (activeTab === "suggestions") return post.type === "suggestion";
-    if (activeTab === "marketplace") return post.type === "marketplace";
-    if (activeTab === "events")
-      return post.type === "announcements" && post.event;
-    if (activeTab === "issues") return post.type === "issue";
-    return true;
-  });
+// 1. First create a filter configuration object outside the component
+// (This prevents recreation on every render)
+const POST_FILTERS = {
+  all: () => true,
+  polls: (post) => post.type === "poll" && post.poll?.isActive !== false,
+  announcements: (post) => post.type === "announcements",
+  suggestions: (post) => post.type === "suggestion",
+  marketplace: (post) => post.type === "marketplace",
+  events: (post) => post.type === "announcements" && post.event,
+  issues: (post) => post.type === "issue"
+};
 
-  const handleContactSeller = (postId) => (e) => {
+// 2. Optimized filter function
+const filteredPosts = useMemo(() => {
+  // Early return if no posts or 'all' tab
+  if (activeTab === "all" || !pageData.posts.length) {
+    return pageData.posts;
+  }
+
+  // Get the appropriate filter function
+  const filterFn = POST_FILTERS[activeTab] || POST_FILTERS.all;
+  
+  // Return filtered posts
+  return pageData.posts.filter(filterFn);
+}, [pageData.posts, activeTab]);
+
+
+
+const contactHandlers = useMemo(() => ({
+  handleContactSeller: (postId) => (e) => {
     e.stopPropagation();
-    setContactStates((prev) => ({
+    setContactStates(prev => ({
       ...prev,
       [postId]: {
         ...prev[postId],
         showContactForm: !prev[postId]?.showContactForm,
       },
     }));
-  };
-
-  const handleSendMessage = (postId) => (e) => {
+  },
+  handleSendMessage: (postId) => (e) => {
     e.stopPropagation();
     if (contactStates[postId]?.contactMessage?.trim()) {
-      // In a real app, you would send this message to the seller
       alert(`Message sent to seller: ${contactStates[postId].contactMessage}`);
-      setContactStates((prev) => ({
+      setContactStates(prev => ({
         ...prev,
         [postId]: {
           ...prev[postId],
@@ -203,17 +229,36 @@ function HomePage() {
         },
       }));
     }
-  };
-
-  const handleContactMessageChange = (postId) => (e) => {
-    setContactStates((prev) => ({
+  },
+  handleContactMessageChange: (postId) => (e) => {
+    setContactStates(prev => ({
       ...prev,
       [postId]: {
         ...prev[postId],
         contactMessage: e.target.value,
       },
     }));
-  };
+  }
+}), [contactStates]); // Add contactStates to dependencies
+  const memoizedPostCards = useMemo(() => 
+  filteredPosts.map((post) => {
+    const postId = post._id;
+    return (
+      <PostCard
+        key={`post-card-${postId}`}
+        post={{
+          ...post,
+          showContactForm: contactStates[postId]?.showContactForm || false,
+          contactMessage: contactStates[postId]?.contactMessage || "",
+          ...contactHandlers
+        }}
+        navigate={navigate}
+        token={token}
+      />
+    );
+  }),
+  [filteredPosts, contactStates, contactHandlers, navigate, token]
+);
 
   useEffect(() => {
     const styleElement = document.createElement("style");
@@ -372,7 +417,7 @@ function HomePage() {
             </h1>
             <div className="ts-title-underline"></div>
             <p className="ts-home-subtitle">
-              Your community platform for {county || "your local area"}
+              Your community platform for {pageData.county || "your local area"}
             </p>
           </div>
           <div className="ts-header-actions">
@@ -413,9 +458,9 @@ function HomePage() {
         ) : (
           <>
             {/* Hero Carousel */}
-            {posts.length > 0 && (
+            {pageData.posts.length > 0 && (
               <HeroCarousel
-                items={posts
+                items={pageData.posts
                   .filter(
                     (post) => post.attachments && post.attachments.length > 0
                   )
@@ -599,27 +644,7 @@ function HomePage() {
                   </div>
                 ) : (
                   <div className="ts-posts-container">
-                    {filteredPosts.map((post) => {
-                      const postId = post._id;
-                      return (
-                        <PostCard
-                          key={`post-card-${postId}`}
-                          post={{
-                            ...post,
-                            showContactForm:
-                              contactStates[postId]?.showContactForm || false,
-                            contactMessage:
-                              contactStates[postId]?.contactMessage || "",
-                            handleContactSeller: handleContactSeller(postId),
-                            handleSendMessage: handleSendMessage(postId),
-                            handleContactMessageChange:
-                              handleContactMessageChange(postId),
-                          }}
-                          navigate={navigate}
-                          token={token}
-                        />
-                      );
-                    })}
+                    {memoizedPostCards}
                   </div>
                 )}
               </main>
@@ -654,14 +679,14 @@ function HomePage() {
                       <div className="ts-loading-small">
                         <div className="ts-loading-spinner"></div>
                       </div>
-                    ) : !trendingPosts || trendingPosts.length === 0 ? (
+                    ) : !pageData.trendingPosts || pageData.trendingPosts.length === 0 ? (
                       <div className="ts-empty-section">
                         No trending posts yet
                       </div>
                     ) : (
                       <div className="ts-trending-list">
-                        {Array.isArray(trendingPosts) ? (
-                          trendingPosts.map((post) => (
+                        {Array.isArray(pageData.trendingPosts) ? (
+                          pageData.trendingPosts.map((post) => (
                             <div
                               key={post._id}
                               className="ts-trending-item"
@@ -736,7 +761,7 @@ function HomePage() {
                     </button>
                   </div>
                   <div className="ts-section-content">
-                    {upcomingEvents.length === 0 ? (
+                    {pageData.upcomingEvents.length === 0 ? (
                       <div className="ts-empty-section">No upcoming events</div>
                     ) : (
                       <div className="ts-events-list">
@@ -840,9 +865,9 @@ function HomePage() {
                 <div className="ts-stats-card">
                   <div className="ts-stats-header">
                     <h3 className="ts-stats-title">Community Stats</h3>
-                    {communities[0] && (
+                    {pageData.communities[0] && (
                       <span className="ts-community-name">
-                        {communities[0].name}
+                        {pageData.communities[0].name}
                       </span>
                     )}
                   </div>
@@ -869,7 +894,7 @@ function HomePage() {
                       </div>
                       <div className="ts-stat-info">
                         <span className="ts-stat-value">
-                          {communities[0]?.members?.length || 0}
+                          {pageData.communities[0]?.members?.length || 0}
                         </span>
                         <span className="ts-stat-label">Members</span>
                       </div>
@@ -894,7 +919,7 @@ function HomePage() {
                       <div className="ts-stat-info">
                         <span className="ts-stat-value">
                           {
-                            posts.filter(
+                            pageData.posts.filter(
                               (post) =>
                                 post.community?._id ===
                                 userData?.communitiesJoined?.[0]?._id
