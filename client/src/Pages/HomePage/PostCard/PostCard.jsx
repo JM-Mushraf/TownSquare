@@ -112,33 +112,19 @@ export const PostCard = ({ post, navigate }) => {
     return post.attachments?.filter((attachment) => attachment.fileType?.startsWith("image/")) || [];
   }, [post.attachments]);
 
-  // Consolidated animation effects
+  // Removed animation-related effects, keeping only placeholder cycling
   useEffect(() => {
-    const intervals = [];
+    let interval;
     if (state.showComments) {
-      intervals.push(
-        setInterval(() => {
-          dispatch({
-            type: "SET_PLACEHOLDER_INDEX",
-            payload: (state.placeholderIndex + 1) % placeholders.length,
-          });
-        }, 3000)
-      );
+      interval = setInterval(() => {
+        dispatch({
+          type: "SET_PLACEHOLDER_INDEX",
+          payload: (state.placeholderIndex + 1) % placeholders.length,
+        });
+      }, 3000);
     }
-    intervals.push(
-      setInterval(() => {
-        dispatch({ type: "SET_VISUAL_STATE", payload: Math.floor(Math.random() * 4) });
-      }, 8000)
-    );
-    if (state.syncAnimation) {
-      intervals.push(
-        setTimeout(() => {
-          dispatch({ type: "SET_ANIMATING", payload: false });
-        }, 3000)
-      );
-    }
-    return () => intervals.forEach((interval) => clearInterval(interval) || clearTimeout(interval));
-  }, [state.showComments, state.syncAnimation, placeholders.length]);
+    return () => interval && clearInterval(interval);
+  }, [state.showComments, placeholders.length]);
 
   // Load user vote from localStorage
   useEffect(() => {
@@ -352,12 +338,6 @@ export const PostCard = ({ post, navigate }) => {
               <span>{post.createdBy?.username?.charAt(0) || "U"}</span>
             </div>
           )}
-          <div className="avatar-glow"></div>
-          <div className="avatar-ring"></div>
-          <div className="avatar-particles">
-            <span className="avatar-particle"></span>
-            <span className="avatar-particle"></span>
-          </div>
         </div>
         <div className="author-info">
           <div className="author-name-container">
@@ -390,28 +370,24 @@ export const PostCard = ({ post, navigate }) => {
               </svg>
               {getTimeAgo(post.createdAt)}
             </span>
-            <div className="sync-indicator" title="Sync Status">
-              <div className={`sync-dot ${state.syncAnimation ? "active" : ""}`}></div>
-              <span>Sync</span>
-            </div>
           </div>
         </div>
       </div>
     );
-  }, [post.createdBy, post.type, post.createdAt, state.syncAnimation]);
+  }, [post.createdBy, post.type, post.createdAt]);
 
   const renderPostActions = useCallback(() => {
     return (
       <div className="post-actions">
         <div className="action-buttons">
           <button
-            className={`action-button neo-action ${state.userVote === "upvote" ? "active" : ""}`}
+            className={`action-button ${state.userVote === "upvote" ? "active" : ""}`}
             id={`upvote-${post._id}`}
             onClick={handleUpvote}
             aria-label={`Upvote post, current votes: ${state.upVotes}`}
             aria-pressed={state.userVote === "upvote"}
           >
-            <span className={`action-icon upvote ${state.isAnimating ? "pulse" : ""}`}>
+            <span className="action-icon upvote">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -428,10 +404,9 @@ export const PostCard = ({ post, navigate }) => {
             <div className="action-data">
               <span className="action-count">{state.upVotes}</span>
             </div>
-            <div className="action-particles"></div>
           </button>
           <button
-            className={`action-button neo-action ${state.userVote === "downvote" ? "active" : ""}`}
+            className={`action-button ${state.userVote === "downvote" ? "active" : ""}`}
             id={`downvote-${post._id}`}
             onClick={handleDownvote}
             aria-label={`Downvote post, current votes: ${state.downVotes}`}
@@ -456,7 +431,7 @@ export const PostCard = ({ post, navigate }) => {
             </div>
           </button>
           <button
-            className={`action-button neo-action ${state.showComments ? "active" : ""}`}
+            className={`action-button ${state.showComments ? "active" : ""}`}
             id={`comment-${post._id}`}
             onClick={(e) => {
               e.stopPropagation();
@@ -484,7 +459,7 @@ export const PostCard = ({ post, navigate }) => {
             </div>
           </button>
           <button
-            className={`action-button neo-action ${state.isBookmarked ? "active" : ""}`}
+            className={`action-button ${state.isBookmarked ? "active" : ""}`}
             id={`bookmark-${post._id}`}
             onClick={toggleBookmark}
             aria-label={state.isBookmarked ? "Remove bookmark" : "Add bookmark"}
@@ -508,7 +483,7 @@ export const PostCard = ({ post, navigate }) => {
           </button>
           <div className="action-spacer"></div>
           <button
-            className="action-button neo-action"
+            className="action-button"
             id={`share-${post._id}`}
             onClick={handleShareClick(post._id)}
             aria-label="Share post"
@@ -550,7 +525,6 @@ export const PostCard = ({ post, navigate }) => {
     fetchComments,
     toggleBookmark,
     handleShareClick,
-    state.isAnimating,
   ]);
 
   const renderAttachments = useCallback(() => {
@@ -665,10 +639,7 @@ export const PostCard = ({ post, navigate }) => {
           <div className="poll-details">
             <div className="poll-status">
               {isPollActive ? (
-                <span className="poll-badge active">
-                  <span className="badge-pulse"></span>
-                  Active Poll
-                </span>
+                <span className="poll-badge">Active Poll</span>
               ) : (
                 <span className="poll-badge closed">Closed</span>
               )}
@@ -676,7 +647,7 @@ export const PostCard = ({ post, navigate }) => {
                 <span className="poll-time-remaining">
                   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="poll-icon" aria-hidden="true">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="M12 6V12L16 14" stroke="currentColor" strokeWidth="1.5" strokeacronym="round" />
+                    <path d="M12 6V12L16 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                   </svg>
                   {isPollActive ? `Ends ${formatDate(post.poll.endDate)}` : `Ended ${formatDate(post.poll.endDate)}`}
                 </span>
@@ -708,11 +679,9 @@ export const PostCard = ({ post, navigate }) => {
                     {(hasVoted || !isPollActive) && (
                       <div className="poll-option-bar">
                         <div
-                          className={`poll-option-progress poll-color-${index % 4}`}
+                          className="poll-option-progress"
                           style={{ width: `${percentage}%` }}
-                        >
-                          <div className="progress-particles"></div>
-                        </div>
+                        ></div>
                       </div>
                     )}
 
@@ -1163,7 +1132,6 @@ export const PostCard = ({ post, navigate }) => {
               onChange={(e) => dispatch({ type: "SET_COMMENT_TEXT", payload: e.target.value })}
               aria-label="Add a comment"
             />
-            <div className="input-glow"></div>
           </div>
           <button type="submit" className="comment-submit" disabled={!state.commentText.trim()} aria-label="Submit comment">
             <span className="submit-icon">
@@ -1186,7 +1154,6 @@ export const PostCard = ({ post, navigate }) => {
 
         {state.isLoadingComments ? (
           <div className="comments-loading">
-            <div className="loading-spinner"></div>
             <p>Loading comments...</p>
           </div>
         ) : state.comments.length === 0 ? (
@@ -1209,15 +1176,11 @@ export const PostCard = ({ post, navigate }) => {
                       <span>{comment.userId?.username?.charAt(0) || "U"}</span>
                     </div>
                   )}
-                  <div className="comment-avatar-glow"></div>
                 </div>
                 <div className="comment-content">
                   <div className="comment-header">
                     <div className="comment-author-container">
                       <h5 className="comment-author">{comment.userId?.username || "Anonymous"}</h5>
-                      <div className="connection-level" title="Connection Level">
-                        <span className="connection-level-indicator">L4</span>
-                      </div>
                     </div>
                     <span className="comment-timestamp">{getTimeAgo(comment.createdAt)}</span>
                   </div>
@@ -1298,7 +1261,7 @@ export const PostCard = ({ post, navigate }) => {
   return (
     <div
       ref={cardRef}
-      className={`post-card post-card-${post.type} state-${state.visualState} futuristic-card`}
+      className="post-card"
       onClick={() => {
         navigate(`/post/${post._id}`);
       }}
@@ -1306,21 +1269,7 @@ export const PostCard = ({ post, navigate }) => {
       role="article"
       aria-label={`Post by ${post.createdBy?.username || "Anonymous"}`}
     >
-      <div className="card-background"></div>
-      <div className="card-glow"></div>
       <div className="card-content">{renderPostContent()}</div>
-      <div className="card-particles">
-        <span className="particle particle-1"></span>
-        <span className="particle particle-2"></span>
-        <span className="particle particle-3"></span>
-        <span className="particle particle-4"></span>
-      </div>
-      <div className="card-holographic-edge"></div>
-      <div className="card-circuit-lines">
-        <span className="circuit-line line-1"></span>
-        <span className="circuit-line line-2"></span>
-        <span className="circuit-line line-3"></span>
-      </div>
     </div>
   );
 };

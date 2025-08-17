@@ -1,18 +1,16 @@
-import { useState, useEffect,lazy,Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import axios from "axios";
 import { useTheme } from "../../components/ThemeProvider";
 import ThemeToggle from "../../components/ThemeToggle";
 import { useSelector } from "react-redux";
 import "./HomePage.css";
-import {throttle} from 'lodash'
-
+import { throttle } from 'lodash';
 import "react-toastify/dist/ReactToastify.css";
 import { getTimeAgo, formatDate } from "./Helpers";
 const HeroCarousel = lazy(() => import("./HeroCarousel").then(module => ({ default: module.HeroCarousel })));
 const PostCard = lazy(() => import("./PostCard/PostCard").then(module => ({ default: module.PostCard })));
 import { toast } from "react-hot-toast";
-import { useCallback } from "react";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 // Create axios instance with interceptor
 const api = axios.create({
@@ -22,25 +20,24 @@ const api = axios.create({
 
 function HomePage() {
   const [activeTab, setActiveTab] = useState("all");
-const [pageData, setPageData] = useState({
-  posts: [],
-  trendingPosts: [],
-  upcomingEvents: [],
-  county: "",
-  communities: []
-});
-
-
+  const [pageData, setPageData] = useState({
+    posts: [],
+    trendingPosts: [],
+    upcomingEvents: [],
+    county: "",
+    communities: []
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [postsPerPage] = useState(5); // Number of posts per page
+  const [totalPosts, setTotalPosts] = useState(0); // Total number of posts
   const [loading, setLoading] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
   const [contactStates, setContactStates] = useState({});
   const { isDarkMode, toggleDarkMode } = useTheme();
   const [isTokenLoading, setIsTokenLoading] = useState(true);
+  const { userData, token } = useSelector((state) => state.user);
 
-  const { userData } = useSelector((state) => state.user);
-  const { token } = useSelector((state) => state.user);
-
-  // Add request interceptor
+  // Add request and response interceptors
   useEffect(() => {
     const requestInterceptor = api.interceptors.request.use(
       (config) => {
@@ -49,26 +46,21 @@ const [pageData, setPageData] = useState({
         }
         return config;
       },
-      (error) => {
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
 
-    // Add response interceptor
     const responseInterceptor = api.interceptors.response.use(
       (response) => response,
       (error) => {
         if (error.response?.status === 401) {
           console.error("Authentication error - token might be invalid:", token);
           toast.error("Please login again to access this resource!");
-          // Optionally redirect to login here
         }
         return Promise.reject(error);
       }
     );
 
     return () => {
-      // Cleanup interceptors when component unmounts
       api.interceptors.request.eject(requestInterceptor);
       api.interceptors.response.eject(responseInterceptor);
     };
@@ -84,6 +76,12 @@ const [pageData, setPageData] = useState({
     }
   }, [token]);
 
+  // Reset currentPage when activeTab changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
+
+  // Fetch data with pagination and type filter
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -94,27 +92,28 @@ const [pageData, setPageData] = useState({
           return;
         }
 
-        // Use the api instance instead of axios directly
-        const response = await api.get("/post/getFeed");
+        // Construct type query parameter based on activeTab
+        const typeParam = activeTab === "all" ? "" : activeTab === "events" ? "announcements" : activeTab;
+
+        // Fetch paginated posts with type filter
+        const response = await api.get(`/post/getFeed?page=${currentPage}&limit=${postsPerPage}${typeParam ? `&type=${typeParam}` : ""}`);
 
         if (response.data) {
-          console.log(response);
           setPageData(prev => ({
-  ...prev,
-  posts: response.data.posts || [],
-  trendingPosts: response.data.trending || [],
-  upcomingEvents: response.data.upcomingEvents || [],
-  county: response.data.county || ""
-}));
+            ...prev,
+            posts: response.data.posts || [],
+            trendingPosts: response.data.trending || [],
+            upcomingEvents: response.data.upcomingEvents || [],
+            county: response.data.county || ""
+          }));
+          setTotalPosts(response.data.totalPosts || 0); // Set total posts from API response
 
           if (!response.data.trending && response.data.posts?.length > 0) {
             const postWithHighestUpvotes = response.data.posts.reduce(
-              (prev, current) => {
-                return prev.upVotes > current.upVotes ? prev : current;
-              },
+              (prev, current) => (prev.upVotes > current.upVotes ? prev : current),
               {}
             );
-            setTrendingPosts(postWithHighestUpvotes);
+            setPageData(prev => ({ ...prev, trendingPosts: [postWithHighestUpvotes] }));
           }
         }
 
@@ -125,17 +124,14 @@ const [pageData, setPageData] = useState({
               queryParams.append("names", name);
             });
 
-            const communityResponse = await api.get(
-              `/user/chat/getCommunities?${queryParams.toString()}`
-            );
-
+            const communityResponse = await api.get(`/user/chat/getCommunities?${queryParams.toString()}`);
             setPageData(prev => ({
-  ...prev,
-  communities: communityResponse.data?.communities || []
-}));
+              ...prev,
+              communities: communityResponse.data?.communities || []
+            }));
           } catch (error) {
             console.error("Error fetching communities:", error);
-            setCommunities([]);
+            setPageData(prev => ({ ...prev, communities: [] }));
           }
         }
       } catch (error) {
@@ -149,12 +145,15 @@ const [pageData, setPageData] = useState({
         } else {
           console.error("Error message:", error.message);
         }
-
-        setPosts([]);
-        setTrendingPosts([]);
-        setUpcomingEvents([]);
-        setCounty("");
-        setCommunities([]);
+        setPageData(prev => ({
+          ...prev,
+          posts: [],
+          trendingPosts: [],
+          upcomingEvents: [],
+          county: "",
+          communities: []
+        }));
+        setTotalPosts(0);
       } finally {
         setLoading(false);
       }
@@ -163,238 +162,269 @@ const [pageData, setPageData] = useState({
     if (token) {
       fetchData();
     }
-  }, [token, userData]);
+  }, [token, userData, currentPage, postsPerPage, activeTab]);
 
-useEffect(() => {
-  const handleScroll = () => {
-    setIsScrolled(window.scrollY > 50);
-  };
-  
-  const throttledScroll = throttle(handleScroll, 100);
-  window.addEventListener('scroll', throttledScroll);
-  
-  return () => window.removeEventListener('scroll', throttledScroll);
-}, []);
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    
+    const throttledScroll = throttle(handleScroll, 100);
+    window.addEventListener('scroll', throttledScroll);
+    
+    return () => window.removeEventListener('scroll', throttledScroll);
+  }, []);
 
-  // Filter posts based on active tab
-// 1. First create a filter configuration object outside the component
-// (This prevents recreation on every render)
-const POST_FILTERS = {
-  all: () => true,
-  polls: (post) => post.type === "poll" && post.poll?.isActive !== false,
-  announcements: (post) => post.type === "announcements",
-  suggestions: (post) => post.type === "suggestion",
-  marketplace: (post) => post.type === "marketplace",
-  events: (post) => post.type === "announcements" && post.event,
-  issues: (post) => post.type === "issue"
-};
+  // Remove client-side filtering since it's handled by the backend
+  const paginatedPosts = pageData.posts; // Use posts directly from API response
 
-// 2. Optimized filter function
-const filteredPosts = useMemo(() => {
-  // Early return if no posts or 'all' tab
-  if (activeTab === "all" || !pageData.posts.length) {
-    return pageData.posts;
-  }
+  // Calculate total pages
+  const totalPages = Math.ceil(totalPosts / postsPerPage);
 
-  // Get the appropriate filter function
-  const filterFn = POST_FILTERS[activeTab] || POST_FILTERS.all;
-  
-  // Return filtered posts
-  return pageData.posts.filter(filterFn);
-}, [pageData.posts, activeTab]);
+  // Handle page navigation
+  const handlePageChange = useCallback((page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top on page change
+    }
+  }, [totalPages]);
 
-
-
-const contactHandlers = useMemo(() => ({
-  handleContactSeller: (postId) => (e) => {
-    e.stopPropagation();
-    setContactStates(prev => ({
-      ...prev,
-      [postId]: {
-        ...prev[postId],
-        showContactForm: !prev[postId]?.showContactForm,
-      },
-    }));
-  },
-  handleSendMessage: (postId) => (e) => {
-    e.stopPropagation();
-    if (contactStates[postId]?.contactMessage?.trim()) {
-      alert(`Message sent to seller: ${contactStates[postId].contactMessage}`);
+  const contactHandlers = useMemo(() => ({
+    handleContactSeller: (postId) => (e) => {
+      e.stopPropagation();
       setContactStates(prev => ({
         ...prev,
         [postId]: {
           ...prev[postId],
-          contactMessage: "",
-          showContactForm: false,
+          showContactForm: !prev[postId]?.showContactForm,
+        },
+      }));
+    },
+    handleSendMessage: (postId) => (e) => {
+      e.stopPropagation();
+      if (contactStates[postId]?.contactMessage?.trim()) {
+        alert(`Message sent to seller: ${contactStates[postId].contactMessage}`);
+        setContactStates(prev => ({
+          ...prev,
+          [postId]: {
+            ...prev[postId],
+            contactMessage: "",
+            showContactForm: false,
+          },
+        }));
+      }
+    },
+    handleContactMessageChange: (postId) => (e) => {
+      setContactStates(prev => ({
+        ...prev,
+        [postId]: {
+          ...prev[postId],
+          contactMessage: e.target.value,
         },
       }));
     }
-  },
-  handleContactMessageChange: (postId) => (e) => {
-    setContactStates(prev => ({
-      ...prev,
-      [postId]: {
-        ...prev[postId],
-        contactMessage: e.target.value,
-      },
-    }));
-  }
-}), [contactStates]); // Add contactStates to dependencies
-  const memoizedPostCards = useMemo(() => 
-  filteredPosts.map((post) => {
-    const postId = post._id;
-    return (
-      <PostCard
-        key={`post-card-${postId}`}
-        post={{
-          ...post,
-          showContactForm: contactStates[postId]?.showContactForm || false,
-          contactMessage: contactStates[postId]?.contactMessage || "",
-          ...contactHandlers
-        }}
-        navigate={navigate}
-        token={token}
-      />
-    );
-  }),
-  [filteredPosts, contactStates, contactHandlers, navigate, token]
-);
+  }), [contactStates]);
 
+  const memoizedPostCards = useMemo(() => 
+    paginatedPosts.map((post) => {
+      const postId = post._id;
+      return (
+        <Suspense key={`post-card-${postId}`} fallback={<div>Loading post...</div>}>
+          <PostCard
+            post={{
+              ...post,
+              showContactForm: contactStates[postId]?.showContactForm || false,
+              contactMessage: contactStates[postId]?.contactMessage || "",
+              ...contactHandlers
+            }}
+            navigate={navigate}
+            token={token}
+          />
+        </Suspense>
+      );
+    }),
+    [paginatedPosts, contactStates, contactHandlers, navigate, token]
+  );
+
+  // Add pagination styles
   useEffect(() => {
     const styleElement = document.createElement("style");
-    const commentStyles = `
-    .ts-comments-section {
-      margin-top: 1rem;
-      padding: 1rem;
-      border-top: 1px solid var(--border-color);
-    }
+    const styles = `
+      .ts-comments-section {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-top: 1px solid var(--border-color);
+      }
 
-    .ts-comments-header {
-      margin-bottom: 1rem;
-    }
+      .ts-comments-header {
+        margin-bottom: 1rem;
+      }
 
-    .ts-comments-title {
-      font-size: 1rem;
-      font-weight: 600;
-    }
+      .ts-comments-title {
+        font-size: 1rem;
+        font-weight: 600;
+      }
 
-    .ts-comment-form {
-      display: flex;
-      margin-bottom: 1rem;
-    }
+      .ts-comment-form {
+        display: flex;
+        margin-bottom: 1rem;
+      }
 
-    .ts-comment-input {
-      flex: 1;
-      padding: 0.75rem;
-      border: 1px solid var(--border-color);
-      border-radius: 0.5rem;
-      background-color: var(--input-bg);
-      color: var(--text-color);
-    }
+      .ts-comment-input {
+        flex: 1;
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        background-color: var(--input-bg);
+        color: var(--text-color);
+      }
 
-    .ts-comment-submit {
-      margin-left: 0.5rem;
-      padding: 0.5rem;
-      border: none;
-      border-radius: 0.5rem;
-      background-color: var(--primary-color);
-      color: white;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+      .ts-comment-submit {
+        margin-left: 0.5rem;
+        padding: 0.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        background-color: var(--primary-color);
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-    .ts-comment-submit:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+      .ts-comment-submit:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
 
-    .ts-comments-loading,
-    .ts-comments-empty {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      color: var(--text-muted);
-    }
+      .ts-comments-loading,
+      .ts-comments-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        color: var(--text-muted);
+      }
 
-    .ts-comments-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
+      .ts-comments-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
 
-    .ts-comment-item {
-      display: flex;
-      gap: 0.75rem;
-    }
+      .ts-comment-item {
+        display: flex;
+        gap: 0.75rem;
+      }
 
-    .ts-comment-avatar {
-      width: 2rem;
-      height: 2rem;
-      border-radius: 50%;
-      background-color: var(--avatar-bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      color: var(--avatar-text);
-      overflow: hidden;
-    }
+      .ts-comment-avatar {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background-color: var(--avatar-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: var(--avatar-text);
+        overflow: hidden;
+      }
 
-    .ts-comment-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+      .ts-comment-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
 
-    .ts-comment-content {
-      flex: 1;
-      background-color: var(--comment-bg);
-      border-radius: 0.5rem;
-      padding: 0.75rem;
-    }
+      .ts-comment-content {
+        flex: 1;
+        background-color: var(--comment-bg);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+      }
 
-    .ts-comment-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.25rem;
-    }
+      .ts-comment-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.25rem;
+      }
 
-    .ts-comment-author {
-      font-weight: 600;
-      font-size: 0.875rem;
-      margin: 0;
-    }
+      .ts-comment-author {
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin: 0;
+      }
 
-    .ts-comment-time {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
+      .ts-comment-time {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
 
-    .ts-comment-text {
-      margin: 0;
-      font-size: 0.875rem;
-      line-height: 1.4;
-    }
+      .ts-comment-text {
+        margin: 0;
+        font-size: 0.875rem;
+        line-height: 1.4;
+      }
 
-    .ts-action-button.active {
-      color: var(--primary-color);
-    }
+      .ts-action-button.active {
+        color: var(--primary-color);
+      }
 
-    /* Dark mode specific styles */
-    .dark .ts-comment-input {
-      background-color: var(--dark-input-bg);
-      border-color: var(--dark-border-color);
-    }
+      /* Pagination Styles */
+      .ts-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding: 1rem;
+      }
 
-    .dark .ts-comment-content {
-      background-color: var(--dark-comment-bg);
-    }
+      .ts-pagination-button {
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        background-color: var(--input-bg);
+        color: var(--text-color);
+        cursor: pointer;
+        font-size: 0.875rem;
+        transition: background-color 0.2s;
+      }
+
+      .ts-pagination-button:hover:not(:disabled) {
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      .ts-pagination-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .ts-pagination-button.active {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+      }
+
+      /* Dark mode specific styles */
+      .dark .ts-comment-input,
+      .dark .ts-pagination-button {
+        background-color: var(--dark-input-bg);
+        border-color: var(--dark-border-color);
+      }
+
+      .dark .ts-comment-content {
+        background-color: var(--dark-comment-bg);
+      }
+
+      .dark .ts-pagination-button.active {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+      }
     `;
-    styleElement.textContent = commentStyles;
+    styleElement.textContent = styles;
     document.head.appendChild(styleElement);
 
     return () => {
@@ -596,7 +626,7 @@ const contactHandlers = useMemo(() => ({
                   <h2 className="ts-section-title">Community Feed</h2>
                 </div>
 
-                {filteredPosts.length === 0 ? (
+                {paginatedPosts.length === 0 ? (
                   <div className="ts-empty-state">
                     <div className="ts-empty-icon-container">
                       <svg
@@ -617,7 +647,7 @@ const contactHandlers = useMemo(() => ({
                     </div>
                     <h3>No posts found</h3>
                     <p>
-                      Be the first to create a post in {county || "your area"}!
+                      Be the first to create a post in {pageData.county || "your area"}!
                     </p>
                     <button
                       className="ts-create-button"
@@ -645,13 +675,42 @@ const contactHandlers = useMemo(() => ({
                 ) : (
                   <div className="ts-posts-container">
                     {memoizedPostCards}
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                      <div className="ts-pagination">
+                        <button
+                          className="ts-pagination-button"
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          aria-label="Previous page"
+                        >
+                          Previous
+                        </button>
+                        {[...Array(totalPages).keys()].map((page) => (
+                          <button
+                            key={`page-${page + 1}`}
+                            className={`ts-pagination-button ${currentPage === page + 1 ? 'active' : ''}`}
+                            onClick={() => handlePageChange(page + 1)}
+                            aria-label={`Page ${page + 1}`}
+                            aria-current={currentPage === page + 1 ? 'page' : undefined}
+                          >
+                            {page + 1}
+                          </button>
+                        ))}
+                        <button
+                          className="ts-pagination-button"
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                          aria-label="Next page"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </main>
               <aside className="ts-sidebar">
-                {/* Enhanced User Profile Card */}
-
-                {/* Trending Section */}
                 {/* Trending Section */}
                 <div className="ts-sidebar-section">
                   <div className="ts-section-header">
@@ -704,16 +763,14 @@ const contactHandlers = useMemo(() => ({
                         ) : (
                           <div
                             className="ts-trending-item"
-                            onClick={() =>
-                              navigate(`/post/${trendingPosts._id}`)
-                            }
+                            onClick={() => navigate(`/post/${pageData.trendingPosts._id}`)}
                           >
                             <h4 className="ts-trending-title">
-                              {trendingPosts.title}
+                              {pageData.trendingPosts.title}
                             </h4>
                             <div className="ts-trending-meta">
-                              <span>{trendingPosts.upVotes || 0} upvotes</span>
-                              <span>{getTimeAgo(trendingPosts.createdAt)}</span>
+                              <span>{pageData.trendingPosts.upVotes || 0} upvotes</span>
+                              <span>{getTimeAgo(pageData.trendingPosts.createdAt)}</span>
                             </div>
                           </div>
                         )}
@@ -765,13 +822,11 @@ const contactHandlers = useMemo(() => ({
                       <div className="ts-empty-section">No upcoming events</div>
                     ) : (
                       <div className="ts-events-list">
-                        {upcomingEvents.slice(0, 3).map((event) => (
+                        {pageData.upcomingEvents.slice(0, 3).map((event) => (
                           <div
                             key={`event-${event._id}`}
                             className="ts-event-item"
-                            onClick={() =>
-                              navigate(`/announcements/${event._id}`)
-                            }
+                            onClick={() => navigate(`/announcements/${event._id}`)}
                           >
                             <div className="ts-event-content">
                               <h3 className="ts-event-title">{event.title}</h3>
@@ -980,8 +1035,7 @@ const contactHandlers = useMemo(() => ({
                   <div className="ts-support-content">
                     <h3 className="ts-support-title">Support Your Community</h3>
                     <p className="ts-support-message">
-                      Help us keep TownSquare running and improving for
-                      everyone.
+                      Help us keep TownSquare running and improving for everyone.
                     </p>
                     <button className="ts-support-button" id="donate-button">
                       Donate Now

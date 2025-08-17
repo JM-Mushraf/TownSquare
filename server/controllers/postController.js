@@ -198,19 +198,32 @@ export const createPost = async (req, res) => {
 export const getCountyPosts = async (req, res) => {
   try {
     const requestingUserId = req.user.id;
+    const { page = 1, limit = 10 } = req.query; // Extract pagination parameters with defaults
+
+    // Validate pagination parameters
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    if (isNaN(pageNum) || pageNum < 1 || isNaN(limitNum) || limitNum < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid pagination parameters",
+      });
+    }
 
     // 1. Get requesting user's county
-    const requestingUser = await User.findById(requestingUserId).select(
-      "location.county"
-    );
+    const requestingUser = await User.findById(requestingUserId).select("location.county");
     if (!requestingUser) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: "User not found" });
     }
     const userCounty = requestingUser.location.county;
 
-    // 2. Get posts from users in the same county with all necessary data
+    // 2. Get total number of posts for pagination
+    const totalPosts = await Post.countDocuments({
+      createdBy: { $in: await User.find({ "location.county": userCounty }).distinct("_id") },
+      type: { $in: ["announcements", "poll", "survey", "general", "marketplace", "issue"] },
+    });
+
+    // 3. Get paginated posts from users in the same county with all necessary data
     const posts = await Post.aggregate([
       {
         $lookup: {
@@ -224,10 +237,12 @@ export const getCountyPosts = async (req, res) => {
       {
         $match: {
           "creator.location.county": userCounty,
-          type: { $in: ["announcements", "poll", "survey", "general", "marketplace","issue"] }
-        }
+          type: { $in: ["announcements", "poll", "survey", "general", "marketplace", "issue"] },
+        },
       },
       { $sort: { createdAt: -1 } },
+      { $skip: (pageNum - 1) * limitNum }, // Skip posts for pagination
+      { $limit: limitNum }, // Limit posts per page
       {
         $project: {
           // Common fields
@@ -240,28 +255,25 @@ export const getCountyPosts = async (req, res) => {
           upVotes: 1,
           downVotes: 1,
           important: 1,
-          comments: { $size: "$comments" },
-      
+          comments: { $size: { $ifNull: ["$comments", []] } }, // Handle missing comments
           // Creator info
           "creator._id": 1,
           "creator.username": 1,
           "creator.email": 1,
           "creator.avatar": 1,
-      
           // Poll data
           poll: {
             $cond: [
               { $eq: ["$type", "poll"] },
               {
                 question: "$poll.question",
-                options: { $ifNull: ["$poll.options", []] },  // Ensure options are an array
+                options: { $ifNull: ["$poll.options", []] },
                 deadline: "$poll.deadline",
                 status: "$poll.status",
               },
               "$$REMOVE",
             ],
           },
-      
           // Survey data
           survey: {
             $cond: [
@@ -274,7 +286,6 @@ export const getCountyPosts = async (req, res) => {
               "$$REMOVE",
             ],
           },
-      
           // Marketplace data
           marketplace: {
             $cond: [
@@ -289,16 +300,15 @@ export const getCountyPosts = async (req, res) => {
               "$$REMOVE",
             ],
           },
-      
           // Announcement data
           event: {
             $cond: [
-              { $eq: ["$type", "announcement"] },
+              { $eq: ["$type", "announcements"] },
               {
                 date: "$event.date",
                 location: "$event.location",
                 time: "$event.time",
-                rsvps: { $size: "$rsvps" },
+                rsvps: { $size: { $ifNull: ["$rsvps", []] } }, // Handle missing rsvps
               },
               "$$REMOVE",
             ],
@@ -311,10 +321,11 @@ export const getCountyPosts = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "No posts found in your county",
+        totalPosts: 0,
       });
     }
 
-    // 3. Format the response
+    // 4. Format the response
     const formattedPosts = posts.map((post) => {
       const basePost = {
         _id: post._id,
@@ -341,7 +352,7 @@ export const getCountyPosts = async (req, res) => {
         case "poll":
           const totalVotes =
             post.poll && Array.isArray(post.poll.options)
-              ? post.poll.options.reduce((sum, opt) => sum + opt.votes, 0)
+              ? post.poll.options.reduce((sum, opt) => sum + (opt.votes || 0), 0)
               : 0;
 
           basePost.poll = {
@@ -350,7 +361,7 @@ export const getCountyPosts = async (req, res) => {
               post.poll && Array.isArray(post.poll.options)
                 ? post.poll.options.map((opt) => ({
                     text: opt.text,
-                    votes: opt.votes,
+                    votes: opt.votes || 0,
                     percentage:
                       totalVotes > 0
                         ? Math.round((opt.votes / totalVotes) * 100)
@@ -377,7 +388,7 @@ export const getCountyPosts = async (req, res) => {
           basePost.marketplace = post.marketplace || {};
           break;
 
-        case "announcement":
+        case "announcements":
           basePost.event = {
             date: post.event?.date || null,
             formattedDate: post.event?.date ? formatDate(post.event.date) : "",
@@ -391,7 +402,7 @@ export const getCountyPosts = async (req, res) => {
       return basePost;
     });
 
-    // 4. Get additional data for sidebar
+    // 5. Get additional data for sidebar (trending posts)
     const trendingPosts = await Post.aggregate([
       {
         $lookup: {
@@ -428,6 +439,7 @@ export const getCountyPosts = async (req, res) => {
         upVotes: post.upVotes,
       })),
       county: userCounty,
+      totalPosts,
     });
   } catch (error) {
     console.error("Error in getCountyPosts:", error);
@@ -438,7 +450,6 @@ export const getCountyPosts = async (req, res) => {
     });
   }
 };
-
 
 // Helper functions
 function getTimeRemaining(endtime) {
