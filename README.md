@@ -83,7 +83,7 @@ We’re building a separate AI/ML server to enhance TownSquare with:
 | Layer         | Tech Used                                |
 |---------------|-------------------------------------------|
 | Frontend      | React.js, Tailwind CSS, Axios             |
-| State Mgmt    | React Context API                         |
+| State Mgmt    | Redux                                     |
 | Backend       | Node.js, Express (Planned)                |
 | Database      | MongoDB (Planned)                         |
 | Hosting       | Render (Frontend), GitHub Pages (Backup)  |
